@@ -1,0 +1,136 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoCred - Formulário</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="wrapper">
+        <div class="header">
+            <img class="img_logo" src="imagens/motocred_logo.avif" alt="Logo MotoCred">
+        </div>
+
+        <div class="hero">
+            <h3 id="titulo_pagina">Solicitação de Financiamento</h3>
+        </div>
+
+        <div id="etapas_processo" aria-label="Etapas do processo">
+            <span class="step-tabs-title">Etapas do processo</span>
+            <div class="step-tabs" role="tablist" aria-label="Progresso do formulário">
+                <button type="button" class="step-tab is-active" id="tab-step-1" data-step="1" role="tab" aria-controls="step-1" aria-selected="true">
+                    Identificação
+                </button>
+                <button type="button" class="step-tab" id="tab-step-2" data-step="2" role="tab" aria-controls="step-2" aria-selected="false" disabled>
+                    Dados do vendedor
+                </button>
+                <button type="button" class="step-tab" id="tab-step-3" data-step="3" role="tab" aria-controls="step-3" aria-selected="false" disabled>
+                    Dados da moto
+                </button>
+                <button type="button" class="step-tab" id="tab-step-4" data-step="4" role="tab" aria-controls="step-4" aria-selected="false" disabled>
+                    Dados do cliente
+                </button>
+            </div>
+        </div>
+
+        <div class="main">
+            <form id="formCadastro">
+                <div class="form-steps">
+                    <section class="form-step is-active" data-step="1" id="step-1" role="tabpanel" aria-labelledby="tab-step-1">
+                        <fieldset class="fieldset-radio">
+                            <legend>Você é:</legend>
+                            <div class="radio-options">
+                                <label class="inline-option">
+                                    <input type="radio" name="tipo_usuario" value="cliente" required>
+                                    Cliente
+                                </label>
+                                <label class="inline-option">
+                                    <input type="radio" name="tipo_usuario" value="vendedor">
+                                    Vendedor
+                                </label>
+                            </div>
+                        </fieldset>
+                    </section>
+
+                    <section class="form-step" data-step="2" id="step-2" role="tabpanel" aria-labelledby="tab-step-2" aria-hidden="true">
+                        <fieldset id="dados_vendedor">
+                            <legend>Dados do Vendedor</legend>
+
+                            <label for="loja">Loja/Concessionária:</label>
+                            <select id="loja" name="loja" required>
+                                <option value="">Selecione</option>
+                                <option value="Loja A">Loja A</option>
+                                <option value="Loja B">Loja B</option>
+                                <option value="Loja C">Loja C</option>
+                            </select>
+
+                            <label for="nome_vendedor">Nome do Vendedor:</label>
+                            <input type="text" id="nome_vendedor" name="nome_vendedor" required>
+
+                            <label for="email_vendedor">Email do Vendedor:</label>
+                            <input type="email" id="email_vendedor" name="email_vendedor" required>
+                        </fieldset>
+                    </section>
+
+                    <section class="form-step" data-step="3" id="step-3" role="tabpanel" aria-labelledby="tab-step-3" aria-hidden="true">
+                        <fieldset id="dados_moto">
+                            <legend>Dados da Moto</legend>
+
+                            <label for="valor_moto">Valor da moto:</label>
+                            <input type="number" id="valor_moto" name="valor_moto" required>
+
+                            <label for="valor_entrada">Valor da entrada:</label>
+                            <span class="field-hint">O valor deve corresponder a no mínimo 40% do valor da moto, neste caso o valor é <span id="valor_entrada_minimo">R$ 0,00</span>.</span>
+                            <input type="number" id="valor_entrada" name="valor_entrada" required>
+                        </fieldset>
+                    </section>
+
+                    <section class="form-step" data-step="4" id="step-4" role="tabpanel" aria-labelledby="tab-step-4" aria-hidden="true">
+                        <fieldset id="dados_cliente">
+                            <legend>Dados do Cliente</legend>
+
+                            <label for="nome_cliente">Nome do Cliente:</label>
+                            <input type="text" id="nome_cliente" name="nome_cliente" required>
+
+                            <label for="cpf">CPF:</label>
+                            <input type="text" id="cpf" name="cpf" inputmode="numeric" autocomplete="off" maxlength="14" required>
+
+                            <span class="radio-label">Possui CNH?</span>
+                            <div class="radio-options">
+                                <label class="inline-option">
+                                    <input type="radio" name="cnh" value="sim" required>
+                                    Sim
+                                </label>
+                                <label class="inline-option">
+                                    <input type="radio" name="cnh" value="nao">
+                                    Não
+                                </label>
+                            </div>
+
+                            <label for="email_cliente">Email:</label>
+                            <input type="email" id="email_cliente" name="email_cliente" required>
+
+                            <label for="telefone">Telefone:</label>
+                            <input type="tel" id="telefone" name="telefone" required>
+
+                            <label for="renda_mensal">Renda mensal:</label>
+                            <input type="number" id="renda_mensal" name="renda_mensal" required>
+                        </fieldset>
+                    </section>
+                </div>
+
+                <div class="form-navigation">
+                    <button type="button" class="nav-button secondary nav-prev" aria-label="Voltar para a etapa anterior" hidden>Voltar</button>
+                    <div class="nav-button-group">
+                        <button type="button" class="nav-button primary nav-next" aria-label="Avançar para a próxima etapa">Próximo</button>
+                        <button type="submit" class="nav-button primary nav-submit" aria-label="Enviar formulário" hidden>Enviar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

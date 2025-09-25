@@ -1,0 +1,309 @@
+﻿* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    background-color: #f47521;
+    color: #333333;
+}
+
+.wrapper {
+    max-width: 900px;
+    width: calc(100% - 32px);
+    margin: 32px auto;
+    padding: 32px 40px;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.img_logo {
+    max-width: 220px;
+    width: 100%;
+    height: auto;
+    margin: 0 auto;
+    display: block;
+}
+
+.hero {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+#titulo_pagina {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #f47521;
+    letter-spacing: 0.5px;
+}
+
+#etapas_processo {
+    background-color: #f8f2ed;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 28px;
+}
+
+.step-tabs-title {
+    display: block;
+    font-weight: 600;
+    color: #d95e14;
+    margin-bottom: 12px;
+}
+
+.step-tabs {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.step-tab {
+    flex: 1 1 180px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-color: rgba(244, 117, 33, 0.1);
+    color: #d95e14;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.step-tab:disabled {
+    cursor: not-allowed;
+}
+
+.step-tab.is-active {
+    background-color: #f47521;
+    color: #ffffff;
+}
+
+.step-tab.is-complete {
+    border-color: #f47521;
+    background-color: rgba(244, 117, 33, 0.18);
+}
+
+.step-tab.is-disabled {
+    background-color: rgba(244, 117, 33, 0.05);
+    color: #b6b6b6;
+    border-color: transparent;
+    opacity: 0.65;
+}
+
+.main {
+    display: flex;
+    flex-direction: column;
+}
+
+.main form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.form-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.form-step {
+    display: none;
+}
+
+.form-step.is-active {
+    display: block;
+}
+
+.form-step.is-hidden-step {
+    display: none !important;
+}
+
+fieldset {
+    border: 1px solid #e4e4e4;
+    border-radius: 12px;
+    padding: 20px;
+    background-color: #fafafa;
+}
+
+legend {
+    font-weight: 600;
+    color: #f47521;
+    padding: 0 8px;
+}
+
+fieldset label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.95rem;
+    gap: 6px;
+    margin-top: 12px;
+}
+
+fieldset label:first-of-type {
+    margin-top: 0;
+}
+
+.radio-label {
+    display: block;
+    margin-top: 16px;
+    font-weight: 600;
+    color: #555555;
+}
+
+.field-hint {
+    display: block;
+    font-size: 0.85rem;
+    color: #666666;
+    margin: 6px 0;
+}
+
+.fieldset-radio .radio-label {
+    margin-top: 0;
+}
+
+.radio-options {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.inline-option {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    margin-top: 0;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+    accent-color: #f47521;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background-color: #ffffff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: #f47521;
+    box-shadow: 0 0 0 3px rgba(244, 117, 33, 0.15);
+}
+
+.is-hidden {
+    display: none !important;
+}
+
+fieldset.is-hidden {
+    display: none !important;
+}
+
+.form-navigation {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.form-navigation .nav-button-group {
+    display: flex;
+    gap: 12px;
+    margin-left: auto;
+}
+
+.nav-button {
+    padding: 12px 28px;
+    border-radius: 999px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s, border-color 0.2s;
+}
+
+.nav-button.primary {
+    border: none;
+    background-color: #f47521;
+    color: #ffffff;
+}
+
+.nav-button.primary:hover {
+    background-color: #d95e14;
+    transform: translateY(-1px);
+}
+
+.nav-button.primary:active {
+    transform: translateY(0);
+}
+
+.nav-button.secondary {
+    border: 2px solid #f47521;
+    color: #f47521;
+    background-color: #ffffff;
+}
+
+.nav-button.secondary:hover {
+    background-color: rgba(244, 117, 33, 0.08);
+}
+
+@media (max-width: 768px) {
+    .step-tab {
+        flex: 1 1 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .wrapper {
+        padding: 24px;
+    }
+
+    fieldset {
+        padding: 16px;
+    }
+
+    .form-navigation {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .form-navigation .nav-button-group {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .nav-button {
+        width: 100%;
+        text-align: center;
+    }
+
+    .radio-options {
+        gap: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .radio-options {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .inline-option {
+        width: 100%;
+    }
+}
