@@ -186,8 +186,11 @@ fieldset label:first-of-type {
 
 input[type="radio"],
 input[type="checkbox"] {
+    width: auto;
     accent-color: #f47521;
+    flex-shrink: 0;
 }
+
 
 input,
 select {
@@ -307,3 +310,8 @@ fieldset.is-hidden {
         width: 100%;
     }
 }
+
+
+
+
+
