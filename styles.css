@@ -5,23 +5,33 @@
 body {
     margin: 0;
     font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-    background-color: #f47521;
-    color: #333333;
+    background-color: #F37521;
+    color: #F37521;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 32px 16px;
 }
 
 .wrapper {
-    max-width: 900px;
-    width: calc(100% - 32px);
-    margin: 32px auto;
-    padding: 32px 40px;
+    width: min(820px, 100%);
+    margin: 0 auto;
+    padding: 48px 64px;
     background-color: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+    border-radius: 36px;
+    border: 1px solid #f3d9c8;
+    box-shadow: 0 28px 60px rgba(0, 0, 0, 0.14);
+    color: #F37521;
 }
 
 .header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
     text-align: center;
-    margin-bottom: 24px;
 }
 
 .img_logo {
@@ -34,68 +44,122 @@ body {
 
 .hero {
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: 32px;
 }
 
 #titulo_pagina {
-    font-size: 1.8rem;
+    font-size: 2rem;
     font-weight: 600;
-    color: #f47521;
-    letter-spacing: 0.5px;
+    color: #F37521;
+    letter-spacing: 0.02em;
+    margin: 0;
 }
 
 #etapas_processo {
-    background-color: #f8f2ed;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 28px;
-}
-
-.step-tabs-title {
-    display: block;
-    font-weight: 600;
-    color: #d95e14;
-    margin-bottom: 12px;
+    margin-bottom: 40px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
 }
 
 .step-tabs {
+    max-width: 520px;
+    width: 100%;
+    margin: 0 auto;
     display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    padding: 0 12px;
 }
 
 .step-tab {
-    flex: 1 1 180px;
-    padding: 10px 16px;
-    border-radius: 10px;
-    border: 2px solid transparent;
-    background-color: rgba(244, 117, 33, 0.1);
-    color: #d95e14;
-    font-weight: 600;
-    font-size: 0.95rem;
+    flex: 1;
+    max-width: 120px;
+    height: 14px;
+    padding: 0;
+    border: none;
+    background: none;
+    position: relative;
     cursor: pointer;
-    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+    font-size: 0;
+    line-height: 0;
+}
+
+.step-tab::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 6px;
+    border-radius: 999px;
+    background-color: #F8E5DB;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .step-tab:disabled {
-    cursor: not-allowed;
+    cursor: default;
 }
 
-.step-tab.is-active {
-    background-color: #f47521;
+.step-tab.is-active::after,
+.step-tab.is-complete::after {
+    background-color: #F37521;
+}
+
+.step-tab.is-active::after {
+    height: 10px;
+    transform: scaleX(1.2);
+    box-shadow: 0 6px 18px rgba(243, 117, 33, 0.25);
+}
+
+.step-tab.is-disabled::after {
+    background-color: #F8E5DB;
+    opacity: 0.7;
+}
+
+.step-tab.is-disabled.is-complete::after {
+    background-color: #F37521;
+    opacity: 1;
+}
+
+.step-tab:focus-visible {
+    outline: none;
+}
+
+.step-tab:focus-visible::after {
+    box-shadow: 0 0 0 3px rgba(243, 117, 33, 0.35);
+}
+
+.step-current-label {
+    margin-top: 6px;
+    font-size: 1.1rem;
+    font-weight: 600;
     color: #ffffff;
 }
 
-.step-tab.is-complete {
-    border-color: #f47521;
-    background-color: rgba(244, 117, 33, 0.18);
+@media (max-width: 768px) {
+    .step-tabs {
+        max-width: 360px;
+        padding: 0 10px;
+        gap: 12px;
+    }
+
+    .step-tab {
+        max-width: 90px;
+    }
 }
 
-.step-tab.is-disabled {
-    background-color: rgba(244, 117, 33, 0.05);
-    color: #b6b6b6;
-    border-color: transparent;
-    opacity: 0.65;
+@media (max-width: 480px) {
+    .step-tabs {
+        max-width: 300px;
+        gap: 8px;
+        padding: 0 6px;
+    }
+
+    .step-tab {
+        max-width: 70px;
+    }
 }
 
 .main {
@@ -106,13 +170,13 @@ body {
 .main form {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 32px;
 }
 
 .form-steps {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 32px;
 }
 
 .form-step {
@@ -128,16 +192,28 @@ body {
 }
 
 fieldset {
-    border: 1px solid #e4e4e4;
-    border-radius: 12px;
-    padding: 20px;
-    background-color: #fafafa;
+    border: 1px solid #f0d9c8;
+    border-radius: 28px;
+    padding: 32px;
+    background-color: #fff5ec;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+.fieldset-radio {
+    background-color: #fff5ec;
+    border-radius: 28px;
+    padding: 32px;
+    border: 1px solid #edd3c2;
+    box-shadow: 0 22px 48px rgba(0, 0, 0, 0.1);
 }
 
 legend {
     font-weight: 600;
-    color: #f47521;
-    padding: 0 8px;
+    font-size: 1rem;
+    color: #F37521;
+    padding: 0 16px;
+    letter-spacing: 0.01em;
+    background-color: transparent;
 }
 
 fieldset label {
@@ -145,7 +221,9 @@ fieldset label {
     flex-direction: column;
     font-size: 0.95rem;
     gap: 6px;
-    margin-top: 12px;
+    margin-top: 16px;
+    color: #333333;
+    font-weight: 500;
 }
 
 fieldset label:first-of-type {
@@ -156,13 +234,13 @@ fieldset label:first-of-type {
     display: block;
     margin-top: 16px;
     font-weight: 600;
-    color: #555555;
+    color: #333333;
 }
 
 .field-hint {
     display: block;
     font-size: 0.85rem;
-    color: #666666;
+    color: #5b3921;
     margin: 6px 0;
 }
 
@@ -172,42 +250,89 @@ fieldset label:first-of-type {
 
 .radio-options {
     display: flex;
-    gap: 16px;
+    gap: 18px;
     flex-wrap: wrap;
-    margin-top: 12px;
+    margin-top: 16px;
+    align-items: center;
+}
+
+.fieldset-radio .radio-options {
+    justify-content: center;
 }
 
 .inline-option {
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
+    position: relative;
+    display: inline-flex;
+    align-items: stretch;
     margin-top: 0;
+    padding: 0;
+}
+
+.inline-option input[type="radio"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+}
+
+.inline-option span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 28px;
+    border-radius: 999px;
+    border: 1px solid #e7d2c1;
+    background-color: #ffffff;
+    color: #F37521;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+    min-width: 128px;
+}
+
+.inline-option input[type="radio"]:checked + span {
+    background-color: #F37521;
+    border-color: #F37521;
+    color: #ffffff;
+    box-shadow: 0 12px 24px rgba(243, 117, 33, 0.3);
+}
+
+.inline-option input[type="radio"]:focus-visible + span {
+    box-shadow: 0 0 0 3px rgba(243, 117, 33, 0.35);
+}
+
+.inline-option input[type="radio"]:not(:checked) + span:hover {
+    border-color: #dca77c;
+    background-color: #fff3eb;
+    color: #d86216;
 }
 
 input[type="radio"],
 input[type="checkbox"] {
     width: auto;
-    accent-color: #f47521;
+    accent-color: #F37521;
     flex-shrink: 0;
 }
-
 
 input,
 select {
     width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #d0d0d0;
-    border-radius: 8px;
+    padding: 12px 16px;
+    border: 1px solid #e7d2c1;
+    border-radius: 18px;
     font-size: 0.95rem;
     background-color: #ffffff;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    color: #4a2b16;
+    transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
 }
 
 input:focus,
 select:focus {
     outline: none;
-    border-color: #f47521;
-    box-shadow: 0 0 0 3px rgba(244, 117, 33, 0.15);
+    border-color: #F37521;
+    box-shadow: 0 0 0 3px rgba(243, 117, 33, 0.25);
+    background-color: #ffffff;
 }
 
 .is-hidden {
@@ -221,7 +346,9 @@ fieldset.is-hidden {
 .form-navigation {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 16px;
+    width: 100%;
 }
 
 .form-navigation .nav-button-group {
@@ -231,66 +358,87 @@ fieldset.is-hidden {
 }
 
 .nav-button {
-    padding: 12px 28px;
+    padding: 14px 38px;
     border-radius: 999px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.2s, transform 0.2s, border-color 0.2s;
+    border: 1px solid transparent;
+    transition: background-color 0.2s, transform 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
 .nav-button.primary {
     border: none;
-    background-color: #f47521;
+    background-color: #F37521;
     color: #ffffff;
+    box-shadow: 0 14px 30px rgba(243, 117, 33, 0.3);
 }
 
 .nav-button.primary:hover {
-    background-color: #d95e14;
+    background-color: #d86216;
     transform: translateY(-1px);
+    box-shadow: 0 18px 34px rgba(243, 117, 33, 0.38);
 }
 
 .nav-button.primary:active {
     transform: translateY(0);
+    box-shadow: 0 10px 20px rgba(243, 117, 33, 0.25);
+}
+
+.nav-button.primary[disabled] {
+    border: none;
+    background-color: #F37521;
+    color: #ffffff;
+    opacity: 0.6;
 }
 
 .nav-button.secondary {
-    border: 2px solid #f47521;
-    color: #f47521;
+    border: 1px solid #F37521;
+    color: #F37521;
     background-color: #ffffff;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
 }
 
 .nav-button.secondary:hover {
-    background-color: rgba(244, 117, 33, 0.08);
+    background-color: #fff2e8;
+    border-color: #dca77c;
 }
 
-@media (max-width: 768px) {
-    .step-tab {
-        flex: 1 1 100%;
-    }
+.nav-button.secondary[disabled] {
+    background-color: #ffffff;
+    color: #F37521;
+    border: 1px solid #F37521;
+    opacity: 0.6;
+}
+
+.nav-button[disabled] {
+    cursor: not-allowed;
 }
 
 @media (max-width: 600px) {
     .wrapper {
-        padding: 24px;
+        padding: 32px;
     }
 
     fieldset {
-        padding: 16px;
+        padding: 24px;
     }
 
     .form-navigation {
-        flex-direction: column-reverse;
-        align-items: stretch;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
     }
 
     .form-navigation .nav-button-group {
-        width: 100%;
-        margin-left: 0;
+        width: auto;
+        margin-left: auto;
+        justify-content: flex-end;
     }
 
     .nav-button {
-        width: 100%;
+        width: auto;
         text-align: center;
     }
 
@@ -309,9 +457,12 @@ fieldset.is-hidden {
     .inline-option {
         width: 100%;
     }
+
+    .step-tabs {
+        max-width: 320px;
+        gap: 10px;
+        padding: 0 6px;
+    }
 }
-
-
-
 
 

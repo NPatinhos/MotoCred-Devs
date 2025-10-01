@@ -13,7 +13,7 @@
         </div>
 
         <div class="hero">
-            <h3 id="titulo_pagina">Solicitação de Financiamento</h3>
+            <h3 id="titulo_pagina">Formulário de Financiamento</h3>
         </div>
 
         <div id="etapas_processo" aria-label="Etapas do processo">
@@ -23,15 +23,16 @@
                     Identificação
                 </button>
                 <button type="button" class="step-tab" id="tab-step-2" data-step="2" role="tab" aria-controls="step-2" aria-selected="false" disabled>
-                    Dados do vendedor
+                    Dados do Vendedor
                 </button>
                 <button type="button" class="step-tab" id="tab-step-3" data-step="3" role="tab" aria-controls="step-3" aria-selected="false" disabled>
-                    Dados da moto
+                    Dados da Moto
                 </button>
                 <button type="button" class="step-tab" id="tab-step-4" data-step="4" role="tab" aria-controls="step-4" aria-selected="false" disabled>
-                    Dados do cliente
+                    Dados do Cliente
                 </button>
             </div>
+            <span class="step-current-label" aria-live="polite">Identificação</span>
         </div>
 
         <div class="main">
@@ -42,12 +43,12 @@
                             <legend>Você é:</legend>
                             <div class="radio-options">
                                 <label class="inline-option">
-                                    <input type="radio" name="tipo_usuario" value="cliente" required>
-                                    Cliente
+                                    <input type="radio" name="tipo_usuario" value="comprador" required>
+                                    <span>Comprador</span>
                                 </label>
                                 <label class="inline-option">
                                     <input type="radio" name="tipo_usuario" value="vendedor">
-                                    Vendedor
+                                    <span>Vendedor</span>
                                 </label>
                             </div>
                         </fieldset>
@@ -81,8 +82,9 @@
                             <input type="number" id="valor_moto" name="valor_moto" required>
 
                             <label for="valor_entrada">Valor da entrada:</label>
-                            <span class="field-hint">O valor deve corresponder a no mínimo 40% do valor da moto, neste caso o valor é <span id="valor_entrada_minimo">R$ 0,00</span>.</span>
-                            <input type="number" id="valor_entrada" name="valor_entrada" required>
+                            <input type="number" id="valor_entrada" name="valor_entrada"
+                                required placeholder="Entrada mínima sugerida de R$ 0,00">
+
                         </fieldset>
                     </section>
 
@@ -100,11 +102,11 @@
                             <div class="radio-options">
                                 <label class="inline-option">
                                     <input type="radio" name="cnh" value="sim" required>
-                                    Sim
+                                    <span>Sim</span>
                                 </label>
                                 <label class="inline-option">
                                     <input type="radio" name="cnh" value="nao">
-                                    Não
+                                    <span>Não</span>
                                 </label>
                             </div>
 
@@ -121,10 +123,11 @@
                 </div>
 
                 <div class="form-navigation">
-                    <button type="button" class="nav-button secondary nav-prev" aria-label="Voltar para a etapa anterior" hidden>Voltar</button>
+                    <button type="button" class="nav-button secondary nav-prev" aria-label="Voltar para a etapa anterior" disabled>Voltar</button>
                     <div class="nav-button-group">
                         <button type="button" class="nav-button primary nav-next" aria-label="Avançar para a próxima etapa">Próximo</button>
-                        <button type="submit" class="nav-button primary nav-submit" aria-label="Enviar formulário" hidden>Enviar</button>
+                        <button type="submit" class="nav-button primary nav-submit" hidden>Enviar</button>
+
                     </div>
                 </div>
             </form>
@@ -134,3 +137,5 @@
     <script src="script.js"></script>
 </body>
 </html>
+
+

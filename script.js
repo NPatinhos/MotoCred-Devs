@@ -6,6 +6,8 @@
 
     const steps = Array.from(form.querySelectorAll('.form-step'));
     const tabs = Array.from(document.querySelectorAll('.step-tab'));
+    const STEP_TITLES = ['Identificação','Dados do Vendedor','Dados do Cliente','Dados da Venda'];
+    const stepCurrentLabel = document.querySelector('.step-current-label');
     const btnPrev = form.querySelector('.nav-prev');
     const btnNext = form.querySelector('.nav-next');
     const btnSubmit = form.querySelector('.nav-submit');
