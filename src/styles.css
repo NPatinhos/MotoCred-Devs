@@ -1,0 +1,64 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply m-0 min-h-screen bg-brand text-brand flex justify-center items-start font-sans py-8 px-4;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading text-brand;
+  }
+}
+
+/* Componentes com visual alinhado ao design atual */
+@layer components {
+  .wrapper {
+    @apply w-full max-w-[820px] mx-auto bg-white text-brand rounded-xl2 border border-[#f3d9c8] shadow-card px-16 py-12;
+  }
+
+  .card {
+    @apply bg-white rounded-xl2 border border-orange-100 shadow-card p-8 text-brand;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-full font-semibold transition;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand text-white shadow hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-light;
+  }
+
+  .btn-secondary {
+    @apply btn border border-brand text-brand bg-white hover:bg-[#fff3eb];
+  }
+
+  .fieldset {
+    @apply rounded-[28px] border border-[#f0d9c8] bg-[#fff5ec] p-8 text-[#5A4033] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.5)];
+  }
+
+  .legend {
+    @apply font-semibold text-brand;
+  }
+
+  .input {
+    @apply block w-full rounded-xl border-neutral-400 focus:border-brand focus:ring-brand text-neutral-800 bg-white;
+  }
+
+  .radio-pill {
+    @apply inline-flex items-center justify-center px-7 py-3 rounded-full border border-neutral-300 bg-white font-semibold text-neutral-800;
+  }
+
+  .radio-pill-checked {
+    @apply bg-brand border-brand text-white shadow;
+  }
+  .step-dot { @apply h-1 w-14 rounded-full bg-orange-100; }
+  .step-dot-complete { @apply h-1 w-14 rounded-full bg-brand; }
+  .step-pill-active { @apply px-3 py-1 rounded-full bg-brand text-white text-sm font-semibold shadow; }
+
+}
+
