@@ -1005,6 +1005,316 @@ h1,
   color: rgb(38 38 38 / var(--tw-text-opacity));
 }
 
+.header {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.img_logo {
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  height: auto;
+  width: 100%;
+  max-width: 220px;
+}
+
+.hero {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+#titulo_pagina {
+  margin: 0px;
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  --tw-text-opacity: 1;
+  color: rgb(243 117 33 / var(--tw-text-opacity));
+}
+
+#etapas_processo {
+  margin-bottom: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.step-tabs {
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  width: 100%;
+  max-width: 520px;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+.step-tab {
+  position: relative;
+  height: 14px;
+  max-width: 120px;
+  flex: 1 1 0%;
+  cursor: pointer;
+  border-width: 0px;
+  background-color: transparent;
+  padding: 0px;
+  font-size: 0;
+  line-height: 1;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+.step-tab:disabled {
+  cursor: default;
+}
+
+.step-tab::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background-color: #F8E5DB;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.step-tab.is-active::after,
+  .step-tab.is-complete::after {
+  background-color: #F37521;
+}
+
+.step-tab.is-active::after {
+  height: 10px;
+  transform: scaleX(1.2);
+  box-shadow: 0 6px 18px rgba(243, 117, 33, 0.25);
+}
+
+.step-tab.is-disabled::after {
+  background-color: #F8E5DB;
+  opacity: 0.7;
+}
+
+.step-tab.is-disabled.is-complete::after {
+  background-color: #F37521;
+  opacity: 1;
+}
+
+.step-tab:focus-visible {
+  outline: none;
+}
+
+.step-tab:focus-visible::after {
+  box-shadow: 0 0 0 3px rgba(243, 117, 33, 0.35);
+}
+
+.step-current-label {
+  margin-top: 0.375rem;
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+}
+
+.main form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.form-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.form-step {
+  display: none;
+}
+
+.form-step.is-active {
+  display: block;
+}
+
+.form-step.is-hidden-step {
+  display: none !important;
+}
+
+fieldset label {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  --tw-text-opacity: 1;
+  color: rgb(51 51 51 / var(--tw-text-opacity));
+}
+
+fieldset label:first-of-type {
+  margin-top: 0;
+}
+
+.radio-label {
+  margin-top: 1rem;
+  display: block;
+  font-weight: 600;
+  --tw-text-opacity: 1;
+  color: rgb(51 51 51 / var(--tw-text-opacity));
+}
+
+.radio-options {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+}
+
+.fieldset-radio .radio-options {
+  justify-content: center;
+}
+
+.inline-option {
+  position: relative;
+  margin-top: 0px;
+  display: inline-flex;
+  align-items: stretch;
+  padding: 0px;
+}
+
+.inline-option input[type="radio"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.inline-option span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border-width: 1px;
+  --tw-border-opacity: 1;
+  border-color: rgb(231 210 193 / var(--tw-border-opacity));
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+  padding-left: 1.75rem;
+  padding-right: 1.75rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  --tw-text-opacity: 1;
+  color: rgb(243 117 33 / var(--tw-text-opacity));
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+  min-width: 128px;
+}
+
+.inline-option input[type="radio"]:checked + span {
+  background-color: #F37521;
+  border-color: #F37521;
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(243, 117, 33, 0.3);
+}
+
+.inline-option input[type="radio"]:focus-visible + span {
+  box-shadow: 0 0 0 3px rgba(243, 117, 33, 0.35);
+}
+
+.inline-option input[type="radio"]:not(:checked) + span:hover {
+  border-color: #dca77c;
+  background-color: #fff3eb;
+  color: #d86216;
+}
+
+.form-navigation {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.form-navigation .nav-button-group {
+  margin-left: auto;
+  display: flex;
+  gap: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .step-tabs {
+    max-width: 360px;
+    padding: 0 10px;
+    gap: 12px;
+  }
+
+  .step-tab {
+    max-width: 90px;
+  }
+}
+
+@media (max-width: 600px) {
+  .form-navigation {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .form-navigation .nav-button-group {
+    width: auto;
+    margin-left: auto;
+    justify-content: flex-end;
+  }
+
+  .radio-options {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .step-tabs {
+    max-width: 300px;
+    gap: 8px;
+    padding: 0 6px;
+  }
+
+  .step-tab {
+    max-width: 70px;
+  }
+
+  .radio-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .inline-option {
+    width: 100%;
+  }
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -1091,4 +1401,3 @@ h1,
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(253 186 116 / var(--tw-ring-opacity));
 }
-

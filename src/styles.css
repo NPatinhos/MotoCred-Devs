@@ -59,6 +59,226 @@
   .step-dot { @apply h-1 w-14 rounded-full bg-orange-100; }
   .step-dot-complete { @apply h-1 w-14 rounded-full bg-brand; }
   .step-pill-active { @apply px-3 py-1 rounded-full bg-brand text-white text-sm font-semibold shadow; }
+  .header {
+    @apply flex flex-col items-center gap-3 mb-4 text-center;
+  }
 
+  .img_logo {
+    @apply max-w-[220px] w-full h-auto mx-auto block;
+  }
+
+  .hero {
+    @apply text-center mb-8;
+  }
+
+  #titulo_pagina {
+    @apply text-[2rem] font-semibold text-brand tracking-[0.02em] m-0;
+  }
+
+  #etapas_processo {
+    @apply mb-10 flex flex-col items-center gap-3 text-center;
+  }
+
+  .step-tabs {
+    @apply w-full max-w-[520px] mx-auto flex justify-center items-center gap-4 px-3;
+  }
+
+  .step-tab {
+    @apply flex-1 max-w-[120px] h-[14px] p-0 border-0 bg-transparent relative cursor-pointer text-[0] leading-none transition duration-200;
+  }
+
+  .step-tab:disabled {
+    cursor: default;
+  }
+
+  .step-tab::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 6px;
+    border-radius: 999px;
+    background-color: #F8E5DB;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .step-tab.is-active::after,
+  .step-tab.is-complete::after {
+    background-color: #F37521;
+  }
+
+  .step-tab.is-active::after {
+    height: 10px;
+    transform: scaleX(1.2);
+    box-shadow: 0 6px 18px rgba(243, 117, 33, 0.25);
+  }
+
+  .step-tab.is-disabled::after {
+    background-color: #F8E5DB;
+    opacity: 0.7;
+  }
+
+  .step-tab.is-disabled.is-complete::after {
+    background-color: #F37521;
+    opacity: 1;
+  }
+
+  .step-tab:focus-visible {
+    outline: none;
+  }
+
+  .step-tab:focus-visible::after {
+    box-shadow: 0 0 0 3px rgba(243, 117, 33, 0.35);
+  }
+
+  .step-current-label {
+    @apply mt-1.5 text-lg font-semibold text-white;
+  }
+
+  .main {
+    @apply flex flex-col;
+  }
+
+  .main form {
+    @apply flex flex-col gap-8;
+  }
+
+  .form-steps {
+    @apply flex flex-col gap-8;
+  }
+
+  .form-step {
+    display: none;
+  }
+
+  .form-step.is-active {
+    display: block;
+  }
+
+  .form-step.is-hidden-step {
+    display: none !important;
+  }
+
+  fieldset label {
+    @apply flex flex-col text-[0.95rem] gap-1.5 mt-4 text-[#333333] font-medium;
+  }
+
+  fieldset label:first-of-type {
+    margin-top: 0;
+  }
+
+  .radio-label {
+    @apply block mt-4 font-semibold text-[#333333];
+  }
+
+  .field-hint {
+    @apply block text-sm text-[#5b3921] my-1.5;
+  }
+
+  .radio-options {
+    @apply flex flex-wrap items-center gap-[18px] mt-4;
+  }
+
+  .fieldset-radio .radio-options {
+    @apply justify-center;
+  }
+
+  .inline-option {
+    @apply relative inline-flex items-stretch mt-0 p-0;
+  }
+
+  .inline-option input[type="radio"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .inline-option span {
+    @apply inline-flex items-center justify-center px-7 py-3 rounded-full border border-[#e7d2c1] bg-white text-brand font-semibold tracking-[0.01em] transition duration-200;
+    min-width: 128px;
+  }
+
+  .inline-option input[type="radio"]:checked + span {
+    background-color: #F37521;
+    border-color: #F37521;
+    color: #ffffff;
+    box-shadow: 0 12px 24px rgba(243, 117, 33, 0.3);
+  }
+
+  .inline-option input[type="radio"]:focus-visible + span {
+    box-shadow: 0 0 0 3px rgba(243, 117, 33, 0.35);
+  }
+
+  .inline-option input[type="radio"]:not(:checked) + span:hover {
+    border-color: #dca77c;
+    background-color: #fff3eb;
+    color: #d86216;
+  }
+
+  .is-hidden,
+  fieldset.is-hidden {
+    display: none !important;
+  }
+
+  .form-navigation {
+    @apply flex items-center justify-between gap-4 w-full;
+  }
+
+  .form-navigation .nav-button-group {
+    @apply flex gap-3 ml-auto;
+  }
+
+  @media (max-width: 768px) {
+    .step-tabs {
+      max-width: 360px;
+      padding: 0 10px;
+      gap: 12px;
+    }
+
+    .step-tab {
+      max-width: 90px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .form-navigation {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .form-navigation .nav-button-group {
+      width: auto;
+      margin-left: auto;
+      justify-content: flex-end;
+    }
+
+    .radio-options {
+      gap: 12px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .step-tabs {
+      max-width: 300px;
+      gap: 8px;
+      padding: 0 6px;
+    }
+
+    .step-tab {
+      max-width: 70px;
+    }
+
+    .radio-options {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .inline-option {
+      width: 100%;
+    }
+  }
 }
-
