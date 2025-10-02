@@ -422,6 +422,14 @@
         if (!validateStep(currentStepIndex)) {
             return;
         }
+            // Ele verifica se estamos saindo da 1ª etapa e se o usuário é comprador
+        if (currentStepIndex === 0 && currentUserType === 'comprador') {
+            const vendedorTab = tabs[1];
+            if (vendedorTab) {
+                vendedorTab.classList.add('is-skipped-complete');
+            }
+        }
+
         const nextIndex = findEnabledStep(currentStepIndex, 1, false);
         if (nextIndex === null) {
             return;
@@ -524,17 +532,30 @@
     updateStepAvailability();
     showStep(0);
 
+    // Em script.js
+
+    // Em script.js
+
     tipoUsuarioRadios.forEach((radio) => {
         radio.addEventListener('change', (event) => {
             const selectedType = event.target.value;
+            const vendedorTab = tabs[1]; // A aba "Dados do Vendedor"
+
+            // Limpa a marcação de "pulado" se o usuário selecionar "Vendedor"
+            if (selectedType === 'vendedor') {
+                if (vendedorTab) vendedorTab.classList.remove('is-skipped-complete');
+            }
+
+            // Lógica existente para limpar os campos e resetar o progresso
             if (currentUserType && currentUserType !== selectedType) {
-                if (selectedType === 'cliente') {
+                if (selectedType === 'comprador') {
                     clearFieldset(vendorFieldset);
                 } else {
                     clearFieldset(clientFieldset);
                 }
                 maxStepIndex = Math.min(maxStepIndex, 0);
             }
+
             currentUserType = selectedType;
             updateStepAvailability();
         });
@@ -631,8 +652,5 @@
         }
     });
 })();
-
-
-
 
 

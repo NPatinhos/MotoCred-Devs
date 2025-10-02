@@ -148,6 +148,11 @@
   box-shadow: 0 6px 18px rgba(243, 117, 33, 0.25);
 }
 
+/* Novo estado para abas que foram puladas, mas devem ser marcadas como concluídas */
+.step-tab.is-skipped-complete::after {
+  background-color: #F37521; /* Laranja */
+}
+
 /* Estilos de abas desabilitadas e de foco */
 .step-tab:disabled {
   cursor: default;
@@ -320,6 +325,39 @@
 
     .inline-option {
       width: 100%;
+    }
+  }
+
+  /* Em styles.css - adicione este novo bloco no final do arquivo */
+
+  /* Em styles.css - adicione ou substitua este bloco no final do arquivo */
+
+  @media (max-width: 400px) {
+    /* Reduzimos o espaçamento entre as abas para economizar espaço */
+    .step-tabs {
+      gap: 8px;
+    }
+
+    /* Etapas INATIVAS: ficam bem pequenas */
+    .step-tab {
+      /* flex: grow shrink basis -> Não cresce, pode encolher, base de 40px */
+      flex: 0 1 40px;
+      height: 36px; /* Altura um pouco menor para economizar espaço vertical */
+    }
+
+    /* Etapa ATIVA: se expande para caber o texto */
+    .step-tab.is-active {
+      /* flex: grow shrink basis -> Pode crescer, não encolhe, largura automática */
+      flex: 1 0 auto;
+      height: 40px; /* Altura um pouco maior para destaque */
+      /* Adicionamos padding para o texto não ficar colado nas bordas */
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    /* Força o texto da aba ativa a ficar em uma única linha */
+    .step-tab.is-active span {
+      white-space: nowrap;
     }
   }
 }
