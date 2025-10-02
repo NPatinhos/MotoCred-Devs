@@ -84,30 +84,46 @@
   }
 
   .step-tab {
-    @apply flex-1 max-w-[120px] h-[14px] p-0 border-0 bg-transparent relative cursor-pointer text-[0] leading-none transition duration-200;
+    @apply flex items-center justify-center flex-1 max-w-[120px] h-[28px] p-0 border-0 bg-transparent relative cursor-pointer transition duration-200 whitespace-nowrap px-2;
   }
+
+  .step-tab span {
+  @apply text-sm font-semibold text-transparent transition-colors duration-200;
+  position: relative; /* Garante que o span fique acima do ::after */
+  z-index: 1;
+}
 
   .step-tab:disabled {
     cursor: default;
   }
 
   .step-tab::after {
-    content: '';
-    display: block;
-    width: 100%;
-    height: 6px;
-    border-radius: 999px;
-    background-color: #F8E5DB;
-    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 6px;
+      transform: translateY(-50%);
+      border-radius: 999px;
+      background-color: #F8E5DB;
+      transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s, height 0.2s, top 0.2s, bottom 0.2s;
+      z-index: 0;
+  }
+
+  .step-tab.is-active span {
+    @apply text-white;
   }
 
   .step-tab.is-active::after,
   .step-tab.is-complete::after {
-    background-color: #F37521;
+    background-color: #F37521; /* laranja */
   }
 
   .step-tab.is-active::after {
-    height: 10px;
+    top: 0;           /* anula o top:50% das inativas */
+    bottom: 0;        /* ocupa a altura toda do botão */
+    height: auto;     /* passa a usar top/bottom */
     transform: scaleX(1.2);
     box-shadow: 0 6px 18px rgba(243, 117, 33, 0.25);
   }
@@ -133,6 +149,9 @@
   .step-current-label {
     @apply mt-1.5 text-lg font-semibold text-white;
   }
+
+  /* .step-current-label { display: none; } */
+
 
   .main {
     @apply flex flex-col;
@@ -282,3 +301,7 @@
     }
   }
 }
+
+
+
+

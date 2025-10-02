@@ -1065,18 +1065,35 @@ h1,
 
 .step-tab {
   position: relative;
-  height: 14px;
+  display: flex;
+  height: 28px;
   max-width: 120px;
   flex: 1 1 0%;
   cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
   border-width: 0px;
   background-color: transparent;
   padding: 0px;
-  font-size: 0;
-  line-height: 1;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 200ms;
+}
+
+.step-tab span {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 600;
+  color: transparent;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+  position: relative;
+  /* Garante que o span fique acima do ::after */
+  z-index: 1;
 }
 
 .step-tab:disabled {
@@ -1085,21 +1102,36 @@ h1,
 
 .step-tab::after {
   content: '';
-  display: block;
-  width: 100%;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
   height: 6px;
+  transform: translateY(-50%);
   border-radius: 999px;
   background-color: #F8E5DB;
-  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s, height 0.2s, top 0.2s, bottom 0.2s;
+  z-index: 0;
+}
+
+.step-tab.is-active span {
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 
 .step-tab.is-active::after,
   .step-tab.is-complete::after {
   background-color: #F37521;
+  /* laranja */
 }
 
 .step-tab.is-active::after {
-  height: 10px;
+  top: 0;
+  /* anula o top:50% das inativas */
+  bottom: 0;
+  /* ocupa a altura toda do botão */
+  height: auto;
+  /* passa a usar top/bottom */
   transform: scaleX(1.2);
   box-shadow: 0 6px 18px rgba(243, 117, 33, 0.25);
 }
@@ -1130,6 +1162,8 @@ h1,
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
+
+/* .step-current-label { display: none; } */
 
 .main {
   display: flex;
@@ -1411,3 +1445,7 @@ fieldset label:first-of-type {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(253 186 116 / var(--tw-ring-opacity));
 }
+
+
+
+

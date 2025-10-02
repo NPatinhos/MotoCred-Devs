@@ -326,7 +326,21 @@
             tab.style.cursor = shouldDisable ? 'default' : '';
             tab.style.pointerEvents = shouldDisable ? 'none' : '';
         });
+
+        // Atualiza o rótulo da etapa atual
+        atualizarNomeEtapaAtual();
     };
+
+
+    const atualizarNomeEtapaAtual = () => {
+        if (!stepCurrentLabel) return;
+
+        const activeTab = tabs.find((tab) => tab.classList.contains('is-active'));
+        if (activeTab) {
+            stepCurrentLabel.textContent = activeTab.innerText.trim();
+        }
+    };
+
 
     const renderSteps = () => {
         steps.forEach((step, index) => {
@@ -382,6 +396,7 @@
         renderSteps();
         renderTabs();
         renderNavigation();
+        // REMOVIDO: requestAnimationFrame(atualizarNomeEtapaAtual);
     };
 
     const goToStep = (index) => {
@@ -616,4 +631,8 @@
         }
     });
 })();
+
+
+
+
 
