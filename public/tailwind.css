@@ -986,6 +986,22 @@ h1,
   --tw-ring-color: rgb(243 117 33 / var(--tw-ring-opacity));
 }
 
+/* Em styles.css */
+
+#valor_entrada::-moz-placeholder {
+  color: #5A4033;
+  /* Mesma cor do texto do fieldset */
+  opacity: 0.7;
+  /* Opacidade reduzida */
+}
+
+#valor_entrada::placeholder {
+  color: #5A4033;
+  /* Mesma cor do texto do fieldset */
+  opacity: 0.7;
+  /* Opacidade reduzida */
+}
+
 .radio-pill {
   display: inline-flex;
   cursor: pointer;
@@ -1325,6 +1341,32 @@ fieldset label:first-of-type {
   margin-left: auto;
   display: flex;
   gap: 0.75rem;
+}
+
+/* Em styles.css */
+
+/* Garante que este grupo específico fique sempre na horizontal e centralizado */
+
+.radio-options-horizontal {
+  flex-direction: row !important;
+  justify-content: center !important;
+}
+
+/* Deixa o texto dos botões Sim/Não preto por padrão */
+
+.radio-options-horizontal .radio-pill {
+  color: black;
+}
+
+/* No mobile, podemos diminuir um pouco os botões para garantir que caibam */
+
+@media (max-width: 480px) {
+  .radio-options-horizontal .radio-pill {
+    padding-left: 1.25rem;
+    /* px-5 */
+    padding-right: 1.25rem;
+    /* px-5 */
+  }
 }
 
 @media (max-width: 768px) {

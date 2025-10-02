@@ -22,7 +22,6 @@
     const telefoneInput = document.getElementById('telefone');
     const valorMotoInput = document.getElementById('valor_moto');
     const valorEntradaInput = document.getElementById('valor_entrada');
-    const valorEntradaHint = document.getElementById('valor_entrada_minimo');
 
     let currentStepIndex = 0;
     let maxStepIndex = 0;
@@ -141,16 +140,23 @@
         return Math.floor(minimo * 100) / 100;
     };
 
+    // Em script.js
+
     const updateValorEntradaHint = () => {
-        if (!valorEntradaHint) {
+        if (!valorMotoInput) {
             return;
         }
         const minimo = calculateValorEntradaMinimo();
+        // Formatamos o valor como moeda brasileira (ex: R$ 1.234,56)
         const formatted = minimo.toLocaleString('pt-BR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+            style: 'currency',
+            currency: 'BRL'
         });
-        valorEntradaHint.textContent = `R$ ${formatted}`;
+
+        // Atualizamos o atributo 'placeholder' do campo de entrada
+        if (valorEntradaInput) {
+            valorEntradaInput.placeholder = `Entrada mínima sugerida: ${formatted}`;
+        }
     };
 
     const updateCpfValidity = (showMessage = false) => {

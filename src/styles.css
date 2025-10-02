@@ -49,6 +49,13 @@
     @apply block w-full rounded-xl border-neutral-400 focus:border-brand focus:ring-brand text-neutral-800 bg-white;
   }
 
+  /* Em styles.css */
+
+  #valor_entrada::placeholder {
+    color: #5A4033; /* Mesma cor do texto do fieldset */
+    opacity: 0.7; /* Opacidade reduzida */
+  }
+
   .radio-pill {
     @apply inline-flex items-center justify-center px-7 py-3 rounded-full border border-neutral-300 bg-white font-semibold text-neutral-800 cursor-pointer transition;
   }
@@ -268,6 +275,27 @@
 
   .form-navigation .nav-button-group {
     @apply flex gap-3 ml-auto;
+  }
+
+  /* Em styles.css */
+
+  /* Garante que este grupo específico fique sempre na horizontal e centralizado */
+  .radio-options-horizontal {
+    flex-direction: row !important;
+    justify-content: center !important;
+  }
+
+  /* Deixa o texto dos botões Sim/Não preto por padrão */
+  .radio-options-horizontal .radio-pill {
+    color: black;
+  }
+
+  /* No mobile, podemos diminuir um pouco os botões para garantir que caibam */
+  @media (max-width: 480px) {
+    .radio-options-horizontal .radio-pill {
+      padding-left: 1.25rem; /* px-5 */
+      padding-right: 1.25rem; /* px-5 */
+    }
   }
 
   @media (max-width: 768px) {
