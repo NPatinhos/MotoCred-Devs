@@ -75,78 +75,95 @@
     @apply text-[2rem] font-semibold text-brand tracking-[0.02em] m-0;
   }
 
-  #etapas_processo {
-    @apply mb-10 flex flex-col items-center gap-3 text-center;
-  }
+/* ======================================================================== */
+/* INÍCIO DO CÓDIGO CORRIGIDO PARA AS ETAPAS                            */
+/* ======================================================================== */
 
-  .step-tabs {
-    @apply w-full max-w-[520px] mx-auto flex justify-center items-center gap-4 px-3;
-  }
-
-  .step-tab {
-    @apply flex items-center justify-center flex-1 max-w-[120px] h-[28px] p-0 border-0 bg-transparent relative cursor-pointer transition duration-200 whitespace-nowrap px-2;
-  }
-
-  .step-tab span {
-  @apply text-sm font-semibold text-transparent transition-colors duration-200;
-  position: relative; /* Garante que o span fique acima do ::after */
-  z-index: 1;
+#etapas_processo {
+  @apply mb-10 w-full flex flex-col items-center gap-3 text-center;
 }
 
-  .step-tab:disabled {
-    cursor: default;
-  }
+/* O contêiner que segura as 4 abas */
+.step-tabs {
+  @apply w-full max-w-[520px] flex justify-center items-center gap-4;
+}
 
-  .step-tab::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 50%;
-      height: 6px;
-      transform: translateY(-50%);
-      border-radius: 999px;
-      background-color: #F8E5DB;
-      transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s, height 0.2s, top 0.2s, bottom 0.2s;
-      z-index: 0;
-  }
+/* A base para CADA UMA das 4 abas (TAMANHO X) */
+.step-tab {
+  height: 44px;
+  /* Define uma LARGURA FIXA de 99px, impedindo que o texto a alargue */
+  flex: 0 0 70px; 
+  @apply flex justify-center items-center text-center relative py-1 px-2 border-0 bg-transparent cursor-pointer;
+  /* Anima a mudança de altura e largura */
+  transition: flex-basis 0.4s ease, height 0.4s ease;
+}
 
-  .step-tab.is-active span {
-    @apply text-white;
-  }
+/* A aba ATIVA (TAMANHO Y) */
+.step-tab.is-active {
+  height: 50px;
+  /* Define uma LARGURA FIXA e MAIOR de 109px para a aba ativa */
+  flex: 0 0 129px; 
+}
 
-  .step-tab.is-active::after,
-  .step-tab.is-complete::after {
-    background-color: #F37521; /* laranja */
-  }
+/* O texto (<span>) dentro de cada aba */
+.step-tab span {
+  @apply hidden;
+}
 
-  .step-tab.is-active::after {
-    top: 0;           /* anula o top:50% das inativas */
-    bottom: 0;        /* ocupa a altura toda do botão */
-    height: auto;     /* passa a usar top/bottom */
-    transform: scaleX(1.2);
-    box-shadow: 0 6px 18px rgba(243, 117, 33, 0.25);
-  }
+/* O texto (<span>) dentro da aba ATIVA */
+.step-tab.is-active span {
+  @apply inline-block text-white text-sm font-semibold;
+  position: relative;
+  z-index: 1;
+  line-height: 1.2; /* Bom para textos com quebra de linha */
+}
 
-  .step-tab.is-disabled::after {
-    background-color: #F8E5DB;
-    opacity: 0.7;
-  }
+/* O fundo de CADA aba (formato de barrinha) */
+.step-tab::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 6px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background-color: #F8E5DB;
+  transition: all 0.3s ease;
+  z-index: 0;
+}
 
-  .step-tab.is-disabled.is-complete::after {
-    background-color: #F37521;
-    opacity: 1;
-  }
+/* Cor laranja para abas ATIVAS ou COMPLETAS */
+.step-tab.is-active::after,
+.step-tab.is-complete::after {
+  background-color: #F37521;
+}
 
-  .step-tab:focus-visible {
-    outline: none;
-  }
+/* Expansão do fundo para a aba ATIVA (formato de pílula) */
+.step-tab.is-active::after {
+  top: 0;
+  bottom: 0;
+  height: auto;
+  transform: none;
+  box-shadow: 0 6px 18px rgba(243, 117, 33, 0.25);
+}
 
-  .step-tab:focus-visible::after {
-    box-shadow: 0 0 0 3px rgba(243, 117, 33, 0.35);
-  }
+/* Estilos de abas desabilitadas e de foco */
+.step-tab:disabled {
+  cursor: default;
+}
+.step-tab:focus-visible {
+  outline: none;
+}
+.step-tab:focus-visible::after {
+  box-shadow: 0 0 0 3px rgba(243, 117, 33, 0.35);
+}
 
-  .step-current-label {
+/* ======================================================================== */
+/* FIM DO CÓDIGO CORRIGIDO                                              */
+/* ======================================================================== */
+
+.step-current-label {
     @apply mt-1.5 text-lg font-semibold text-white;
   }
 
@@ -254,10 +271,19 @@
       padding: 0 10px;
       gap: 12px;
     }
+  
+  .step-tab {
+    /* No mobile, trocamos a largura fixa por um modelo flexível */
+    flex: 1 1 0%;
+    /* Também podemos reduzir um pouco a altura para telas menores */
+    height: 40px; 
+  }
 
-    .step-tab {
-      max-width: 90px;
-    }
+  .step-tab.is-active {
+    /* A aba ativa cresce 1.5x mais que as outras para manter a proporção */
+    flex: 1.5 1 0%;
+    height: 44px; /* Altura um pouco maior para a ativa */
+  }
   }
 
   @media (max-width: 600px) {
@@ -284,10 +310,6 @@
       max-width: 300px;
       gap: 8px;
       padding: 0 6px;
-    }
-
-    .step-tab {
-      max-width: 70px;
     }
 
     .radio-options {
