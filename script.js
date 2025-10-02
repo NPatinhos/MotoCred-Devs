@@ -6,15 +6,16 @@
 
     const steps = Array.from(form.querySelectorAll('.form-step'));
     const tabs = Array.from(document.querySelectorAll('.step-tab'));
-    const STEP_TITLES = ['Identificação','Dados do Vendedor','Dados do Cliente','Dados da Venda'];
+    const STEP_TITLES = ['Identificacao','Dados do Vendedor','Dados do Cliente','Dados da Moto'];
     const stepCurrentLabel = document.querySelector('.step-current-label');
     const btnPrev = form.querySelector('.nav-prev');
     const btnNext = form.querySelector('.nav-next');
-    const btnSubmit = form.querySelector('.nav-submit');
+    const navButtonGroup = form.querySelector('.nav-button-group');
+    const navButtonGroupParent = navButtonGroup ? navButtonGroup.parentElement : null;
 
     const vendorFieldset = document.getElementById('dados_vendedor');
     const clientFieldset = document.getElementById('dados_cliente');
-    const motoFieldset = document.querySelector('#step-3 fieldset');
+    const motoFieldset = document.querySelector('#step-4 fieldset');
     const tipoUsuarioRadios = Array.from(form.querySelectorAll('input[name="tipo_usuario"]'));
     const cpfInput = document.getElementById('cpf');
     const emailInputs = Array.from(form.querySelectorAll('input[type="email"]'));
@@ -322,6 +323,8 @@
             tab.setAttribute('aria-disabled', (!enabled).toString());
             const shouldDisable = !enabled || (!isActive && index > maxStepIndex);
             tab.disabled = shouldDisable;
+            tab.style.cursor = shouldDisable ? 'default' : '';
+            tab.style.pointerEvents = shouldDisable ? 'none' : '';
         });
     };
 
@@ -339,17 +342,30 @@
     const renderNavigation = () => {
         const previousIndex = findEnabledStep(currentStepIndex, -1, false);
         const nextIndex = findEnabledStep(currentStepIndex, 1, false);
+        const isLastStep = currentStepIndex === steps.length - 1;
 
         if (btnPrev) {
-            btnPrev.hidden = previousIndex === null;
+            const shouldShowPrev = previousIndex !== null;
+            if (shouldShowPrev) {
+                if (!btnPrev.isConnected && navButtonGroupParent && navButtonGroup) {
+                    navButtonGroupParent.insertBefore(btnPrev, navButtonGroup);
+                }
+                btnPrev.disabled = false;
+                btnPrev.hidden = false;
+            } else {
+                btnPrev.disabled = true;
+                btnPrev.hidden = true;
+                if (btnPrev.isConnected) {
+                    btnPrev.remove();
+                }
+            }
         }
 
         if (btnNext) {
-            btnNext.hidden = nextIndex === null;
-        }
-
-        if (btnSubmit) {
-            btnSubmit.hidden = nextIndex !== null;
+            btnNext.type = 'button';
+            btnNext.dataset.action = isLastStep ? 'submit' : 'next';
+            btnNext.textContent = isLastStep ? 'Enviar' : 'Pr\u00f3ximo';
+            btnNext.setAttribute('aria-label', isLastStep ? 'Enviar formul\u00e1rio' : 'Avan\u00e7ar para a pr\u00f3xima etapa');
         }
     };
 
@@ -510,7 +526,21 @@
     });
 
     if (btnNext) {
-        btnNext.addEventListener('click', handleNext);
+        btnNext.dataset.action = 'next';
+        btnNext.addEventListener('click', () => {
+            if (btnNext.dataset.action === 'submit') {
+                if (!validateStep(currentStepIndex)) {
+                    return;
+                }
+                if (typeof form.requestSubmit === 'function') {
+                    form.requestSubmit();
+                } else {
+                    form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                }
+                return;
+            }
+            handleNext();
+        });
     }
 
     if (btnPrev) {
@@ -586,5 +616,4 @@
         }
     });
 })();
-
 

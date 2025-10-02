@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="public/tailwind.css">
 </head>
 
-<body class="min-h-svh grid place-items-center bg-brand p-6">
-    <div class="card max-w-[820px] w-[calc(100%-48px)] max-h-[calc(100svh-48px)] overflow-auto">
+<body class="min-h-svh flex items-stretch justify-center bg-brand p-6">
+    <div class="card max-w-[820px] w-full h-full flex flex-col">
         <div class="header">
             <img class="img_logo" src="imagens/motocred_logo.avif" alt="Logo MotoCred">
         </div>
@@ -18,7 +18,6 @@
         </div>
 
         <div id="etapas_processo" aria-label="Etapas do processo">
-            <span class="step-tabs-title">Etapas do processo</span>
             <div class="step-tabs" role="tablist" aria-label="Progresso do formulário">
                 <button type="button" class="step-tab is-active" id="tab-step-1" data-step="1" role="tab" aria-controls="step-1" aria-selected="true">
                     Identificação
@@ -27,10 +26,10 @@
                     Dados do Vendedor
                 </button>
                 <button type="button" class="step-tab" id="tab-step-3" data-step="3" role="tab" aria-controls="step-3" aria-selected="false" disabled>
-                    Dados da Moto
+                    Dados do Cliente
                 </button>
                 <button type="button" class="step-tab" id="tab-step-4" data-step="4" role="tab" aria-controls="step-4" aria-selected="false" disabled>
-                    Dados do Cliente
+                    Dados da Moto
                 </button>
             </div>
             <span class="step-current-label" aria-live="polite">Identificação</span>
@@ -43,16 +42,15 @@
                         <fieldset class="fieldset fieldset-radio">
                             <legend class="legend">Você é:</legend>
                             <div class="radio-options">
-                            <label class="inline-option">
-                                <input class="sr-only peer" type="radio" name="tipo_usuario" value="comprador" required>
-                                <span class="radio-pill peer-checked:radio-pill-checked">Comprador</span>
-                            </label>
-                            <label class="inline-option">
-                                <input class="sr-only peer" type="radio" name="tipo_usuario" value="vendedor">
-                                <span class="radio-pill peer-checked:radio-pill-checked">Vendedor</span>
-                            </label>
+                                <label class="inline-option">
+                                    <input class="sr-only peer" type="radio" name="tipo_usuario" value="comprador" required>
+                                    <span class="radio-pill peer-checked:radio-pill-checked">Comprador</span>
+                                </label>
+                                <label class="inline-option">
+                                    <input class="sr-only peer" type="radio" name="tipo_usuario" value="vendedor">
+                                    <span class="radio-pill peer-checked:radio-pill-checked">Vendedor</span>
+                                </label>
                             </div>
-
                         </fieldset>
                     </section>
 
@@ -77,20 +75,6 @@
                     </section>
 
                     <section class="form-step" data-step="3" id="step-3" role="tabpanel" aria-labelledby="tab-step-3" aria-hidden="true">
-                        <fieldset class="fieldset" id="dados_moto">
-                            <legend class="legend">Dados da Moto</legend>
-
-                            <label for="valor_moto">Valor da moto:</label>
-                            <input class="input" type="number" id="valor_moto" name="valor_moto" required>
-
-                            <label for="valor_entrada">Valor da entrada:</label>
-                            <input class="input" type="number" id="valor_entrada" name="valor_entrada"
-                                required placeholder="Entrada mínima sugerida de R$ 0,00">
-
-                        </fieldset>
-                    </section>
-
-                    <section class="form-step" data-step="4" id="step-4" role="tabpanel" aria-labelledby="tab-step-4" aria-hidden="true">
                         <fieldset class="fieldset" id="dados_cliente">
                             <legend class="legend">Dados do Cliente</legend>
 
@@ -104,19 +88,13 @@
                             <div class="radio-options">
                                 <label class="inline-option">
                                     <input class="sr-only peer" type="radio" name="cnh" value="sim" required>
-                                    <span class="radio-pill peer-checked:radio-pill-checked peer-focus-visible:ring-2 peer-focus-visible:ring-orange-300">
-                                    Sim
-                                    </span>
+                                    <span class="radio-pill peer-checked:radio-pill-checked peer-focus-visible:ring-2 peer-focus-visible:ring-orange-300">Sim</span>
                                 </label>
-
                                 <label class="inline-option">
                                     <input class="sr-only peer" type="radio" name="cnh" value="nao">
-                                    <span class="radio-pill peer-checked:radio-pill-checked peer-focus-visible:ring-2 peer-focus-visible:ring-orange-300">
-                                    Não
-                                    </span>
+                                    <span class="radio-pill peer-checked:radio-pill-checked peer-focus-visible:ring-2 peer-focus-visible:ring-orange-300">Não</span>
                                 </label>
                             </div>
-
 
                             <label for="email_cliente">Email:</label>
                             <input class="input" type="email" id="email_cliente" name="email_cliente" required>
@@ -128,14 +106,24 @@
                             <input class="input" type="number" id="renda_mensal" name="renda_mensal" required>
                         </fieldset>
                     </section>
+
+                    <section class="form-step" data-step="4" id="step-4" role="tabpanel" aria-labelledby="tab-step-4" aria-hidden="true">
+                        <fieldset class="fieldset" id="dados_moto">
+                            <legend class="legend">Dados da Moto</legend>
+
+                            <label for="valor_moto">Valor da moto:</label>
+                            <input class="input" type="number" id="valor_moto" name="valor_moto" required>
+
+                            <label for="valor_entrada">Valor da entrada:</label>
+                            <input class="input" type="number" id="valor_entrada" name="valor_entrada" required placeholder="Entrada mínima sugerida de R$ 0,00">
+                        </fieldset>
+                    </section>
                 </div>
 
                 <div class="form-navigation">
                     <button type="button" class="btn-secondary nav-prev" aria-label="Voltar para a etapa anterior" disabled>Voltar</button>
                     <div class="nav-button-group">
                         <button type="button" class="btn-primary nav-next" aria-label="Avançar para a próxima etapa">Próximo</button>
-                        <button type="submit" class="btn-primary nav-submit" hidden>Enviar</button>
-
                     </div>
                 </div>
             </form>
@@ -145,5 +133,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
-

@@ -50,7 +50,7 @@
   }
 
   .radio-pill {
-    @apply inline-flex items-center justify-center px-7 py-3 rounded-full border border-neutral-300 bg-white font-semibold text-neutral-800;
+    @apply inline-flex items-center justify-center px-7 py-3 rounded-full border border-neutral-300 bg-white font-semibold text-neutral-800 cursor-pointer transition;
   }
 
   .radio-pill-checked {
@@ -175,15 +175,15 @@
   }
 
   .radio-options {
-    @apply flex flex-wrap items-center gap-[18px] mt-4;
+    @apply flex flex-wrap items-center justify-start gap-6 mt-4;
   }
 
   .fieldset-radio .radio-options {
-    @apply justify-center;
+    @apply justify-center gap-6;
   }
 
   .inline-option {
-    @apply relative inline-flex items-stretch mt-0 p-0;
+    @apply relative inline-flex items-center mt-0 p-0;
   }
 
   .inline-option input[type="radio"] {
