@@ -1165,7 +1165,7 @@ h1,
   bottom: 0;
   height: auto;
   transform: none;
-  box-shadow: 0 6px 18px rgba(243, 117, 33, 0.25);
+  /*box-shadow: 0 6px 18px rgba(243, 117, 33, 0.25);*/
 }
 
 /* Novo estado para abas que foram puladas, mas devem ser marcadas como concluídas */
@@ -1295,7 +1295,7 @@ fieldset label:first-of-type {
   border-radius: 9999px;
   border-width: 1px;
   --tw-border-opacity: 1;
-  border-color: rgb(231 210 193 / var(--tw-border-opacity));
+  border-color: rgb(163 163 163 / var(--tw-border-opacity));
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   padding-left: 1.75rem;
@@ -1316,7 +1316,6 @@ fieldset label:first-of-type {
   background-color: #F37521;
   border-color: #F37521;
   color: #ffffff;
-  box-shadow: 0 12px 24px rgba(243, 117, 33, 0.3);
 }
 
 .inline-option input[type="radio"]:focus-visible + span {
