@@ -4,7 +4,7 @@
   if (!form) return;
 
   // 2️⃣  Config: coloque aqui sua URL do Apps Script
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyJpc89a-1iR2xh7ZEOVe1HJPDCObjuaeO3kmiIYkHF1T_5XCHth1928rC1ncKHB_aRNw/exec";
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzQjC_vcsKFOD8FuWHPURXGW_Ac_sEB5E0ddxBQlwUfUO6oDg8ScVJh8Gg1I8exsb3CYQ/exec";
 
   // 3️⃣  Função que monta o JSON com os dados
   function serializeFormToPayload(form) {
