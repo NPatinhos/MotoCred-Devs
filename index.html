@@ -41,8 +41,7 @@
                     <section class="form-step is-active" data-step="1" id="step-1" role="tabpanel" aria-labelledby="tab-step-1">
                         <fieldset class="fieldset fieldset-radio">
                             <legend class="legend">Você é:</legend>
-                            <div class="radio-options">
-                                <label class="inline-option">
+                            <div class="radio-options radio-options-horizontal">                                <label class="inline-option">
                                     <input class="sr-only peer" type="radio" name="tipo_usuario" value="comprador" required>
                                     <span class="radio-pill peer-checked:radio-pill-checked">Comprador</span>
                                 </label>
@@ -108,15 +107,15 @@
                     </section>
 
                     <section class="form-step" data-step="4" id="step-4" role="tabpanel" aria-labelledby="tab-step-4" aria-hidden="true">
-                        <fieldset class="fieldset" id="dados_moto">
-                            <legend class="legend">Dados da Moto</legend>
+                        <fieldset class="fieldset" id="dados_venda">
+                            <legend class="legend">Dados da Venda</legend>
 
                             <label for="valor_moto">Valor da moto:</label>
                             <input class="input" type="number" id="valor_moto" name="valor_moto" required>
 
                         <label for="valor_entrada">Valor da entrada:</label>
                         <input class="input" type="number" id="valor_entrada" name="valor_entrada" required></section>
-                </div>
+                    </div>
 
                 <div class="form-navigation">
                     <button type="button" class="btn-secondary nav-prev" aria-label="Voltar para a etapa anterior" disabled>Voltar</button>

@@ -6,8 +6,7 @@
 
     const steps = Array.from(form.querySelectorAll('.form-step'));
     const tabs = Array.from(document.querySelectorAll('.step-tab'));
-    const STEP_TITLES = ['Identificacao','Dados do Vendedor','Dados do Cliente','Dados da Moto'];
-    const stepCurrentLabel = document.querySelector('.step-current-label');
+    const STEP_TITLES = ['Identificacao','Dados do Vendedor','Dados do Cliente','Dados da Venda'];    const stepCurrentLabel = document.querySelector('.step-current-label');
     const btnPrev = form.querySelector('.nav-prev');
     const btnNext = form.querySelector('.nav-next');
     const navButtonGroup = form.querySelector('.nav-button-group');
@@ -220,12 +219,27 @@
         if (!valorEntradaInput || valorEntradaInput.disabled) {
             return true;
         }
+
+        // CORREÇÃO: Se o campo estiver vazio, limpamos qualquer erro customizado
+        // e deixamos o 'required' do HTML cuidar do aviso de campo obrigatório.
+        if (valorEntradaInput.value.trim() === '') {
+            valorEntradaInput.setCustomValidity(''); 
+            return true; // Campo é considerado válido para o JS, mas o HTML o marcará como required
+        }
+        // FIM DA CORREÇÃO
+
+        const valorMoto = parseFloat(valorMotoInput.value);
         const minimo = calculateValorEntradaMinimo();
         const parsedValue = valorEntradaInput.value !== '' ? parseFloat(valorEntradaInput.value) : NaN;
         const validNumber = Number.isFinite(parsedValue) ? parsedValue : NaN;
 
         if (!Number.isFinite(validNumber) || validNumber <= 0) {
             valorEntradaInput.setCustomValidity(showMessage ? 'Informe um valor de entrada válido.' : '');
+            return false;
+        }
+        
+        if (validNumber > valorMoto) {
+            valorEntradaInput.setCustomValidity(showMessage ? 'O valor da entrada não pode ser maior que o valor total da moto.' : '');
             return false;
         }
 
@@ -237,6 +251,7 @@
         valorEntradaInput.setCustomValidity('');
         return true;
     };
+    
 
     const isStepEnabled = (index) => Boolean(stepAvailability[index]);
 
@@ -359,34 +374,30 @@
         });
     };
 
-    const renderNavigation = () => {
-        const previousIndex = findEnabledStep(currentStepIndex, -1, false);
-        const nextIndex = findEnabledStep(currentStepIndex, 1, false);
-        const isLastStep = currentStepIndex === steps.length - 1;
+        // Em script.js
 
-        if (btnPrev) {
-            const shouldShowPrev = previousIndex !== null;
-            if (shouldShowPrev) {
-                if (!btnPrev.isConnected && navButtonGroupParent && navButtonGroup) {
-                    navButtonGroupParent.insertBefore(btnPrev, navButtonGroup);
-                }
-                btnPrev.disabled = false;
-                btnPrev.hidden = false;
-            } else {
-                btnPrev.disabled = true;
-                btnPrev.hidden = true;
-                if (btnPrev.isConnected) {
-                    btnPrev.remove();
-                }
-            }
-        }
+   const renderNavigation = () => {
+        // Habilita/desabilita o botão Voltar
+        btnPrev.disabled = currentStepIndex === 0;
 
-        if (btnNext) {
-            btnNext.type = 'button';
-            btnNext.dataset.action = isLastStep ? 'submit' : 'next';
-            btnNext.textContent = isLastStep ? 'Enviar' : 'Pr\u00f3ximo';
-            btnNext.setAttribute('aria-label', isLastStep ? 'Enviar formul\u00e1rio' : 'Avan\u00e7ar para a pr\u00f3xima etapa');
-        }
+        // Determina se a próxima ação deve ser 'submit' (ou seja, não há próxima etapa habilitada).
+        // A função findEnabledStep é usada aqui.
+        const shouldSubmit = findEnabledStep(currentStepIndex, 1, false) === null;
+        
+        // CORREÇÃO: A ação de envio (submit) só é permitida SE shouldSubmit for TRUE 
+        // E a etapa atual NÃO for a Etapa 1 (índice 0).
+        const isSubmitAction = shouldSubmit && currentStepIndex !== 0;
+        
+        // Mantém SEMPRE como 'button' para evitar o bug de validação precoce.
+        btnNext.type = 'button'; 
+        
+        btnNext.dataset.action = isSubmitAction ? 'submit' : 'next';
+        btnNext.textContent = isSubmitAction ? 'Enviar' : 'Próximo';
+        btnNext.setAttribute('aria-label', isSubmitAction ? 'Enviar formulário' : 'Avançar para a próxima etapa');
+        
+        // Lógica de desabilitar o botão de acordo com a validação (opcional)
+        // Você pode ter outras linhas aqui para desabilitar o btnNext que não estão visíveis,
+        // mas a lógica principal está acima.
     };
 
     const showStep = (index) => {
@@ -509,11 +520,13 @@
             if (field === valorEntradaInput) {
                 updateValorEntradaValidity(true);
             }
+
+            // Se a validação do campo falhar, reporte o erro e interrompa.
             if (!field.checkValidity()) {
                 field.reportValidity();
                 return false;
             }
-        }
+        } 
 
         return true;
     };
@@ -630,6 +643,8 @@
     if (valorMotoInput) {
         valorMotoInput.addEventListener('input', () => {
             updateCpfHintValidity();
+            // ADICIONADO: Revalida a entrada quando o valor da moto é alterado
+            updateValorEntradaValidity(false); 
         });
     }
 

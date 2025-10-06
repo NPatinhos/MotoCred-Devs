@@ -912,6 +912,13 @@ h1,
   background-color: rgb(255 243 235 / var(--tw-bg-opacity));
 }
 
+/* Adiciona estilo para o botão secundário quando desabilitado */
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .\!fieldset {
   border-radius: 28px;
   border-width: 1px;
@@ -1309,7 +1316,6 @@ fieldset label:first-of-type {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 200ms;
-  min-width: 128px;
 }
 
 .inline-option input[type="radio"]:checked + span {
@@ -1355,6 +1361,30 @@ fieldset label:first-of-type {
 
 .radio-options-horizontal .radio-pill {
   color: black;
+}
+
+/* Em styles.css - Adicione esta nova regra */
+
+/* Sobrescreve a cor do texto para o estado checado (.radio-pill-checked) */
+
+/* Isso usa a mesma cor da classe 'text-brand' que define o título. */
+
+/* Em styles.css - Adicione esta nova regra */
+
+/* Altera a cor do texto padrão (não-selecionado) APENAS nos botões Comprador/Vendedor */
+
+/* O seletor mira o span.radio-pill dentro da primeira etapa do formulário. */
+
+.form-steps .form-step[data-step="1"] .radio-pill {
+  /* Aplica a cor da marca (text-brand) ao texto do botão, por padrão. */
+  --tw-text-opacity: 1;
+  color: rgb(243 117 33 / var(--tw-text-opacity));
+}
+
+.form-steps .form-step[data-step="1"] .radio-pill.radio-pill-checked {
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
+  /* ESPECIFICIDADE MÁXIMA */
 }
 
 /* No mobile, podemos diminuir um pouco os botões para garantir que caibam */
@@ -1416,13 +1446,15 @@ fieldset label:first-of-type {
     padding: 0 6px;
   }
 
-  .radio-options {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+  .radio-options-horizontal .inline-option span {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    font-size: 0.875rem;
   }
 
-  .inline-option {
+  /* Esta única regra agora controla o empilhamento dos botões */
+
+  .radio-options:not(.radio-options-horizontal) .inline-option {
     width: 100%;
   }
 }
@@ -1463,6 +1495,73 @@ fieldset label:first-of-type {
 
   .step-tab.is-active span {
     white-space: nowrap;
+  }
+}
+
+/* Em styles.css - adicione este novo bloco no final do arquivo */
+
+@media (max-width: 768px) {
+  /* 1. Deixa os blocos de perguntas com cantos mais quadrados */
+
+  .\!fieldset {
+    border-radius: 0.75rem !important;
+    /* Equivalente a 'rounded-xl' do Tailwind */
+  }
+
+  /* 2. Deixa os campos de resposta com cantos ainda mais quadrados */
+
+   {
+    border-radius: 0.5rem !important;
+    /* Equivalente a 'rounded-lg' do Tailwind */
+  }
+
+  /* 3. Afeta APENAS os botões Sim/Não, deixando-os mais quadrados */
+
+   {
+    border-radius: 0.75rem !important;
+    /* Equivalente a 'rounded-xl' do Tailwind */
+  }
+
+  /* 1. Deixa os blocos de perguntas com cantos mais quadrados */
+
+  .fieldset {
+    border-radius: 0.75rem;
+    /* Equivalente a 'rounded-xl' do Tailwind */
+  }
+
+  /* 2. Deixa os campos de resposta com cantos ainda mais quadrados */
+
+  .input {
+    border-radius: 0.5rem;
+    /* Equivalente a 'rounded-lg' do Tailwind */
+  }
+
+  /* 3. Afeta APENAS os botões Sim/Não, deixando-os mais quadrados */
+
+  #dados_cliente .inline-option span {
+    border-radius: 0.75rem;
+    /* Equivalente a 'rounded-xl' do Tailwind */
+  }
+
+  /* 1. Deixa os blocos de perguntas com cantos mais quadrados */
+
+   {
+    border-radius: 0.75rem !important;
+    /* Equivalente a 'rounded-xl' do Tailwind */
+  }
+
+  /* 2. Deixa os campos de resposta com cantos ainda mais quadrados */
+
+  .\!input {
+    border-radius: 0.5rem !important;
+    /* Equivalente a 'rounded-lg' do Tailwind */
+  }
+
+  /* 3. Afeta APENAS os botões Sim/Não, deixando-os mais quadrados */
+
+   {
+    border-radius: 0.75rem !important;
+    /* Equivalente a 'rounded-xl' do Tailwind */
   }
 }
 
@@ -1539,11 +1638,20 @@ fieldset label:first-of-type {
   border-color: rgb(243 117 33 / var(--tw-border-opacity));
   --tw-bg-opacity: 1;
   background-color: rgb(243 117 33 / var(--tw-bg-opacity));
-  --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
   --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+  /* @apply é uma diretiva do Tailwind para aplicar utilitários dentro do CSS customizado. */
+  /* Isso garante que a cor do texto seja a cor principal do seu site. */
+  --tw-text-opacity: 1;
+  color: rgb(243 117 33 / var(--tw-text-opacity));
+}
+
+.form-steps .form-step[data-step="1"] .peer:checked ~ .peer-checked\:radio-pill-checked.radio-pill {
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
+  /* ESPECIFICIDADE MÁXIMA */
 }
 
 .peer:focus-visible ~ .peer-focus-visible\:ring-2 {

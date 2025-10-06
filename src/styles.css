@@ -37,6 +37,12 @@
     @apply btn border border-brand text-brand bg-white hover:bg-[#fff3eb];
   }
 
+/* Adiciona estilo para o botão secundário quando desabilitado */
+  .btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
   .fieldset {
     @apply rounded-[28px] border border-[#f0d9c8] bg-[#fff5ec] p-8 text-[#5A4033] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.5)];
   }
@@ -244,7 +250,6 @@
 
   .inline-option span {
     @apply inline-flex items-center justify-center px-7 py-3 rounded-full border border-neutral-400 bg-white text-brand font-semibold tracking-[0.01em] transition duration-200;
-    min-width: 128px;
   }
 
   .inline-option input[type="radio"]:checked + span {
@@ -288,6 +293,29 @@
   .radio-options-horizontal .radio-pill {
     color: black;
   }
+
+  /* Em styles.css - Adicione esta nova regra */
+
+  /* Sobrescreve a cor do texto para o estado checado (.radio-pill-checked) */
+  /* Isso usa a mesma cor da classe 'text-brand' que define o título. */
+  .radio-pill-checked {
+      /* @apply é uma diretiva do Tailwind para aplicar utilitários dentro do CSS customizado. */
+      /* Isso garante que a cor do texto seja a cor principal do seu site. */
+      @apply text-brand;
+  }
+
+  /* Em styles.css - Adicione esta nova regra */
+
+  /* Altera a cor do texto padrão (não-selecionado) APENAS nos botões Comprador/Vendedor */
+  /* O seletor mira o span.radio-pill dentro da primeira etapa do formulário. */
+  .form-steps .form-step[data-step="1"] .radio-pill {
+      /* Aplica a cor da marca (text-brand) ao texto do botão, por padrão. */
+      @apply text-brand;
+  }
+
+  .form-steps .form-step[data-step="1"] .radio-pill.radio-pill-checked { 
+    @apply text-white; /* ESPECIFICIDADE MÁXIMA */
+}
 
   /* No mobile, podemos diminuir um pouco os botões para garantir que caibam */
   @media (max-width: 480px) {
@@ -344,13 +372,14 @@
       padding: 0 6px;
     }
 
-    .radio-options {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 8px;
+    .radio-options-horizontal .inline-option span {
+      padding-left: 1.25rem;
+      padding-right: 1.25rem;
+      font-size: 0.875rem;
     }
 
-    .inline-option {
+    /* Esta única regra agora controla o empilhamento dos botões */
+    .radio-options:not(.radio-options-horizontal) .inline-option {
       width: 100%;
     }
   }
@@ -385,6 +414,25 @@
     /* Força o texto da aba ativa a ficar em uma única linha */
     .step-tab.is-active span {
       white-space: nowrap;
+    }
+  }
+
+  /* Em styles.css - adicione este novo bloco no final do arquivo */
+
+  @media (max-width: 768px) {
+    /* 1. Deixa os blocos de perguntas com cantos mais quadrados */
+    .fieldset {
+      border-radius: 0.75rem; /* Equivalente a 'rounded-xl' do Tailwind */
+    }
+
+    /* 2. Deixa os campos de resposta com cantos ainda mais quadrados */
+    .input {
+      border-radius: 0.5rem; /* Equivalente a 'rounded-lg' do Tailwind */
+    }
+
+    /* 3. Afeta APENAS os botões Sim/Não, deixando-os mais quadrados */
+    #dados_cliente .inline-option span {
+      border-radius: 0.75rem; /* Equivalente a 'rounded-xl' do Tailwind */
     }
   }
 }
