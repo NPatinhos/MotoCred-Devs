@@ -675,3 +675,81 @@
 })();
 
 
+// === ENVIO PARA APPS SCRIPT ===
+
+// 1) COLE AQUI a URL do seu Web App (termina com /exec)
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwqVToj0iGuvBikcu4nZgXncVzdspBFWiXyN4jgjTp41DoX8T2dOJ0c_zzMnP-VfwIjZw/exec";
+
+function serializeFormToPayload(form) {
+  // Pegamos os campos pelo "name" que você já tem no HTML
+  const get = (name) => form.elements[name]?.value?.trim() ?? "";
+
+  return {
+    // Etapa 1
+    tipo_usuario: get("tipo_usuario"),
+    // Etapa 2 (só existirão se "vendedor")
+    loja: get("loja"),
+    nome_vendedor: get("nome_vendedor"),
+    email_vendedor: get("email_vendedor"),
+    // Etapa 3
+    nome_cliente: get("nome_cliente"),
+    cpf: get("cpf"),
+    cnh: get("cnh"),
+    email_cliente: get("email_cliente"),
+    telefone: get("telefone"),
+    renda_mensal: get("renda_mensal"),
+    // Etapa 4
+    valor_moto: get("valor_moto"),
+    valor_entrada: get("valor_entrada"),
+  };
+}
+
+async function postToAppsScript(payload) {
+  // Evita preflight/CORS: usa x-www-form-urlencoded
+  const body = new URLSearchParams({ data: JSON.stringify(payload) }).toString();
+
+  const res = await fetch(WEB_APP_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+    },
+    body,
+  });
+
+  // Obs: Com esse content-type, o Apps Script responde sem preflight
+  // e dá para ler o JSON normalmente
+  return res.json();
+}
+
+// Intercepta o submit real do formulário e envia
+document.getElementById("formCadastro")?.addEventListener("submit", async (ev) => {
+  ev.preventDefault(); // não deixa recarregar a página
+
+  // Se você quiser, rode uma validação final aqui.
+  // (Seu código atual já valida antes de chegar no submit.)
+
+  const form = ev.currentTarget;
+  const payload = serializeFormToPayload(form);
+
+  try {
+    // Para testar localmente a coleta de dados:
+    console.log("Payload pronto para enviar:", payload);
+
+    // Enviar de verdade:
+    const result = await postToAppsScript(payload);
+
+    if (result?.ok) {
+      alert("Enviado com sucesso! 🎉");
+      form.reset();
+      // Se tiver controle de etapas, volte para a 1ª etapa:
+      // window.location.reload(); // ou chame sua função showStep(0) se for acessível aqui
+    } else {
+      alert("Falha ao enviar: " + (result?.error || "erro desconhecido"));
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Erro de rede ao enviar. Veja o console.");
+  }
+});
+
+
