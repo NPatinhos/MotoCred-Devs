@@ -678,7 +678,7 @@
 // === ENVIO PARA APPS SCRIPT ===
 
 // 1) COLE AQUI a URL do seu Web App (termina com /exec)
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwqVToj0iGuvBikcu4nZgXncVzdspBFWiXyN4jgjTp41DoX8T2dOJ0c_zzMnP-VfwIjZw/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx2E-W0NbVOK-F3eD0myLMu0ISHewKKX9f5pgiBTdQgfyAZaIH0Nw9SE-XWENbgZ5AssA/exec";
 
 function serializeFormToPayload(form) {
   // Pegamos os campos pelo "name" que você já tem no HTML
