@@ -1,12 +1,46 @@
 ﻿(function () {
-    const form = document.getElementById('formCadastro');
-    if (!form) {
-        return;
-    }
+  // 1️⃣  Pega o formulário
+  const form = document.getElementById('formCadastro');
+  if (!form) return;
+
+  // 2️⃣  Config: coloque aqui sua URL do Apps Script
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzMdJvWRo9qDjtotq7UlajW6xQStkl6-Pyzgyi5srIyER3o8zkWbyKefiQQ002FixWtBg/exec";
+
+  // 3️⃣  Função que monta o JSON com os dados
+  function serializeFormToPayload(form) {
+    const get = (name) => form.elements[name]?.value?.trim() ?? "";
+    return {
+      tipo_usuario: get("tipo_usuario"),
+      loja: get("loja"),
+      nome_vendedor: get("nome_vendedor"),
+      email_vendedor: get("email_vendedor"),
+      nome_cliente: get("nome_cliente"),
+      cpf: get("cpf"),
+      cnh: get("cnh"),
+      email_cliente: get("email_cliente"),
+      telefone: get("telefone"),
+      renda_mensal: get("renda_mensal"),
+      valor_moto: get("valor_moto"),
+      valor_entrada: get("valor_entrada"),
+    };
+  }
+
+  // 4️⃣  Função que faz o POST para o Apps Script
+  async function postToAppsScript(payload) {
+    const body = new URLSearchParams({ data: JSON.stringify(payload) }).toString();
+    const res = await fetch(WEB_APP_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+      body,
+    });
+    return res.json();
+  }
+
 
     const steps = Array.from(form.querySelectorAll('.form-step'));
     const tabs = Array.from(document.querySelectorAll('.step-tab'));
-    const STEP_TITLES = ['Identificacao','Dados do Vendedor','Dados do Cliente','Dados da Venda'];    const stepCurrentLabel = document.querySelector('.step-current-label');
+    const STEP_TITLES = ['Identificacao','Dados do Vendedor','Dados do Cliente','Dados da Venda'];    
+    const stepCurrentLabel = document.querySelector('.step-current-label');
     const btnPrev = form.querySelector('.nav-prev');
     const btnNext = form.querySelector('.nav-next');
     const navButtonGroup = form.querySelector('.nav-button-group');
@@ -657,99 +691,30 @@
         });
     }
 
-    form.addEventListener('submit', (event) => {
-        if (!validateStep(currentStepIndex)) {
-            event.preventDefault();
-            return;
-        }
+     // 👇 E no final do arquivo, antes de fechar o parêntese da função:
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-        for (let index = 0; index < steps.length; index += 1) {
-            if (!validateStep(index)) {
-                event.preventDefault();
-                maxStepIndex = Math.max(maxStepIndex, index);
-                showStep(index);
-                return;
-            }
-        }
-    });
-})();
+    // se quiser, use sua função validateStep
+    if (typeof validateStep === "function" && typeof currentStepIndex === "number") {
+      if (!validateStep(currentStepIndex)) return;
+    }
 
+    const payload = serializeFormToPayload(form);
+    console.log("Enviando payload:", payload);
 
-// === ENVIO PARA APPS SCRIPT ===
-
-// 1) COLE AQUI a URL do seu Web App (termina com /exec)
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx2E-W0NbVOK-F3eD0myLMu0ISHewKKX9f5pgiBTdQgfyAZaIH0Nw9SE-XWENbgZ5AssA/exec";
-
-function serializeFormToPayload(form) {
-  // Pegamos os campos pelo "name" que você já tem no HTML
-  const get = (name) => form.elements[name]?.value?.trim() ?? "";
-
-  return {
-    // Etapa 1
-    tipo_usuario: get("tipo_usuario"),
-    // Etapa 2 (só existirão se "vendedor")
-    loja: get("loja"),
-    nome_vendedor: get("nome_vendedor"),
-    email_vendedor: get("email_vendedor"),
-    // Etapa 3
-    nome_cliente: get("nome_cliente"),
-    cpf: get("cpf"),
-    cnh: get("cnh"),
-    email_cliente: get("email_cliente"),
-    telefone: get("telefone"),
-    renda_mensal: get("renda_mensal"),
-    // Etapa 4
-    valor_moto: get("valor_moto"),
-    valor_entrada: get("valor_entrada"),
-  };
-}
-
-async function postToAppsScript(payload) {
-  // Evita preflight/CORS: usa x-www-form-urlencoded
-  const body = new URLSearchParams({ data: JSON.stringify(payload) }).toString();
-
-  const res = await fetch(WEB_APP_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-    },
-    body,
+    try {
+      const result = await postToAppsScript(payload);
+      if (result?.ok) {
+        alert("Enviado com sucesso! 🎉");
+        form.reset();
+      } else {
+        alert("Erro ao enviar: " + (result?.error || "desconhecido"));
+      }
+    } catch (err) {
+      console.error("Erro de rede:", err);
+      alert("Falha ao enviar. Veja o console.");
+    }
   });
 
-  // Obs: Com esse content-type, o Apps Script responde sem preflight
-  // e dá para ler o JSON normalmente
-  return res.json();
-}
-
-// Intercepta o submit real do formulário e envia
-document.getElementById("formCadastro")?.addEventListener("submit", async (ev) => {
-  ev.preventDefault(); // não deixa recarregar a página
-
-  // Se você quiser, rode uma validação final aqui.
-  // (Seu código atual já valida antes de chegar no submit.)
-
-  const form = ev.currentTarget;
-  const payload = serializeFormToPayload(form);
-
-  try {
-    // Para testar localmente a coleta de dados:
-    console.log("Payload pronto para enviar:", payload);
-
-    // Enviar de verdade:
-    const result = await postToAppsScript(payload);
-
-    if (result?.ok) {
-      alert("Enviado com sucesso! 🎉");
-      form.reset();
-      // Se tiver controle de etapas, volte para a 1ª etapa:
-      // window.location.reload(); // ou chame sua função showStep(0) se for acessível aqui
-    } else {
-      alert("Falha ao enviar: " + (result?.error || "erro desconhecido"));
-    }
-  } catch (err) {
-    console.error(err);
-    alert("Erro de rede ao enviar. Veja o console.");
-  }
-});
-
-
+})(); // 👈 essa linha fecha tudo
