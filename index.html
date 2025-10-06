@@ -36,7 +36,8 @@
         </div>
 
         <div class="main">
-            <form id="formCadastro">
+            <form id="formCadastro" method="post" action="#">
+
                 <div class="form-steps">
                     <section class="form-step is-active" data-step="1" id="step-1" role="tabpanel" aria-labelledby="tab-step-1">
                         <fieldset class="fieldset fieldset-radio">
@@ -113,10 +114,12 @@
                             <label for="valor_moto">Valor da moto:</label>
                             <input class="input" type="number" id="valor_moto" name="valor_moto" required>
 
-                        <label for="valor_entrada">Valor da entrada:</label>
-                        <input class="input" type="number" id="valor_entrada" name="valor_entrada" required></section>
-                    </div>
+                            <label for="valor_entrada">Valor da entrada:</label>
+                            <input class="input" type="number" id="valor_entrada" name="valor_entrada" required>
+                        </fieldset> <!-- ✅ fecha o fieldset -->
+                    </section>     <!-- ✅ fecha só UMA section -->
 
+                </div>
                 <div class="form-navigation">
                     <button type="button" class="btn-secondary nav-prev" aria-label="Voltar para a etapa anterior" disabled>Voltar</button>
                     <div class="nav-button-group">
