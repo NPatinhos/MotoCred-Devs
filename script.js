@@ -65,15 +65,14 @@
             cnh: get("cnh"),
             email_cliente: get("email_cliente"),
             telefone: get("telefone"),
-            renda_mensal: normalizeMoney(get("renda_mensal")),
-            valor_moto: normalizeMoney(get("valor_moto")),
-            valor_entrada: normalizeMoney(get("valor_entrada")),
 
+            // ✅ manter só estas 3 linhas
             renda_mensal: sanitizeMoneyInput(get("renda_mensal")),
             valor_moto: sanitizeMoneyInput(get("valor_moto")),
             valor_entrada: sanitizeMoneyInput(get("valor_entrada")),
         };
     }
+
 
 
 
