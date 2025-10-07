@@ -47,7 +47,7 @@
 
 
   // 2️⃣  Config: coloque aqui sua URL do Apps Script
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyd8f-WkIxpacAeWyiakEZJDXWpNyDGwj7NcjWri0xmR7RQWQiNDgZus-1AYHGYo1m_Gw/exec";
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz230px12xx6GJ7PX9DocFtO62xI9dLogqM7c-wuouS5UcZWphCbtSGLISvm_hqcogSCg/exec";
 
   // 3️⃣  Função que monta o JSON com os dados
 
@@ -67,9 +67,10 @@
             telefone: get("telefone"),
 
             // ✅ manter só estas 3 linhas
-            renda_mensal: sanitizeMoneyInput(get("renda_mensal")),
-            valor_moto: sanitizeMoneyInput(get("valor_moto")),
-            valor_entrada: sanitizeMoneyInput(get("valor_entrada")),
+            renda_mensal: numFromInput(document.getElementById('renda_mensal')),
+            valor_moto:   numFromInput(document.getElementById('valor_moto')),
+            valor_entrada:numFromInput(document.getElementById('valor_entrada')),
+
         };
     }
 
@@ -218,11 +219,12 @@
     };
 
     const calculateValorEntradaMinimo = () => {
-        const vm = toNumber(valorMotoInput && valorMotoInput.value);
+        const vm = numFromInput(valorMotoInput);
         const positive = Number.isFinite(vm) && vm > 0 ? vm : 0;
         const minimo = positive * 0.4;
         return Math.floor(minimo * 100) / 100;
     };
+
 
 
     // Em script.js
@@ -314,9 +316,9 @@
         }
         // FIM DA CORREÇÃO
 
-        const valorMoto = toNumber(valorMotoInput.value);
-        const minimo = calculateValorEntradaMinimo();
-        const parsedValue = toNumber(valorEntradaInput.value);
+        const valorMoto   = numFromInput(valorMotoInput);
+        const minimo      = calculateValorEntradaMinimo();
+        const parsedValue = numFromInput(valorEntradaInput);
         const validNumber = Number.isFinite(parsedValue) ? parsedValue : NaN;
 
         if (!Number.isFinite(validNumber) || validNumber <= 0) {
@@ -756,47 +758,77 @@
         });
     }
 
-    // --- Normaliza campos numéricos de valores ---
-    const moneyInputs = [
-        document.getElementById('valor_moto'),
-        document.getElementById('valor_entrada'),
-        document.getElementById('renda_mensal'),
-        ].filter(Boolean);
-
-    function sanitizeMoneyInput(value) {
-        if (value == null) return '';
-        let v = String(value);
-        v = v.replace(/,/g, '.');
-        v = v.replace(/[^0-9.]/g, '');
-        const firstDot = v.indexOf('.');
-        if (firstDot !== -1) {
-            const head = v.slice(0, firstDot + 1);
-            const tail = v.slice(firstDot + 1).replace(/\./g, '');
-            v = head + tail;
-        }
-        return v;
+    // === MÁSCARA BRL (2 casas, cresce da direita p/ esquerda) ===
+    function formatBRLCentsFromDigits(digits) {
+        if (!digits) return '0,00';
+        digits = String(digits).replace(/\D/g, '');
+        if (digits.length === 1) digits = '0' + digits;
+        if (digits.length === 2) digits = '0' + digits;
+        const centavos = digits.slice(-2);
+        let inteiro = digits.slice(0, -2) || '0';
+        inteiro = inteiro.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        return `${inteiro},${centavos}`;
     }
 
-
-    function toNumber(value) {
-        const s = sanitizeMoneyInput(value ?? '');
-        return s === '' ? NaN : Number(s);
+    function onlyDigitsFromMasked(value) {
+        return String(value || '').replace(/\D/g, '');
     }
 
+    function attachBRLMoneyMask(input) {
+        if (!input) return;
+        let digits = onlyDigitsFromMasked(input.value);
+        input.value = formatBRLCentsFromDigits(digits);
 
-    moneyInputs.forEach((input) => {
-        input.addEventListener('input', (e) => {
-            const cursor = e.target.selectionStart;
-            const oldLen = e.target.value.length;
-            e.target.value = sanitizeMoneyInput(e.target.value);
-            const newLen = e.target.value.length;
-            e.target.selectionEnd = cursor - (oldLen - newLen);
-    });
-
-        input.addEventListener('blur', (e) => {
-            e.target.value = sanitizeMoneyInput(e.target.value);
+        input.addEventListener('beforeinput', (e) => {
+            const t = e.inputType;
+            if (t === 'insertText') {
+            if (!/\d/.test(e.data)) { e.preventDefault(); return; }
+            digits += e.data;
+            input.value = formatBRLCentsFromDigits(digits);
+            e.preventDefault();
+            } else if (t === 'deleteContentBackward' || t === 'deleteContentForward') {
+            digits = digits.slice(0, -1);
+            input.value = formatBRLCentsFromDigits(digits);
+            e.preventDefault();
+            }
+            queueMicrotask(() => input.setSelectionRange(input.value.length, input.value.length));
         });
-    });
+
+        input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const text = (e.clipboardData || window.clipboardData).getData('text') || '';
+            const pasted = text.replace(/\D/g, '');
+            if (!pasted) return;
+            digits += pasted;
+            input.value = formatBRLCentsFromDigits(digits);
+            queueMicrotask(() => input.setSelectionRange(input.value.length, input.value.length));
+        });
+
+        input.addEventListener('focus', () => {
+            queueMicrotask(() => input.setSelectionRange(input.value.length, input.value.length));
+        });
+
+        // número real (ex.: "1.234,56" -> 1234.56)
+        input.getNumberValue = () => {
+            const d = onlyDigitsFromMasked(input.value);
+            return d ? Number(d) / 100 : NaN;
+        };
+        }
+
+    // helper p/ ler número do input (usa a máscara; tem fallback)
+    function numFromInput(el) {
+        if (!el) return NaN;
+        if (typeof el.getNumberValue === 'function') return el.getNumberValue();
+        const raw = String(el.value || '').replace(/\./g, '').replace(',', '.');
+        const n = Number(raw);
+        return Number.isFinite(n) ? n : NaN;
+    }
+
+    // aplica a máscara nos três campos
+    attachBRLMoneyMask(document.getElementById('valor_moto'));
+    attachBRLMoneyMask(document.getElementById('valor_entrada'));
+    attachBRLMoneyMask(document.getElementById('renda_mensal'));
+
 
      // 👇 E no final do arquivo, antes de fechar o parêntese da função:
  // 👇 E no final do arquivo, antes de fechar o parêntese da função:
