@@ -19,20 +19,31 @@
 
     function setSubmittingState(on) {
         isSubmitting = on;
-        const allControls = form.querySelectorAll('input, select, textarea, button');
-        allControls.forEach(el => { el.disabled = on; });
 
+        // 1) Desabilita botões dentro do form (inclui Próximo/Enviar e Voltar)
+        form.querySelectorAll('button').forEach(btn => { btn.disabled = on; });
+
+        // 2) Desabilita também as step tabs (ficam fora do form)
+        document.querySelectorAll('.step-tab, .nav-prev, .nav-next').forEach(el => {
+            el.disabled = on;
+            el.setAttribute('aria-disabled', on ? 'true' : 'false');
+            el.style.pointerEvents = on ? 'none' : '';
+            el.style.cursor = on ? 'default' : '';
+        });
+
+        // 3) Feedback no botão principal
         if (btnNext) {
-        if (on) {
+            if (on) {
             btnNext.dataset.prevText = btnNext.textContent;
             btnNext.textContent = 'Enviando...';
             btnNext.setAttribute('aria-busy', 'true');
-        } else {
+            } else {
             btnNext.textContent = btnNext.dataset.prevText || 'Próximo';
             btnNext.removeAttribute('aria-busy');
-        }
+            }
         }
     }
+
 
 
   // 2️⃣  Config: coloque aqui sua URL do Apps Script
@@ -684,12 +695,13 @@
 
     tabs.forEach((tab, index) => {
         tab.addEventListener('click', () => {
-            if (tab.disabled) {
-                return;
-            }
+            // 🚫 bloqueia cliques nas etapas durante o envio
+            if (isSubmitting) return;
+            if (tab.disabled) return;
             goToStep(index);
         });
     });
+
 
     if (cpfInput) {
         cpfInput.addEventListener('input', (event) => {
