@@ -1,59 +1,74 @@
 ﻿(function () {
-  // 1️⃣  Pega o formulário
-  const form = document.getElementById('formCadastro');
-  if (!form) return;
+    // 1️⃣  Pega o formulário
+    const form = document.getElementById('formCadastro');
+    if (!form) return;
 
-  let isSubmitting = false;
-
-  function setSubmittingState(on) {
-    isSubmitting = on;
-    const allControls = form.querySelectorAll('input, select, textarea, button');
-    allControls.forEach(el => { el.disabled = on; });
-
-    if (btnNext) {
-      if (on) {
-        btnNext.dataset.prevText = btnNext.textContent;
-        btnNext.textContent = 'Enviando...';
-        btnNext.setAttribute('aria-busy', 'true');
-      } else {
-        btnNext.textContent = btnNext.dataset.prevText || 'Próximo';
-        btnNext.removeAttribute('aria-busy');
-      }
+    // ✅ ID único por envio (usado no back para deduplicar)
+    let submissionIdInput = form.querySelector('input[name="submission_id"]');
+    if (!submissionIdInput) {
+        submissionIdInput = document.createElement('input');
+        submissionIdInput.type = 'hidden';
+        submissionIdInput.name = 'submission_id';
+        form.appendChild(submissionIdInput);
     }
-  }
+    submissionIdInput.value =
+        (crypto?.randomUUID?.() ||
+        (Date.now().toString(36) + Math.random().toString(36).slice(2)));
+
+    let isSubmitting = false;
+
+    function setSubmittingState(on) {
+        isSubmitting = on;
+        const allControls = form.querySelectorAll('input, select, textarea, button');
+        allControls.forEach(el => { el.disabled = on; });
+
+        if (btnNext) {
+        if (on) {
+            btnNext.dataset.prevText = btnNext.textContent;
+            btnNext.textContent = 'Enviando...';
+            btnNext.setAttribute('aria-busy', 'true');
+        } else {
+            btnNext.textContent = btnNext.dataset.prevText || 'Próximo';
+            btnNext.removeAttribute('aria-busy');
+        }
+        }
+    }
+
 
   // 2️⃣  Config: coloque aqui sua URL do Apps Script
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyryPNYr8dxV4NCw5bduH0hhFl3DAXUU3LSFGXuoriwtnBzX9y_k63jWT3OiJNjDnGxVg/exec";
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyd8f-WkIxpacAeWyiakEZJDXWpNyDGwj7NcjWri0xmR7RQWQiNDgZus-1AYHGYo1m_Gw/exec";
 
   // 3️⃣  Função que monta o JSON com os dados
-  function serializeFormToPayload(form) {
+    function serializeFormToPayload(form) {
     const get = (name) => form.elements[name]?.value?.trim() ?? "";
     return {
-      tipo_usuario: get("tipo_usuario"),
-      loja: get("loja"),
-      nome_vendedor: get("nome_vendedor"),
-      email_vendedor: get("email_vendedor"),
-      nome_cliente: get("nome_cliente"),
-      cpf: get("cpf"),
-      cnh: get("cnh"),
-      email_cliente: get("email_cliente"),
-      telefone: get("telefone"),
-      renda_mensal: get("renda_mensal"),
-      valor_moto: get("valor_moto"),
-      valor_entrada: get("valor_entrada"),
+        submission_id: get("submission_id"), // 👈 precisa existir
+        tipo_usuario: get("tipo_usuario"),
+        loja: get("loja"),
+        nome_vendedor: get("nome_vendedor"),
+        email_vendedor: get("email_vendedor"),
+        nome_cliente: get("nome_cliente"),
+        cpf: get("cpf"),
+        cnh: get("cnh"),
+        email_cliente: get("email_cliente"),
+        telefone: get("telefone"),
+        renda_mensal: get("renda_mensal"),
+        valor_moto: get("valor_moto"),
+        valor_entrada: get("valor_entrada"),
     };
-  }
+    }
+
 
   // 4️⃣  Função que faz o POST para o Apps Script
-  async function postToAppsScript(payload) {
-    const body = new URLSearchParams({ data: JSON.stringify(payload) }).toString();
-    const res = await fetch(WEB_APP_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-      body,
-    });
-    return res.json();
-  }
+    async function postToAppsScript(payload) {
+        const body = new URLSearchParams({ data: JSON.stringify(payload) }).toString();
+        const res = await fetch(WEB_APP_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+        body,
+        });
+        return res.json();
+    }
 
 
     const steps = Array.from(form.querySelectorAll('.form-step'));
