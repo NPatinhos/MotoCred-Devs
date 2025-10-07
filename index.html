@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MotoCred - Formulário</title>
     <link rel="stylesheet" href="public/tailwind.css">
-    <link rel="stylesheet" href="src/styles.css"> 
+    <link  rel="stylesheet" href="src/styles.css"> 
 
 </head>
 
@@ -105,7 +105,7 @@
                             <input class="input" type="tel" id="telefone" name="telefone" required>
 
                             <label for="renda_mensal">Renda mensal:</label>
-                            <input class="input" type="number" id="renda_mensal" name="renda_mensal" required>
+                            <input class="input" type="text" inputmode="decimal" id="renda_mensal" name="renda_mensal" required>
                         </fieldset>
                     </section>
 
@@ -114,10 +114,10 @@
                             <legend class="legend">Dados da Venda</legend>
 
                             <label for="valor_moto">Valor da moto:</label>
-                            <input class="input" type="number" id="valor_moto" name="valor_moto" required>
+                            <input class="input" type="text" inputmode="decimal" id="valor_moto" name="valor_moto" required>
 
                             <label for="valor_entrada">Valor da entrada:</label>
-                            <input class="input" type="number" id="valor_entrada" name="valor_entrada" required>
+                            <input class="input" type="text" inputmode="decimal" id="valor_entrada" name="valor_entrada" required>
                         </fieldset> <!-- ✅ fecha o fieldset -->
                     </section>     <!-- ✅ fecha só UMA section -->
 

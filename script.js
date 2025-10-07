@@ -50,24 +50,31 @@
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyd8f-WkIxpacAeWyiakEZJDXWpNyDGwj7NcjWri0xmR7RQWQiNDgZus-1AYHGYo1m_Gw/exec";
 
   // 3️⃣  Função que monta o JSON com os dados
+
     function serializeFormToPayload(form) {
-    const get = (name) => form.elements[name]?.value?.trim() ?? "";
-    return {
-        submission_id: get("submission_id"), // 👈 precisa existir
-        tipo_usuario: get("tipo_usuario"),
-        loja: get("loja"),
-        nome_vendedor: get("nome_vendedor"),
-        email_vendedor: get("email_vendedor"),
-        nome_cliente: get("nome_cliente"),
-        cpf: get("cpf"),
-        cnh: get("cnh"),
-        email_cliente: get("email_cliente"),
-        telefone: get("telefone"),
-        renda_mensal: get("renda_mensal"),
-        valor_moto: get("valor_moto"),
-        valor_entrada: get("valor_entrada"),
-    };
+        const get = (name) => form.elements[name]?.value?.trim() ?? "";
+
+        return {
+            submission_id: get("submission_id"),
+            tipo_usuario: get("tipo_usuario"),
+            loja: get("loja"),
+            nome_vendedor: get("nome_vendedor"),
+            email_vendedor: get("email_vendedor"),
+            nome_cliente: get("nome_cliente"),
+            cpf: get("cpf"),
+            cnh: get("cnh"),
+            email_cliente: get("email_cliente"),
+            telefone: get("telefone"),
+            renda_mensal: normalizeMoney(get("renda_mensal")),
+            valor_moto: normalizeMoney(get("valor_moto")),
+            valor_entrada: normalizeMoney(get("valor_entrada")),
+
+            renda_mensal: sanitizeMoneyInput(get("renda_mensal")),
+            valor_moto: sanitizeMoneyInput(get("valor_moto")),
+            valor_entrada: sanitizeMoneyInput(get("valor_entrada")),
+        };
     }
+
 
 
   // 4️⃣  Função que faz o POST para o Apps Script
@@ -212,11 +219,12 @@
     };
 
     const calculateValorEntradaMinimo = () => {
-        const parsedValue = valorMotoInput && valorMotoInput.value !== '' ? parseFloat(valorMotoInput.value) : NaN;
-        const positiveValue = Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : 0;
-        const minimo = positiveValue * 0.4;
+        const vm = toNumber(valorMotoInput && valorMotoInput.value);
+        const positive = Number.isFinite(vm) && vm > 0 ? vm : 0;
+        const minimo = positive * 0.4;
         return Math.floor(minimo * 100) / 100;
     };
+
 
     // Em script.js
 
@@ -307,9 +315,9 @@
         }
         // FIM DA CORREÇÃO
 
-        const valorMoto = parseFloat(valorMotoInput.value);
+        const valorMoto = toNumber(valorMotoInput.value);
         const minimo = calculateValorEntradaMinimo();
-        const parsedValue = valorEntradaInput.value !== '' ? parseFloat(valorEntradaInput.value) : NaN;
+        const parsedValue = toNumber(valorEntradaInput.value);
         const validNumber = Number.isFinite(parsedValue) ? parsedValue : NaN;
 
         if (!Number.isFinite(validNumber) || validNumber <= 0) {
@@ -748,6 +756,48 @@
             updateValorEntradaValidity(false);
         });
     }
+
+    // --- Normaliza campos numéricos de valores ---
+    const moneyInputs = [
+        document.getElementById('valor_moto'),
+        document.getElementById('valor_entrada'),
+        document.getElementById('renda_mensal'),
+        ].filter(Boolean);
+
+    function sanitizeMoneyInput(value) {
+        if (value == null) return '';
+        let v = String(value);
+        v = v.replace(/,/g, '.');
+        v = v.replace(/[^0-9.]/g, '');
+        const firstDot = v.indexOf('.');
+        if (firstDot !== -1) {
+            const head = v.slice(0, firstDot + 1);
+            const tail = v.slice(firstDot + 1).replace(/\./g, '');
+            v = head + tail;
+        }
+        return v;
+    }
+
+
+    function toNumber(value) {
+        const s = sanitizeMoneyInput(value ?? '');
+        return s === '' ? NaN : Number(s);
+    }
+
+
+    moneyInputs.forEach((input) => {
+        input.addEventListener('input', (e) => {
+            const cursor = e.target.selectionStart;
+            const oldLen = e.target.value.length;
+            e.target.value = sanitizeMoneyInput(e.target.value);
+            const newLen = e.target.value.length;
+            e.target.selectionEnd = cursor - (oldLen - newLen);
+    });
+
+        input.addEventListener('blur', (e) => {
+            e.target.value = sanitizeMoneyInput(e.target.value);
+        });
+    });
 
      // 👇 E no final do arquivo, antes de fechar o parêntese da função:
  // 👇 E no final do arquivo, antes de fechar o parêntese da função:
