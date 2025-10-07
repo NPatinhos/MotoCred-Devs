@@ -692,29 +692,31 @@
     }
 
      // 👇 E no final do arquivo, antes de fechar o parêntese da função:
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
+ // 👇 E no final do arquivo, antes de fechar o parêntese da função:
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
 
-    // se quiser, use sua função validateStep
-    if (typeof validateStep === "function" && typeof currentStepIndex === "number") {
-      if (!validateStep(currentStepIndex)) return;
-    }
+        // se quiser, use sua função validateStep
+        if (typeof validateStep === "function" && typeof currentStepIndex === "number") {
+        if (!validateStep(currentStepIndex)) return;
+        }
 
-    const payload = serializeFormToPayload(form);
-    console.log("Enviando payload:", payload);
+        const payload = serializeFormToPayload(form);
+        console.log("Enviando payload:", payload);
 
-    try {
-      const result = await postToAppsScript(payload);
-      if (result?.ok) {
-        alert("Enviado com sucesso! 🎉");
-        form.reset();
-      } else {
-        alert("Erro ao enviar: " + (result?.error || "desconhecido"));
-      }
-    } catch (err) {
-      console.error("Erro de rede:", err);
-      alert("Falha ao enviar. Veja o console.");
-    }
-  });
+        try {
+        const result = await postToAppsScript(payload);
+        if (result?.ok) {
+            // Redireciona o usuário para a página de sucesso
+            window.location.href = 'confirmacao.html'; 
+            
+        } else {
+            alert("Erro ao enviar: " + (result?.error || "desconhecido"));
+        }
+        } catch (err) {
+        console.error("Erro de rede:", err);
+        alert("Falha ao enviar. Veja o console.");
+        }
+    });
 
 })(); // 👈 essa linha fecha tudo

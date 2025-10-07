@@ -88,6 +88,27 @@
     @apply text-[2rem] font-semibold text-brand tracking-[0.02em] m-0;
   }
 
+  
+  /* ------------------------------------------- */
+  /* NO SEU ARQUIVO DE ESTILOS CUSTOMIZADO */
+  /* ------------------------------------------- */
+  #texto-confirmacao {
+      font-size: 20px; 
+      line-height: 1.6; 
+      
+      color: #F37521 !important; 
+  }
+
+  /* 2. O ÍCONE DE CHECK VAI USAR A MESMA ALTURA */
+  .check-icon {
+      /* 🎯 Use a mesma altura definida no item 1 */
+      height: auto !important; 
+      width: 90px !important; /* ESSENCIAL: Garante que a largura seja proporcional */
+      display: block !important; 
+      /* Regras de centralização */
+      margin: 16px auto 0 !important;
+  }
+
 /* ======================================================================== */
 /* INÍCIO DO CÓDIGO CORRIGIDO PARA AS ETAPAS                            */
 /* ======================================================================== */
