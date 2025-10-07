@@ -3,6 +3,25 @@
   const form = document.getElementById('formCadastro');
   if (!form) return;
 
+  let isSubmitting = false;
+
+  function setSubmittingState(on) {
+    isSubmitting = on;
+    const allControls = form.querySelectorAll('input, select, textarea, button');
+    allControls.forEach(el => { el.disabled = on; });
+
+    if (btnNext) {
+      if (on) {
+        btnNext.dataset.prevText = btnNext.textContent;
+        btnNext.textContent = 'Enviando...';
+        btnNext.setAttribute('aria-busy', 'true');
+      } else {
+        btnNext.textContent = btnNext.dataset.prevText || 'Próximo';
+        btnNext.removeAttribute('aria-busy');
+      }
+    }
+  }
+
   // 2️⃣  Config: coloque aqui sua URL do Apps Script
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyryPNYr8dxV4NCw5bduH0hhFl3DAXUU3LSFGXuoriwtnBzX9y_k63jWT3OiJNjDnGxVg/exec";
 
@@ -617,20 +636,32 @@
     if (btnNext) {
         btnNext.dataset.action = 'next';
         btnNext.addEventListener('click', () => {
+            // 🔒 se já estiver enviando, ignora qualquer clique
+            if (isSubmitting) return;
+
             if (btnNext.dataset.action === 'submit') {
-                if (!validateStep(currentStepIndex)) {
-                    return;
-                }
-                if (typeof form.requestSubmit === 'function') {
-                    form.requestSubmit();
-                } else {
-                    form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-                }
-                return;
+            // valida a etapa atual
+            if (!validateStep(currentStepIndex)) return;
+
+            // trava tudo imediatamente ao clicar
+            setSubmittingState(true);
+
+            // envia o formulário normalmente
+            if (typeof form.requestSubmit === 'function') {
+                form.requestSubmit();
+            } else {
+                form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
             }
+
+            // sai da função (impede outro clique)
+            return;
+            }
+
+            // caso contrário, apenas avança para próxima etapa
             handleNext();
         });
     }
+
 
     if (btnPrev) {
         btnPrev.addEventListener('click', handlePrev);
