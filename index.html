@@ -109,17 +109,26 @@
                         </fieldset>
                     </section>
 
-                    <section class="form-step" data-step="4" id="step-4" role="tabpanel" aria-labelledby="tab-step-4" aria-hidden="true">
-                        <fieldset class="fieldset" id="dados_venda">
-                            <legend class="legend">Dados da Venda</legend>
+                    <!-- DADOS DE VENDA -->
+                    <section id="dados-venda" class="card relative">
+                        <div class="grid gap-4">
+                            <div>
+                                <label for="valor_moto" class="font-medium">Valor da moto</label>
+                                <input id="valor_moto" inputmode="decimal" class="input" />
+                                </div>
 
-                            <label for="valor_moto">Valor da moto:</label>
-                            <input class="input" type="text" inputmode="numeric" id="valor_moto" name="valor_moto" required>
+                            <div>
+                                <label for="valor_entrada" class="font-medium">Valor de entrada</label>
+                                <input id="valor_entrada" inputmode="decimal" class="input" />
 
-                            <label for="valor_entrada">Valor da entrada:</label>
-                            <input class="input" type="text" inputmode="numeric" id="valor_entrada" name="valor_entrada" required>
-                        </fieldset> <!-- ✅ fecha o fieldset -->
-                    </section>     <!-- ✅ fecha só UMA section -->
+                            <!-- AQUI VAI A MENSAGEM DE ERRO PRINCIPAL -->
+                            <p id="erro_dados_venda"
+                                class="hidden mt-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                                role="alert" aria-live="polite"></p>
+                            </div>
+                        </div>
+                        </section>
+
 
                 </div>
                 <div class="form-navigation">
@@ -133,5 +142,6 @@
     </div>
 
     <script src="script.js"></script>
+    <script src="scripts/calculo-ppa.js"></script>
 </body>
 </html>

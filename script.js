@@ -832,30 +832,91 @@
 
      // 👇 E no final do arquivo, antes de fechar o parêntese da função:
  // 👇 E no final do arquivo, antes de fechar o parêntese da função:
+// SUBSTITUA o bloco 'form.addEventListener("submit", ...)' no SEU ARQUIVO script.js:
+
+// SUBSTITUA o bloco form.addEventListener("submit", ...) no SEU ARQUIVO script.js:
+
+// ⭐️ SUBSTITUA o bloco 'form.addEventListener("submit", ...)' no SEU ARQUIVO script.js:
+
+// ----------------------------------------------------------------------
+    // MANIPULADOR DE SUBMISSÃO (PORTEIRO PPA + ENVIO APPS SCRIPT)
+    // ----------------------------------------------------------------------
+    
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
+        
+        // Desabilita botões enquanto a validação roda
+        setSubmittingState(true); 
+        
+        // ----------------------------------------------------------------------
+        // 1. PORTEIRO PPA: VALIDAÇÃO
+        // ----------------------------------------------------------------------
+        
+        // Pega os elementos e a área de feedback
+        const feedbackArea = document.getElementById('erro_dados_venda'); // usa o bloco dentro de "Dados da Moto"
+        const rendaInput = document.getElementById('renda_mensal');
+        const valorMotoInput = document.getElementById('valor_moto');
+        const entradaInput = document.getElementById('valor_entrada');
 
-        // se quiser, use sua função validateStep
-        if (typeof validateStep === "function" && typeof currentStepIndex === "number") {
-        if (!validateStep(currentStepIndex)) return;
+        feedbackArea.classList.add('hidden');
+        feedbackArea.innerHTML = ''; // limpa mensagens anteriores
+
+
+        // Coleta e Limpeza dos Dados (cleanAndParse deve estar em calculo-ppa.js)
+        // Nota: A função cleanAndParse usa a mesma lógica de Number do script.js
+        const renda = cleanAndParse(rendaInput);
+        const valorMoto = cleanAndParse(valorMotoInput);
+        const entrada = cleanAndParse(entradaInput);
+        
+        // Validação de Preenchimento Básico
+        if (valorMoto <= 0 || entrada < 0 || renda <= 0) {
+            feedbackArea.innerHTML = '❌ Por favor, preencha Moto e Entrada com valores válidos.';
+            feedbackArea.classList.remove('hidden');
+            setSubmittingState(false);
+            return;
         }
 
+        // Executa a PPA
+        const resultado = realizarPPA(valorMoto, entrada, renda);
+
+        if (!resultado.aprovado) {
+            // SE REPROVADO, EXIBE MENSAGEM E PARA O PROCESSO
+            exibirMensagemDeErro(resultado, feedbackArea);
+            setSubmittingState(false);
+            feedbackArea.classList.remove('hidden');
+
+            return; // **IMPEDE O ENVIO PARA O APPS SCRIPT**
+        }
+        
+        // SE APROVADO, EXIBE MENSAGEM DE SUCESSO DA PPA antes de enviar
+        feedbackArea.classList.add('hidden');
+        feedbackArea.innerHTML = '';
+
+
+        // ----------------------------------------------------------------------
+        // 2. PROCESSO DE ENVIO PARA O APPS SCRIPT (Segue apenas se aprovado)
+        // ----------------------------------------------------------------------
+        
         const payload = serializeFormToPayload(form);
-        console.log("Enviando payload:", payload);
-
+        
         try {
-        const result = await postToAppsScript(payload);
-        if (result?.ok) {
-            // Redireciona o usuário para a página de sucesso
-            window.location.href = 'confirmacao.html'; 
-            
-        } else {
-            alert("Erro ao enviar: " + (result?.error || "desconhecido"));
-        }
-        } catch (err) {
-        console.error("Erro de rede:", err);
-        alert("Falha ao enviar. Veja o console.");
-        }
-    });
+            const result = await postToAppsScript(payload);
 
-})(); // 👈 essa linha fecha tudo
+            if (result?.ok) {
+                // Redireciona o usuário para a página de sucesso
+                window.location.href = 'confirmacao.html'; 
+            } else {
+                alert("Erro ao enviar: " + (result?.error || "desconhecido"));
+            }
+        } catch (err) {
+            // Bloco de tratamento de erro do envio
+            console.error("Erro na comunicação com Apps Script:", err);
+            alert("Ocorreu um erro na comunicação. Tente novamente.");
+        } finally {
+            // Garante que os botões sejam reativados, independente do sucesso ou falha
+            setSubmittingState(false);
+        }
+
+    }); // 🛑 FIM DO form.addEventListener
+
+})(); // 🛑 FIM DA IIFE GERAL (FINAL DO ARQUIVO)
