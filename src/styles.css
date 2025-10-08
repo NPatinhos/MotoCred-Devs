@@ -338,6 +338,26 @@
     @apply text-white; /* ESPECIFICIDADE MÁXIMA */
 }
 
+  #dados-venda {
+    background-color: #f5f2f0; /* ou o mesmo fundo escuro que você já usa */
+    border-radius: 1rem;
+    padding: 1.5rem;
+    position: relative;
+  }
+
+  #erro_dados_venda {
+    animation: aparecerErro 0.3s ease;
+  }
+
+  @keyframes aparecerErro {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+
+
+
+
   /* No mobile, podemos diminuir um pouco os botões para garantir que caibam */
   @media (max-width: 480px) {
     .radio-options-horizontal .radio-pill {

@@ -241,3 +241,4 @@ function exibirMensagemDeErro(resultado, feedbackArea) {
     feedbackArea.innerHTML = mensagemHTML;
 }
 
+/* VERIFICANDO A FUNCIONALIDADE DO PPA TENTANDO COLOCAR ELE NO BLOCO COLORIDO NO FINAL*/

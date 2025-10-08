@@ -31,8 +31,9 @@
                     <span>Dados do Cliente</span>
                 </button>
                 <button type="button" class="step-tab" id="tab-step-4" data-step="4" role="tab" aria-controls="step-4" aria-selected="false" disabled>
-                    <span>Dados da Moto</span>
+                    <span>Dados da Venda</span>
                 </button>
+
             </div>
             <span class="step-current-label" aria-live="polite">Identificação</span>
         </div>
@@ -109,25 +110,31 @@
                         </fieldset>
                     </section>
 
-                    <!-- DADOS DE VENDA -->
-                    <section id="dados-venda" class="card relative">
-                        <div class="grid gap-4">
-                            <div>
-                                <label for="valor_moto" class="font-medium">Valor da moto</label>
-                                <input id="valor_moto" inputmode="decimal" class="input" />
+                    <!-- ETAPA 4 — DADOS DA VENDA -->
+                    <section class="form-step" data-step="4" id="step-4" role="tabpanel" aria-labelledby="tab-step-4" aria-hidden="true">
+                        <fieldset class="fieldset" id="dados_venda">
+                            <legend class="legend">Dados da Venda</legend>
+
+                            <div class="grid gap-4">
+                                <div>
+                                    <label for="valor_moto" class="font-medium">Valor da moto</label>
+                                    <input id="valor_moto" inputmode="decimal" class="input" required />
                                 </div>
 
-                            <div>
-                                <label for="valor_entrada" class="font-medium">Valor de entrada</label>
-                                <input id="valor_entrada" inputmode="decimal" class="input" />
-
-                            <!-- AQUI VAI A MENSAGEM DE ERRO PRINCIPAL -->
-                            <p id="erro_dados_venda"
-                                class="hidden mt-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
-                                role="alert" aria-live="polite"></p>
+                                <div>
+                                    <label for="valor_entrada" class="font-medium">Valor de entrada</label>
+                                    <input id="valor_entrada" inputmode="decimal" class="input" required />
+                                </div>
                             </div>
-                        </div>
-                        </section>
+
+                            <!-- Mensagem de erro DENTRO do bloco escuro -->
+                            <p id="erro_dados_venda"
+                                class="hidden mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                                role="alert" aria-live="polite"></p>
+                        </fieldset>
+                    </section>
+
+
 
 
                 </div>
