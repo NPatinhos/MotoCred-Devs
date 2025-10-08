@@ -354,6 +354,12 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
+  /* Força espaçamento maior entre os blocos da etapa "Dados da Venda" */
+ /* src/styles.css */
+  #dados_venda .grid > :nth-child(2) { margin-top: 1.5rem !important; } /* ~32px */
+
+
+
 
 
 

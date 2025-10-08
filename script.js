@@ -230,21 +230,21 @@
     // Em script.js
 
     const updateValorEntradaHint = () => {
-        if (!valorMotoInput) {
-            return;
-        }
-        const minimo = calculateValorEntradaMinimo();
-        // Formatamos o valor como moeda brasileira (ex: R$ 1.234,56)
-        const formatted = minimo.toLocaleString('pt-BR', {
-            style: 'currency',
-            currency: 'BRL'
-        });
+        if (!valorMotoInput || !valorEntradaInput) return;
 
-        // Atualizamos o atributo 'placeholder' do campo de entrada
-        if (valorEntradaInput) {
-            valorEntradaInput.placeholder = `Entrada mínima sugerida: ${formatted}`;
-        }
+        const minimo = calculateValorEntradaMinimo();
+        const formatted = minimo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        // força repaint do placeholder em todos os navegadores
+        valorEntradaInput.removeAttribute('placeholder');
+        requestAnimationFrame(() => {
+            valorEntradaInput.setAttribute('placeholder', `Min. sugerido: ${formatted}`);
+        });
     };
+
+
+
+
 
     const updateCpfValidity = (showMessage = false) => {
         if (!cpfInput || cpfInput.disabled) {
@@ -502,6 +502,11 @@
         renderTabs();
         renderNavigation();
         // REMOVIDO: requestAnimationFrame(atualizarNomeEtapaAtual);
+        // depois de renderSteps(); renderTabs(); renderNavigation();
+        if (currentStepIndex === 3) { // etapa 4 (índice 3)
+            updateValorEntradaHint();
+        }
+
     };
 
     const goToStep = (index) => {
@@ -743,11 +748,25 @@
 
     if (valorMotoInput) {
         valorMotoInput.addEventListener('input', () => {
-            updateCpfHintValidity();
-            // ADICIONADO: Revalida a entrada quando o valor da moto é alterado
-            updateValorEntradaValidity(false); 
+            // 1) atualiza o placeholder (dinâmico 40%)
+            updateValorEntradaHint();
+
+            // 2) limpa o campo de entrada p/ o placeholder reaparecer
+            if (valorEntradaInput && typeof valorEntradaInput.clearMasked === 'function') {
+            valorEntradaInput.clearMasked();      // zera estado interno + value
+            } else if (valorEntradaInput) {
+            valorEntradaInput.value = '';
+            // garante que a máscara não restaure nada
+            valorEntradaInput._digits = '';
+            }
+
+            // 3) revalida sem balão
+            updateValorEntradaValidity(false);
         });
     }
+
+
+
 
     if (valorEntradaInput) {
         valorEntradaInput.addEventListener('input', () => {
@@ -760,7 +779,7 @@
 
     // === MÁSCARA BRL (2 casas, cresce da direita p/ esquerda) ===
     function formatBRLCentsFromDigits(digits) {
-        if (!digits) return '0,00';
+        if (!digits) return '';
         digits = String(digits).replace(/\D/g, '');
         if (digits.length === 1) digits = '0' + digits;
         if (digits.length === 2) digits = '0' + digits;
@@ -777,23 +796,46 @@
     function attachBRLMoneyMask(input) {
         if (!input) return;
         let digits = onlyDigitsFromMasked(input.value);
-        input.value = formatBRLCentsFromDigits(digits);
 
+        // mantém vazio no carregamento — permite aparecer placeholder
+        input.value = digits ? formatBRLCentsFromDigits(digits) : '';
+
+        // 🔹 função auxiliar pra limpar do lado de fora
+        input.clearMasked = () => {
+            digits = '';
+            input.value = '';
+        };
+
+        // === quando o usuário digita ou apaga ===
         input.addEventListener('beforeinput', (e) => {
             const t = e.inputType;
+
             if (t === 'insertText') {
             if (!/\d/.test(e.data)) { e.preventDefault(); return; }
+
             digits += e.data;
             input.value = formatBRLCentsFromDigits(digits);
-            e.preventDefault();
-            } else if (t === 'deleteContentBackward' || t === 'deleteContentForward') {
-            digits = digits.slice(0, -1);
-            input.value = formatBRLCentsFromDigits(digits);
+
+            // 🔸 dispara evento “input” para ativar o listener normal
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+
             e.preventDefault();
             }
+
+            else if (t === 'deleteContentBackward' || t === 'deleteContentForward') {
+            digits = digits.slice(0, -1);
+            input.value = formatBRLCentsFromDigits(digits);
+
+            // 🔸 dispara evento “input” também ao apagar
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+
+            e.preventDefault();
+            }
+
             queueMicrotask(() => input.setSelectionRange(input.value.length, input.value.length));
         });
 
+        // === quando o usuário cola ===
         input.addEventListener('paste', (e) => {
             e.preventDefault();
             const text = (e.clipboardData || window.clipboardData).getData('text') || '';
@@ -801,19 +843,26 @@
             if (!pasted) return;
             digits += pasted;
             input.value = formatBRLCentsFromDigits(digits);
+
+            // 🔸 dispara evento “input” após colar
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+
             queueMicrotask(() => input.setSelectionRange(input.value.length, input.value.length));
         });
 
+        // === quando foca ===
         input.addEventListener('focus', () => {
             queueMicrotask(() => input.setSelectionRange(input.value.length, input.value.length));
         });
 
-        // número real (ex.: "1.234,56" -> 1234.56)
+        // retorna número (ex.: "1.234,56" -> 1234.56)
         input.getNumberValue = () => {
             const d = onlyDigitsFromMasked(input.value);
             return d ? Number(d) / 100 : NaN;
         };
-        }
+    }
+
+
 
     // helper p/ ler número do input (usa a máscara; tem fallback)
     function numFromInput(el) {
