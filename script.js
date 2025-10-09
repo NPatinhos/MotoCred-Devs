@@ -966,6 +966,7 @@
             setSubmittingState(false);
             feedbackArea.classList.remove('hidden');
 
+            console.log('PPA Reprovada! Resultado:', resultado);
             return; // **IMPEDE O ENVIO PARA O APPS SCRIPT**
         }
         
