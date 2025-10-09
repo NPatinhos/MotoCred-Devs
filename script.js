@@ -303,42 +303,57 @@
         return true;
     };
 
+        // ❌ sem setCustomValidity / reportValidity
+    // ✅ escreve a mensagem no #erro_dados_venda, igual à PPA
     const updateValorEntradaValidity = (showMessage = false) => {
-        if (!valorEntradaInput || valorEntradaInput.disabled) {
-            return true;
+        const erroArea = document.getElementById('erro_dados_venda');
+        if (!valorEntradaInput || !erroArea) return true;
+
+        // limpa a área antes de validar
+        if (showMessage) {
+            erroArea.classList.add('hidden');
+            erroArea.innerHTML = '';
         }
 
-        // CORREÇÃO: Se o campo estiver vazio, limpamos qualquer erro customizado
-        // e deixamos o 'required' do HTML cuidar do aviso de campo obrigatório.
-        if (valorEntradaInput.value.trim() === '') {
-            valorEntradaInput.setCustomValidity(''); 
-            return true; // Campo é considerado válido para o JS, mas o HTML o marcará como required
-        }
-        // FIM DA CORREÇÃO
+        const vm = numFromInput(valorMotoInput);
+        const minimo = calculateValorEntradaMinimo();
+        const ve = numFromInput(valorEntradaInput);
 
-        const valorMoto   = numFromInput(valorMotoInput);
-        const minimo      = calculateValorEntradaMinimo();
-        const parsedValue = numFromInput(valorEntradaInput);
-        const validNumber = Number.isFinite(parsedValue) ? parsedValue : NaN;
-
-        if (!Number.isFinite(validNumber) || validNumber <= 0) {
-            valorEntradaInput.setCustomValidity(showMessage ? 'Informe um valor de entrada válido.' : '');
-            return false;
-        }
-        
-        if (validNumber > valorMoto) {
-            valorEntradaInput.setCustomValidity(showMessage ? 'O valor da entrada não pode ser maior que o valor total da moto.' : '');
+        // vazio / inválido
+        if (!valorEntradaInput.value.trim() || !Number.isFinite(ve) || ve <= 0) {
+            if (showMessage) {
+            erroArea.innerHTML = '❌ Informe um valor de entrada válido.';
+            erroArea.classList.remove('hidden');
+            }
             return false;
         }
 
-        if (validNumber + 1e-9 < minimo) {
-            valorEntradaInput.setCustomValidity(showMessage ? 'O valor deve ser igual ou superior a 40% do valor da moto.' : '');
+        // maior que moto
+        if (Number.isFinite(vm) && ve > vm) {
+            if (showMessage) {
+            erroArea.innerHTML = '❌ O valor da entrada não pode ser maior que o valor da moto.';
+            erroArea.classList.remove('hidden');
+            }
             return false;
         }
 
-        valorEntradaInput.setCustomValidity('');
+        // menor que 40%  👉 AQUI ESTÁ A MENSAGEM QUE VOCÊ VAI EDITAR SE QUISER
+        if (Number.isFinite(vm) && ve + 1e-9 < minimo) {
+            if (showMessage) {
+            const minimoBRL = minimo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            erroArea.innerHTML = `
+            <p>Pedido de Pré Análise recusado.</p>
+            <p>A entrada deve ser pelo menos 40% do valor da moto (${minimoBRL}).</p>
+            `;
+            erroArea.classList.remove('hidden');
+            }
+            return false;
+        }
+
+        // válido
         return true;
     };
+
     
 
     const isStepEnabled = (index) => Boolean(stepAvailability[index]);
@@ -612,6 +627,11 @@
             }
             if (field === valorEntradaInput) {
                 updateValorEntradaValidity(true);
+            }
+
+            if (field === valorEntradaInput) {
+            if (!updateValorEntradaValidity(true)) return false; // mostra erro “normal”
+            continue; // NÃO chama checkValidity/reportValidity para evitar balão
             }
 
             // Se a validação do campo falhar, reporte o erro e interrompa.

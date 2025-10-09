@@ -848,6 +848,21 @@ h1,
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  font-weight: 600;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -923,9 +938,8 @@ h1,
   border-radius: 28px;
   border-width: 1px;
   --tw-border-opacity: 1;
-  border-color: rgb(240 217 200 / var(--tw-border-opacity));
-  --tw-bg-opacity: 1;
-  background-color: rgb(255 245 236 / var(--tw-bg-opacity));
+  border-color: rgb(207 189 175 / var(--tw-border-opacity));
+  background-color: #a36a343d;
   padding: 2rem;
   --tw-text-opacity: 1;
   color: rgb(90 64 51 / var(--tw-text-opacity));
@@ -938,15 +952,28 @@ h1,
   border-radius: 28px;
   border-width: 1px;
   --tw-border-opacity: 1;
-  border-color: rgb(240 217 200 / var(--tw-border-opacity));
-  --tw-bg-opacity: 1;
-  background-color: rgb(255 245 236 / var(--tw-bg-opacity));
+  border-color: rgb(207 189 175 / var(--tw-border-opacity));
+  background-color: #a36a343d;
   padding: 2rem;
   --tw-text-opacity: 1;
   color: rgb(90 64 51 / var(--tw-text-opacity));
   --tw-shadow: inset 0 0 0 1px rgba(255,255,255,0.5);
   --tw-shadow-colored: inset 0 0 0 1px var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+.\!fieldset {
+  /*
+    monitor AMOLED: border #f0d9c8  bg #fff5ec
+    monitor LCD:  border #cfbdaf  bg #a36a343d
+    */
+}
+
+.fieldset {
+  /*
+    monitor AMOLED: border #f0d9c8  bg #fff5ec
+    monitor LCD:  border #cfbdaf  bg #a36a343d
+    */
 }
 
 .legend {
@@ -1063,6 +1090,20 @@ h1,
   --tw-text-opacity: 1;
   color: rgb(243 117 33 / var(--tw-text-opacity));
 }
+
+/* ------------------------------------------- */
+
+/* NO SEU ARQUIVO DE ESTILOS CUSTOMIZADO */
+
+/* ------------------------------------------- */
+
+#texto-confirmacao {
+  font-size: 20px;
+  line-height: 1.6;
+  color: #F37521 !important;
+}
+
+/* 2. O ÍCONE DE CHECK VAI USAR A MESMA ALTURA */
 
 /* ======================================================================== */
 
@@ -1387,6 +1428,40 @@ fieldset label:first-of-type {
   /* ESPECIFICIDADE MÁXIMA */
 }
 
+#dados-venda {
+  background-color: #f5f2f0;
+  /* ou o mesmo fundo escuro que você já usa */
+  border-radius: 1rem;
+  padding: 1.5rem;
+  position: relative;
+}
+
+#erro_dados_venda {
+  animation: aparecerErro 0.3s ease;
+}
+
+@keyframes aparecerErro {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Força espaçamento maior entre os blocos da etapa "Dados da Venda" */
+
+/* src/styles.css */
+
+#dados_venda .grid > :nth-child(2) {
+  margin-top: 1.5rem !important;
+}
+
+/* ~32px */
+
 /* No mobile, podemos diminuir um pouco os botões para garantir que caibam */
 
 @media (max-width: 480px) {
@@ -1577,8 +1652,20 @@ fieldset label:first-of-type {
   border-width: 0;
 }
 
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.mt-8 {
+  margin-top: 2rem;
+}
+
 .flex {
   display: flex;
+}
+
+.grid {
+  display: grid;
 }
 
 .hidden {
@@ -1613,13 +1700,59 @@ fieldset label:first-of-type {
   justify-content: center;
 }
 
+.gap-8 {
+  gap: 2rem;
+}
+
+.rounded-md {
+  border-radius: 0.375rem;
+}
+
+.border {
+  border-width: 1px;
+}
+
+.border-red-200 {
+  --tw-border-opacity: 1;
+  border-color: rgb(254 202 202 / var(--tw-border-opacity));
+}
+
 .bg-brand {
   --tw-bg-opacity: 1;
   background-color: rgb(243 117 33 / var(--tw-bg-opacity));
 }
 
+.bg-red-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(254 242 242 / var(--tw-bg-opacity));
+}
+
 .p-6 {
   padding: 1.5rem;
+}
+
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.py-3 {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.text-red-700 {
+  --tw-text-opacity: 1;
+  color: rgb(185 28 28 / var(--tw-text-opacity));
 }
 
 .blur {

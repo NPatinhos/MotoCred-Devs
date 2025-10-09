@@ -37,14 +37,18 @@
     @apply btn border border-brand text-brand bg-white hover:bg-[#fff3eb];
   }
 
-/* Adiciona estilo para o botão secundário quando desabilitado */
+  /* Adiciona estilo para o botão secundário quando desabilitado */
   .btn-secondary:disabled {
     opacity: 0.5;
     cursor: not-allowed;
   }
 
   .fieldset {
-    @apply rounded-[28px] border border-[#f0d9c8] bg-[#fff5ec] p-8 text-[#5A4033] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.5)];
+    @apply rounded-[28px] border border-[#cfbdaf] bg-[#a36a343d] p-8 text-[#5A4033] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.5)];
+    /*
+    monitor AMOLED: border #f0d9c8  bg #fff5ec
+    monitor LCD:  border #cfbdaf  bg #a36a343d
+    */
   }
 
   .legend {
@@ -482,6 +486,7 @@
       border-radius: 0.75rem; /* Equivalente a 'rounded-xl' do Tailwind */
     }
   }
+
 }
 
 
