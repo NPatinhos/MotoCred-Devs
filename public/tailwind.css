@@ -1432,7 +1432,7 @@ fieldset label:first-of-type {
   background-color: #f5f2f0;
   /* ou o mesmo fundo escuro que você já usa */
   border-radius: 1rem;
-  padding: 1.5rem;
+  /*padding: 1.5rem;*/
   position: relative;
 }
 
@@ -1656,10 +1656,6 @@ fieldset label:first-of-type {
   margin-top: 1rem;
 }
 
-.mt-8 {
-  margin-top: 2rem;
-}
-
 .flex {
   display: flex;
 }
@@ -1700,8 +1696,20 @@ fieldset label:first-of-type {
   justify-content: center;
 }
 
-.gap-8 {
-  gap: 2rem;
+.gap-6 {
+  gap: 1.5rem;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.gap-1 {
+  gap: 0.25rem;
 }
 
 .rounded-md {

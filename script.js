@@ -661,8 +661,20 @@
         currentUserType = preselected.value;
     }
 
-    updateStepAvailability();
-    showStep(0);
+    // =============================================
+    // 🚧 MODO DESENVOLVEDORA – TESTAR ETAPA 4
+    // Libera todas as etapas e abre direto "Dados da Venda"
+    // =============================================
+    setStepEnabled(0, true);
+    setStepEnabled(1, true);
+    setStepEnabled(2, true);
+    setStepEnabled(3, true);
+    maxStepIndex = 3;
+    showStep(3); // abre direto etapa 4 (índice 3)
+    // =============================================
+
+    /*updateStepAvailability();
+    showStep(0);  DESCOMENTAR ESSA PARTE DPS QUE SAIR DO MODO DEV*/
 
     // Em script.js
 
