@@ -1,4 +1,67 @@
 ﻿(function () {
+//MODO DEV
+    // Mude para 'false' para desativar o preenchimento automático
+    const MODO_TESTE = true; 
+
+    function preencherDadosParaTeste() {
+        // Dados do Vendedor (conforme solicitado)
+        const dadosVendedor = {
+            'nome_loja': 'Loja A',
+            'nome_vendedor': 'Fulano',
+            'email_vendedor': 'email@gmail.com'
+        };
+
+        // Dados do Cliente (gerados aleatoriamente)
+        const dadosCliente = {
+            'nome_completo': 'Ciclano de Tal Teste',
+            'data_nascimento': '1995-03-20',
+            'cpf': '134.357.854-03',
+            'celular': '(84) 98888-7777',
+            'email': 'ciclano.teste@email.com',
+            'nome_mae': 'Maria da Silva Teste',
+            'cep': '59015-000',
+            'logradouro': 'Avenida dos Testes',
+            'numero': '123',
+            'complemento': 'Apto 404',
+            'bairro': 'Bairro do Script',
+            'cidade': 'Natal',
+            'uf': 'RN'
+        };
+        
+        // Renda Mensal (conforme solicitado)
+        const dadosVenda = {
+            'renda_mensal': '1.000,00'
+        };
+
+        // 1. Seleciona a opção "Vendedor" e mostra os campos
+        const radioVendedor = document.getElementById('tipo_cliente_vendedor');
+        if (radioVendedor) {
+            radioVendedor.checked = true;
+            document.getElementById('dados_vendedor').classList.remove('hidden');
+        }
+
+        // 2. Junta todos os dados em um só objeto
+        const todosOsDados = { ...dadosVendedor, ...dadosCliente, ...dadosVenda };
+
+        // 3. Preenche cada campo do formulário
+        for (const id in todosOsDados) {
+            const elemento = document.getElementById(id);
+            if (elemento) {
+                elemento.value = todosOsDados[id];
+            } else {
+                console.warn(`Elemento de teste não encontrado no HTML: #${id}`);
+            }
+        }
+        
+        console.log('%c🚀 MODO TESTE ATIVADO: Formulário preenchido automaticamente!', 'color: #fff; background: #007acc; padding: 4px 8px; border-radius: 4px;');
+    }
+
+    if (MODO_TESTE) {
+        // Espera o conteúdo da página carregar para garantir que os campos existam
+        window.addEventListener('DOMContentLoaded', preencherDadosParaTeste);
+    }
+
+
     // 1️⃣  Pega o formulário
     const form = document.getElementById('formCadastro');
     if (!form) return;
@@ -338,7 +401,7 @@
         }
 
         // menor que 40%  👉 AQUI ESTÁ A MENSAGEM QUE VOCÊ VAI EDITAR SE QUISER
-        if (Number.isFinite(vm) && ve + 1e-9 < minimo) {
+        /*if (Number.isFinite(vm) && ve + 1e-9 < minimo) {
             if (showMessage) {
             const minimoBRL = minimo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             erroArea.innerHTML = `
@@ -348,7 +411,7 @@
             erroArea.classList.remove('hidden');
             }
             return false;
-        }
+        }   */
 
         // válido
         return true;
@@ -923,82 +986,94 @@
     // MANIPULADOR DE SUBMISSÃO (PORTEIRO PPA + ENVIO APPS SCRIPT)
     // ----------------------------------------------------------------------
     
+// ----------------------------------------------------------------------
+// MANIPULADOR DE SUBMISSÃO (PORTEIRO PPA + ENVIO APPS SCRIPT)
+// ----------------------------------------------------------------------
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
         
-        // Desabilita botões enquanto a validação roda
+        // Desabilita botões enquanto a validação e o envio rodam
         setSubmittingState(true); 
         
-        // ----------------------------------------------------------------------
-        // 1. PORTEIRO PPA: VALIDAÇÃO
-        // ----------------------------------------------------------------------
-        
-        // Pega os elementos e a área de feedback
-        const feedbackArea = document.getElementById('erro_dados_venda'); // usa o bloco dentro de "Dados da Moto"
-        const rendaInput = document.getElementById('renda_mensal');
-        const valorMotoInput = document.getElementById('valor_moto');
-        const entradaInput = document.getElementById('valor_entrada');
-
+        const feedbackArea = document.getElementById('erro_dados_venda');
         feedbackArea.classList.add('hidden');
-        feedbackArea.innerHTML = ''; // limpa mensagens anteriores
+        feedbackArea.innerHTML = ''; // Limpa mensagens anteriores
 
-
-        // Coleta e Limpeza dos Dados (cleanAndParse deve estar em calculo-ppa.js)
-        // Nota: A função cleanAndParse usa a mesma lógica de Number do script.js
-        const renda = cleanAndParse(rendaInput);
-        const valorMoto = cleanAndParse(valorMotoInput);
-        const entrada = cleanAndParse(entradaInput);
+        // ----------------------------------------------------------------------
+        // 1. COLETA E VALIDAÇÃO DOS DADOS COM A PPA
+        // ----------------------------------------------------------------------
+        const renda = cleanAndParse(document.getElementById('renda_mensal'));
+        const valorMoto = cleanAndParse(document.getElementById('valor_moto'));
+        const entrada = cleanAndParse(document.getElementById('valor_entrada'));
         
-        // Validação de Preenchimento Básico
-        if (valorMoto <= 0 || entrada < 0 || renda <= 0) {
-            feedbackArea.innerHTML = '❌ Por favor, preencha Moto e Entrada com valores válidos.';
+        // Validação básica de preenchimento
+        if (valorMoto <= 0 || renda <= 0) {
+            feedbackArea.innerHTML = '❌ Por favor, preencha os campos de Renda, Valor da Moto e Entrada com valores válidos.';
             feedbackArea.classList.remove('hidden');
             setSubmittingState(false);
             return;
         }
 
-        // Executa a PPA
-        const resultado = realizarPPA(valorMoto, entrada, renda);
+        // Executa o cálculo da PPA para obter os códigos de falha
+        const falhas = realizarCalculoPPA(valorMoto, entrada, renda);
 
-        if (!resultado.aprovado) {
-            // SE REPROVADO, EXIBE MENSAGEM E PARA O PROCESSO
-            exibirMensagemDeErro(resultado, feedbackArea);
-            setSubmittingState(false);
+        // ----------------------------------------------------------------------
+        // 2. MONTAGEM DA MENSAGEM DE ERRO (SE HOUVER FALHAS)
+        // ----------------------------------------------------------------------
+        if (falhas.length > 0) {
+            // Pega os textos dos motivos com base nos códigos de falha
+            const motivos = obterMotivosDeReprovacao(falhas);
+            
+            // Calcula as sugestões com base nas falhas e nos valores
+            const sugestoes = calcularSugestoes(falhas, valorMoto, entrada, renda);
+            
+            // Monta a mensagem HTML final
+            let mensagemHTML = '<p style="font-weight: bold;">Pré-Análise Não Concedida.</p>';
+            
+            // Adiciona os motivos da reprovação
+           // Adiciona os motivos da reprovação
+            if (motivos.length > 0) {
+                mensagemHTML += '<p class="mt-2">Motivos:</p>';
+                // Mapeia cada motivo para adicionar o hífen e cria a lista
+                const listaMotivos = motivos.map(motivo => `<li>- ${motivo}</li>`).join('');
+                mensagemHTML += `<ul class="list-none pl-5">${listaMotivos}<br></ul>`;
+            }
+
+            // Adiciona as sugestões, se houver alguma
+            if (sugestoes.length > 0) {
+                mensagemHTML += '<p class="mt-3">Para ser aprovado, sugerimos que você:</p>';
+                // Mapeia cada sugestão para adicionar o hífen e cria a lista
+                const listaSugestoes = sugestoes.map(sugestao => `<li>- ${sugestao}</li>`).join('');
+                mensagemHTML += `<ul class="list-none pl-5">${listaSugestoes}</ul>`;
+            }
+            // Exibe a mensagem e para o processo
+            feedbackArea.innerHTML = mensagemHTML;
             feedbackArea.classList.remove('hidden');
-
-            console.log('PPA Reprovada! Resultado:', resultado);
+            setSubmittingState(false);
+            console.warn('PPA Reprovada! Falhas:', falhas);
             return; // **IMPEDE O ENVIO PARA O APPS SCRIPT**
         }
         
-        // SE APROVADO, EXIBE MENSAGEM DE SUCESSO DA PPA antes de enviar
-        feedbackArea.classList.add('hidden');
-        feedbackArea.innerHTML = '';
-
-
         // ----------------------------------------------------------------------
-        // 2. PROCESSO DE ENVIO PARA O APPS SCRIPT (Segue apenas se aprovado)
+        // 3. PROCESSO DE ENVIO (SE APROVADO NA PPA)
         // ----------------------------------------------------------------------
-        
+        console.log('PPA Aprovada! Enviando para o Apps Script...');
         const payload = serializeFormToPayload(form);
         
         try {
             const result = await postToAppsScript(payload);
 
             if (result?.ok) {
-                // Redireciona o usuário para a página de sucesso
                 window.location.href = 'confirmacao.html'; 
             } else {
                 alert("Erro ao enviar: " + (result?.error || "desconhecido"));
             }
         } catch (err) {
-            // Bloco de tratamento de erro do envio
             console.error("Erro na comunicação com Apps Script:", err);
             alert("Ocorreu um erro na comunicação. Tente novamente.");
         } finally {
-            // Garante que os botões sejam reativados, independente do sucesso ou falha
-            setSubmittingState(false);
+            setSubmittingState(false); // Reativa os botões em qualquer cenário
         }
-
-    }); // 🛑 FIM DO form.addEventListener
+    });
 
 })(); // 🛑 FIM DA IIFE GERAL (FINAL DO ARQUIVO)
