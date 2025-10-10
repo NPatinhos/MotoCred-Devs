@@ -533,27 +533,26 @@ function setSubmittingState(on, buttonText = null) {
     };
 
     function showConfirmacao() {
-        // 1) Mostra a confirmação
-        const confirma = document.getElementById('tela_confirmacao'); // <- underline
+        // liga o estado global
+        document.body.classList.add('confirmado');
+
+        // mostra a seção (se ela começa .hidden no HTML)
+        const confirma = document.getElementById('tela_confirmacao');
         if (confirma) {
-            confirma.classList.remove('hidden');      // <-- MOSTRA
+            confirma.classList.remove('hidden');
             confirma.setAttribute('tabindex', '-1');
             confirma.focus({ preventScroll: false });
         }
 
-        // 2) Esconde o restante do fluxo
-        document.getElementById('etapas_processo')?.classList.add('hidden');
-        document.querySelector('.form-steps')?.classList.add('hidden');
-        document.querySelector('.form-navigation')?.classList.add('hidden');
-
-        // 3) (Opcional) trava interação do resto da página
+        // opcional: travar interação do resto
         document.querySelectorAll('input, select, textarea, button').forEach(el => {
             if (!confirma || !confirma.contains(el)) {
             el.disabled = true;
             el.setAttribute('aria-disabled', 'true');
             }
         });
-    }
+        }
+
 
 
 

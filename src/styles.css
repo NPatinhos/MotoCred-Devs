@@ -62,15 +62,55 @@
   /* Utilitário (se já não vier do Tailwind) */
 /* .hidden { display: none !important; } */
 
-  body.confirmado #etapas_processo,
-  body.confirmado .form-steps,
-  body.confirmado .form-navigation {
-    display: none !important;
-  }
+/* Estado final: some com tudo do fluxo e remova espaçamentos */
+body.confirmado #etapas_processo,
+body.confirmado .form-steps,
+body.confirmado .form-navigation,
+body.confirmado form {
+  display: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
 
-  body.confirmado #tela_confirmacao {
-    display: flex !important;
-  }
+/* Opcional: se quiser esconder o título também 
+body.confirmado .hero {
+  display: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}*/
+
+/* Faça a área principal virar um container flex que centraliza a confirmação */
+body.confirmado .main {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+/* A tela de confirmação preenche e centraliza */
+body.confirmado #tela_confirmacao {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0.01emrem !important;
+  text-align: center !important;
+}
+
+/* Ajustes visuais da confirmação */
+#tela_confirmacao .confirmacao-wrap {
+  max-width: 600px;
+  margin: 0 auto;
+}
+#tela_confirmacao .check-icon {
+  width: 80px;
+  height: 80px;
+  display: inline-block;
+  margin-top: 8px;
+}
+
 
   /* Estilo da confirmação */
   .confirmacao {
