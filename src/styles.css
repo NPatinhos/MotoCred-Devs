@@ -59,6 +59,32 @@
     @apply block w-full rounded-xl border-neutral-400 focus:border-brand focus:ring-brand text-neutral-800 bg-white;
   }
 
+  /* Utilitário (se já não vier do Tailwind) */
+/* .hidden { display: none !important; } */
+
+  body.confirmado #etapas_processo,
+  body.confirmado .form-steps,
+  body.confirmado .form-navigation {
+    display: none !important;
+  }
+
+  body.confirmado #tela_confirmacao {
+    display: flex !important;
+  }
+
+  /* Estilo da confirmação */
+  .confirmacao {
+    display: none;
+    min-height: 60vh;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+  }
+  .confirmacao-wrap { max-width: 600px; margin: 0 auto; }
+  .check-icon { width: 80px; height: 80px; display: inline-block; margin-top: 8px; }
+
+
   /* Em styles.css */
 
   #valor_entrada::placeholder {

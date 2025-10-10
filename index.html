@@ -134,10 +134,6 @@
                                 role="alert" aria-live="polite"></p>
                         </fieldset>
                     </section>
-
-
-
-
                 </div>
                 <div class="form-navigation">
                     <button type="button" class="btn-secondary nav-prev" aria-label="Voltar para a etapa anterior" disabled>Voltar</button>
@@ -146,7 +142,24 @@
                     </div>
                 </div>
             </form>
+            <section id="tela_confirmacao" class="hidden" role="status" aria-live="polite" tabindex="-1">
+                <div class="confirmacao-wrap">
+                    <div class="flex items-center justify-center p-8">
+                        <div class="text-center max-w-lg">
+                            <p id="texto-confirmacao" class="mb-6">
+                            Formulário enviado com sucesso!
+                        </p>
+                        <img 
+                            src="imagens/Check-mark.png" 
+                            alt="Símbolo de Confirmação" 
+                            class="check-icon" 
+                        >
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
+    </di>
     </div>
 
     <script src="script.js"></script>

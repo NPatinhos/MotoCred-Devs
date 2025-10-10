@@ -80,32 +80,24 @@
 
     let isSubmitting = false;
 
-    function setSubmittingState(on) {
-        isSubmitting = on;
+// Cole esta nova versão no lugar da antiga
+function setSubmittingState(on, buttonText = null) {
+    isSubmitting = on;
 
-        // 1) Desabilita botões dentro do form (inclui Próximo/Enviar e Voltar)
-        form.querySelectorAll('button').forEach(btn => { btn.disabled = on; });
-
-        // 2) Desabilita também as step tabs (ficam fora do form)
-        document.querySelectorAll('.step-tab, .nav-prev, .nav-next').forEach(el => {
-            el.disabled = on;
-            el.setAttribute('aria-disabled', on ? 'true' : 'false');
-            el.style.pointerEvents = on ? 'none' : '';
-            el.style.cursor = on ? 'default' : '';
-        });
-
-        // 3) Feedback no botão principal
-        if (btnNext) {
-            if (on) {
-            btnNext.dataset.prevText = btnNext.textContent;
-            btnNext.textContent = 'Enviando...';
-            btnNext.setAttribute('aria-busy', 'true');
-            } else {
-            btnNext.textContent = btnNext.dataset.prevText || 'Próximo';
-            btnNext.removeAttribute('aria-busy');
-            }
-        }
+    // 1) Desabilita/habilita todos os elementos de navegação
+    document.querySelectorAll('.nav-prev, .nav-next, .step-tab').forEach(el => {
+        el.disabled = on;
+        el.setAttribute('aria-disabled', on ? 'true' : 'false');
+        el.style.pointerEvents = on ? 'none' : '';
+        el.style.cursor = on ? 'not-allowed' : '';
+    });
+    
+    // 2) Altera o texto do botão principal se um texto for fornecido
+    const nextButton = document.querySelector('.nav-next');
+    if (nextButton && buttonText !== null) {
+        nextButton.textContent = buttonText;
     }
+}
 
 
 
@@ -540,6 +532,32 @@
         });
     };
 
+    function showConfirmacao() {
+        // 1) Mostra a confirmação
+        const confirma = document.getElementById('tela_confirmacao'); // <- underline
+        if (confirma) {
+            confirma.classList.remove('hidden');      // <-- MOSTRA
+            confirma.setAttribute('tabindex', '-1');
+            confirma.focus({ preventScroll: false });
+        }
+
+        // 2) Esconde o restante do fluxo
+        document.getElementById('etapas_processo')?.classList.add('hidden');
+        document.querySelector('.form-steps')?.classList.add('hidden');
+        document.querySelector('.form-navigation')?.classList.add('hidden');
+
+        // 3) (Opcional) trava interação do resto da página
+        document.querySelectorAll('input, select, textarea, button').forEach(el => {
+            if (!confirma || !confirma.contains(el)) {
+            el.disabled = true;
+            el.setAttribute('aria-disabled', 'true');
+            }
+        });
+    }
+
+
+
+
         // Em script.js
 
    const renderNavigation = () => {
@@ -973,107 +991,79 @@
     attachBRLMoneyMask(document.getElementById('valor_entrada'));
     attachBRLMoneyMask(document.getElementById('renda_mensal'));
 
-
-     // 👇 E no final do arquivo, antes de fechar o parêntese da função:
- // 👇 E no final do arquivo, antes de fechar o parêntese da função:
-// SUBSTITUA o bloco 'form.addEventListener("submit", ...)' no SEU ARQUIVO script.js:
-
-// SUBSTITUA o bloco form.addEventListener("submit", ...) no SEU ARQUIVO script.js:
-
-// ⭐️ SUBSTITUA o bloco 'form.addEventListener("submit", ...)' no SEU ARQUIVO script.js:
-
-// ----------------------------------------------------------------------
-    // MANIPULADOR DE SUBMISSÃO (PORTEIRO PPA + ENVIO APPS SCRIPT)
-    // ----------------------------------------------------------------------
-    
-// ----------------------------------------------------------------------
-// MANIPULADOR DE SUBMISSÃO (PORTEIRO PPA + ENVIO APPS SCRIPT)
-// ----------------------------------------------------------------------
+// Substitua todo o seu bloco addEventListener por este:
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
-        
-        // Desabilita botões enquanto a validação e o envio rodam
-        setSubmittingState(true); 
+
+        // Inicia o estado de envio: desabilita botões E MUDA O TEXTO
+        setSubmittingState(true, 'Enviando...');
         
         const feedbackArea = document.getElementById('erro_dados_venda');
         feedbackArea.classList.add('hidden');
-        feedbackArea.innerHTML = ''; // Limpa mensagens anteriores
+        feedbackArea.innerHTML = '';
 
-        // ----------------------------------------------------------------------
-        // 1. COLETA E VALIDAÇÃO DOS DADOS COM A PPA
-        // ----------------------------------------------------------------------
-        const renda = cleanAndParse(document.getElementById('renda_mensal'));
+        // Coleta os valores numéricos uma única vez no início
         const valorMoto = cleanAndParse(document.getElementById('valor_moto'));
         const entrada = cleanAndParse(document.getElementById('valor_entrada'));
-        
-        // Validação básica de preenchimento
-        if (valorMoto <= 0 || renda <= 0) {
-            feedbackArea.innerHTML = '❌ Por favor, preencha os campos de Renda, Valor da Moto e Entrada com valores válidos.';
-            feedbackArea.classList.remove('hidden');
-            setSubmittingState(false);
-            return;
-        }
+        const renda = cleanAndParse(document.getElementById('renda_mensal'));
 
-        // Executa o cálculo da PPA para obter os códigos de falha
+        // Pequeno atraso para o usuário perceber a mudança no botão
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        // Executa a PPA com os valores coletados
         const falhas = realizarCalculoPPA(valorMoto, entrada, renda);
 
-        // ----------------------------------------------------------------------
-        // 2. MONTAGEM DA MENSAGEM DE ERRO (SE HOUVER FALHAS)
-        // ----------------------------------------------------------------------
+        // --- FLUXO DE FALHA DA PPA ---
         if (falhas.length > 0) {
-            // Pega os textos dos motivos com base nos códigos de falha
+            let mensagemHTML = '<p style="font-weight: bold;">Pré-Análise Não Concedida.</p>';
             const motivos = obterMotivosDeReprovacao(falhas);
             
-            // Calcula as sugestões com base nas falhas e nos valores
+            // --- CORREÇÃO APLICADA AQUI ---
+            // Passa os parâmetros corretos que já coletamos para a função de sugestões
             const sugestoes = calcularSugestoes(falhas, valorMoto, entrada, renda);
             
-            // Monta a mensagem HTML final
-            let mensagemHTML = '<p style="font-weight: bold;">Pré-Análise Não Concedida.</p>';
-            
-            // Adiciona os motivos da reprovação
-           // Adiciona os motivos da reprovação
-            if (motivos.length > 0) {
-                mensagemHTML += '<p class="mt-2">Motivos:</p>';
-                // Mapeia cada motivo para adicionar o hífen e cria a lista
-                const listaMotivos = motivos.map(motivo => `<li>- ${motivo}</li>`).join('');
-                mensagemHTML += `<ul class="list-none pl-5">${listaMotivos}<br></ul>`;
-            }
+            const listaMotivos = motivos.map(motivo => `<li>- ${motivo}</li>`).join('');
+            mensagemHTML += `<ul class="list-none pl-5">${listaMotivos}<br></ul>`;
 
-            // Adiciona as sugestões, se houver alguma
             if (sugestoes.length > 0) {
                 mensagemHTML += '<p class="mt-3">Para ser aprovado, sugerimos que você:</p>';
-                // Mapeia cada sugestão para adicionar o hífen e cria a lista
                 const listaSugestoes = sugestoes.map(sugestao => `<li>- ${sugestao}</li>`).join('');
                 mensagemHTML += `<ul class="list-none pl-5">${listaSugestoes}</ul>`;
             }
-            // Exibe a mensagem e para o processo
+
             feedbackArea.innerHTML = mensagemHTML;
             feedbackArea.classList.remove('hidden');
-            setSubmittingState(false);
+            
+            // Restaura o estado e o texto original do botão para "Enviar"
+            setSubmittingState(false, 'Enviar');
+
             console.warn('PPA Reprovada! Falhas:', falhas);
-            return; // **IMPEDE O ENVIO PARA O APPS SCRIPT**
+            return; // Interrompe a execução aqui
         }
         
-        // ----------------------------------------------------------------------
-        // 3. PROCESSO DE ENVIO (SE APROVADO NA PPA)
-        // ----------------------------------------------------------------------
+        // --- FLUXO DE SUCESSO DA PPA ---
         console.log('PPA Aprovada! Enviando para o Apps Script...');
         const payload = serializeFormToPayload(form);
         
         try {
             const result = await postToAppsScript(payload);
 
-            if (result?.ok) {
-                window.location.href = 'confirmacao.html'; 
+            if (result && result.ok) {
+                // Sucesso no envio abre a etapa de sucesso
+                showConfirmacao();
+    
             } else {
+                // Falha no envio (erro retornado pelo servidor)
                 alert("Erro ao enviar: " + (result?.error || "desconhecido"));
+                setSubmittingState(false, 'Enviar');
             }
         } catch (err) {
+            // Falha de comunicação (rede, etc.)
             console.error("Erro na comunicação com Apps Script:", err);
             alert("Ocorreu um erro na comunicação. Tente novamente.");
-        } finally {
-            setSubmittingState(false); // Reativa os botões em qualquer cenário
+            setSubmittingState(false, 'Enviar');
         }
     });
+
 
 })(); // 🛑 FIM DA IIFE GERAL (FINAL DO ARQUIVO)
