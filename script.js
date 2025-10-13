@@ -1026,9 +1026,16 @@ function setSubmittingState(on, buttonText = null) {
 
             if (sugestoes.length > 0) {
                 mensagemHTML += '<p class="mt-3">Para ser aprovado, sugerimos que você:</p>';
-                const listaSugestoes = sugestoes.map(sugestao => `<li>- ${sugestao}</li>`).join('');
-                mensagemHTML += `<ul class="list-none pl-5">${listaSugestoes}</ul>`;
+                
+                // sempre mostra duas sugestões unidas por "OU"
+                mensagemHTML += `
+                    <ul class="list-none pl-5">
+                        <li>- ${sugestoes[0]} OU</li>
+                        <li>- ${sugestoes[1]}</li>
+                    </ul>
+                `;
             }
+
 
             feedbackArea.innerHTML = mensagemHTML;
             feedbackArea.classList.remove('hidden');
