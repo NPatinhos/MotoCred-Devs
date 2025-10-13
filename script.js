@@ -1,66 +1,4 @@
 ﻿(function () {
-//MODO DEV
-    // Mude para 'false' para desativar o preenchimento automático
-    const MODO_TESTE = true; 
-
-    function preencherDadosParaTeste() {
-        // Dados do Vendedor (conforme solicitado)
-        const dadosVendedor = {
-            'nome_loja': 'Loja A',
-            'nome_vendedor': 'Fulano',
-            'email_vendedor': 'email@gmail.com'
-        };
-
-        // Dados do Cliente (gerados aleatoriamente)
-        const dadosCliente = {
-            'nome_completo': 'Ciclano de Tal Teste',
-            'data_nascimento': '1995-03-20',
-            'cpf': '134.357.854-03',
-            'celular': '(84) 98888-7777',
-            'email': 'ciclano.teste@email.com',
-            'nome_mae': 'Maria da Silva Teste',
-            'cep': '59015-000',
-            'logradouro': 'Avenida dos Testes',
-            'numero': '123',
-            'complemento': 'Apto 404',
-            'bairro': 'Bairro do Script',
-            'cidade': 'Natal',
-            'uf': 'RN'
-        };
-        
-        // Renda Mensal (conforme solicitado)
-        const dadosVenda = {
-            'renda_mensal': '1.000,00'
-        };
-
-        // 1. Seleciona a opção "Vendedor" e mostra os campos
-        const radioVendedor = document.getElementById('tipo_cliente_vendedor');
-        if (radioVendedor) {
-            radioVendedor.checked = true;
-            document.getElementById('dados_vendedor').classList.remove('hidden');
-        }
-
-        // 2. Junta todos os dados em um só objeto
-        const todosOsDados = { ...dadosVendedor, ...dadosCliente, ...dadosVenda };
-
-        // 3. Preenche cada campo do formulário
-        for (const id in todosOsDados) {
-            const elemento = document.getElementById(id);
-            if (elemento) {
-                elemento.value = todosOsDados[id];
-            } else {
-                console.warn(`Elemento de teste não encontrado no HTML: #${id}`);
-            }
-        }
-        
-        console.log('%c🚀 MODO TESTE ATIVADO: Formulário preenchido automaticamente!', 'color: #fff; background: #007acc; padding: 4px 8px; border-radius: 4px;');
-    }
-
-    if (MODO_TESTE) {
-        // Espera o conteúdo da página carregar para garantir que os campos existam
-        window.addEventListener('DOMContentLoaded', preencherDadosParaTeste);
-    }
-
 
     // 1️⃣  Pega o formulário
     const form = document.getElementById('formCadastro');
@@ -741,20 +679,8 @@ function setSubmittingState(on, buttonText = null) {
         currentUserType = preselected.value;
     }
 
-    // =============================================
-    // 🚧 MODO DESENVOLVEDORA – TESTAR ETAPA 4
-    // Libera todas as etapas e abre direto "Dados da Venda"
-    // =============================================
-    setStepEnabled(0, true);
-    setStepEnabled(1, true);
-    setStepEnabled(2, true);
-    setStepEnabled(3, true);
-    maxStepIndex = 3;
-    showStep(3); // abre direto etapa 4 (índice 3)
-    // =============================================
-
-    /*updateStepAvailability();
-    showStep(0);  DESCOMENTAR ESSA PARTE DPS QUE SAIR DO MODO DEV*/
+    updateStepAvailability();
+    showStep(0);  //DESCOMENTAR ESSA PARTE DPS QUE SAIR DO MODO DEv
 
     // Em script.js
 
