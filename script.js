@@ -953,6 +953,14 @@ function setSubmittingState(on, buttonText = null) {
             if (sugestoes.length > 0) {
                 mensagemHTML += '<p class="mt-3">Para ser aprovado, sugerimos que você:</p>';
                 
+                if (sugestoes.length == 1){
+                    mensagemHTML += `
+                    <ul class="list-none pl-5">
+                        <li>- ${sugestoes[0]}</li>
+                    </ul>
+                `;
+                }
+                else{
                 // sempre mostra duas sugestões unidas por "OU"
                 mensagemHTML += `
                     <ul class="list-none pl-5">
@@ -960,9 +968,8 @@ function setSubmittingState(on, buttonText = null) {
                         <li>- ${sugestoes[1]}</li>
                     </ul>
                 `;
+                }
             }
-
-
             feedbackArea.innerHTML = mensagemHTML;
             feedbackArea.classList.remove('hidden');
             
