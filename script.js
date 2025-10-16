@@ -1004,5 +1004,20 @@ function setSubmittingState(on, buttonText = null) {
         }
     });
 
+//TESTANDO TELAS DE SIMULAÇÃO NEGATIVADA
+    // 🔹 Mostra a tela de simulação negada ao abrir a página (modo dev)
+    window.addEventListener('DOMContentLoaded', () => {
+        document.body.classList.add('v2-mode'); // neutraliza bg do body
+        const mainCard = document.querySelector('.card');
+        if (mainCard) mainCard.style.display = 'none';
+
+        const v2Negada = document.getElementById('v2-root');
+        if (v2Negada) {
+            v2Negada.classList.remove('hidden');
+            v2Negada.classList.add('v2-flex','v2-items-center','v2-justify-center','v2-min-h-screen');
+        }
+    });
+
+
 
 })(); // 🛑 FIM DA IIFE GERAL (FINAL DO ARQUIVO)
