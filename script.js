@@ -1,4 +1,33 @@
-﻿(function () {
+﻿function showV2Overlay(sectionId) {
+  document.body.classList.add('v2-mode');
+  const mainCard = document.querySelector('.card');
+  if (mainCard) mainCard.style.display = 'none';
+
+  ['v2-pagina-negado','v2-pagina-aprovado'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.add('v2-hidden');           // <- aqui
+    el.classList.remove('v2-flex');
+  });
+
+  const target = document.getElementById(sectionId);
+  if (target) {
+    target.classList.remove('v2-hidden');    // <- e aqui
+    target.classList.add('v2-flex','v2-items-center','v2-justify-center','v2-min-h-screen');
+  }
+}
+
+
+//TESTANDO TELAS DE SIMULAÇÃO NEGATIVADA
+    // 🔹 Mostra a tela de simulação negada ao abrir a página (modo dev)
+// MODO DEV: escolha qual página abrir ao carregar
+    window.addEventListener('DOMContentLoaded', () => {
+        showV2Overlay('v2-pagina-aprovado'); // ou 'v2-pagina-aprovado'
+    });
+
+
+
+(function () {
 
     // 1️⃣  Pega o formulário
     const form = document.getElementById('formCadastro');
@@ -1004,19 +1033,75 @@ function setSubmittingState(on, buttonText = null) {
         }
     });
 
-//TESTANDO TELAS DE SIMULAÇÃO NEGATIVADA
-    // 🔹 Mostra a tela de simulação negada ao abrir a página (modo dev)
-    window.addEventListener('DOMContentLoaded', () => {
-        document.body.classList.add('v2-mode'); // neutraliza bg do body
-        const mainCard = document.querySelector('.card');
-        if (mainCard) mainCard.style.display = 'none';
 
-        const v2Negada = document.getElementById('v2-root');
-        if (v2Negada) {
-            v2Negada.classList.remove('hidden');
-            v2Negada.classList.add('v2-flex','v2-items-center','v2-justify-center','v2-min-h-screen');
-        }
-    });
+const rangeMoto = document.getElementById('valor-moto');
+const valorMotoNum = document.getElementById('valor-moto-num');
+
+if (rangeMoto) {
+  const hardMin = +rangeMoto.dataset.hardMin || 0; // mínimo real (ex.: 8000)
+  const formatar = v => Number(v).toLocaleString('pt-BR', {
+    style: 'currency', currency: 'BRL', minimumFractionDigits: 0
+  });
+
+  const atualizar = () => {
+    const max = +rangeMoto.max || 100;
+    let val = +rangeMoto.value || 0;
+
+    // 🔒 trava abaixo do mínimo real
+    if (val < hardMin) {
+      val = hardMin;
+      rangeMoto.value = hardMin;
+    }
+
+    // 🎨 min visual = 0 → já aparece preenchido no hardMin
+    const pct = (val / max) * 100;
+    rangeMoto.style.setProperty('--pct', pct + '%');
+
+    // 🧾 número do topo (se houver)
+    if (valorMotoNum) valorMotoNum.textContent = formatar(val);
+  };
+
+  // Travar também por teclado/mouse
+  rangeMoto.addEventListener('input', atualizar);
+  rangeMoto.addEventListener('change', atualizar);
+  atualizar(); // inicial
+}
+
+// === RANGE 2: Valor de entrada ===
+const rangeEntrada = document.getElementById('valor-entrada');
+const valorEntradaNum = document.getElementById('valor-entrada-num');
+
+if (rangeEntrada) {
+  const hardMin = +rangeEntrada.dataset.hardMin || 0; // mínimo real (ex.: 4000)
+  const formatar = v => Number(v).toLocaleString('pt-BR', {
+    style: 'currency', currency: 'BRL', minimumFractionDigits: 0
+  });
+
+  const atualizar = () => {
+    const max = +rangeEntrada.max || 100;
+    let val = +rangeEntrada.value || 0;
+
+    // 🔒 trava abaixo do mínimo real
+    if (val < hardMin) {
+      val = hardMin;
+      rangeEntrada.value = hardMin;
+    }
+
+    // 🎨 min visual = 0 → já aparece preenchido no hardMin
+    const pct = (val / max) * 100;
+    rangeEntrada.style.setProperty('--pct', pct + '%');
+
+    // 🧾 número do topo (se houver)
+    if (valorEntradaNum) valorEntradaNum.textContent = formatar(val);
+  };
+
+  rangeEntrada.addEventListener('input', atualizar);
+  rangeEntrada.addEventListener('change', atualizar);
+  atualizar(); // inicial
+}
+
+
+
 
 
 
