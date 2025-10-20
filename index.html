@@ -18,7 +18,7 @@
 
 </head>
 
-<body class="min-h-svh flex items-stretch justify-center bg-brand p-6">
+<body class="min-h-svh flex items-stretch justify-center bg-brand">
       <div class="v1-shell">
 
         <div class="card max-w-[820px] w-full h-full flex flex-col">
@@ -250,7 +250,7 @@
         class="v2-hidden v2-wrapper v2-fixed v2-inset-0 v2-z-50 v2-overflow-auto
             v2-bg-[#D9D9D9]
             v2-flex v2-items-center v2-justify-center
-            v2-pt-8 v2-pb-8 v2-pr-14 v2-pl-14">
+            v2-pt-8 v2-pb-8 v2-pr-8 v2-pl-8">
 
                 <!--QUADRADO BRANCO-->
         <div class="v2-bg-white v2-rounded-2xl
@@ -328,24 +328,37 @@
                 <!--FIM DO RANGE-->
 
                 <!--PARCELAS-->
-                <div class="v2-w-full v2-flex-1 v2-flex v2-gap-2">
-                    <button id="btn-parcela-12x" class="v2-bg-[#D9D9D9] v2-p-4 v2-flex-1 v2-rounded-[10px]">
+                <div class="v2-w-full v2-flex v2-gap-2 justify-center">
+                    <button id="btn-parcela-12x" class="v2-hidden v2-bg-[#D9D9D9] v2-p-4 v2-rounded-[10px] v2-flex-1 v2-max-w-[202px]">
                         <span class="v2-font-semibold v2-text-4xl font-stretch-ultra-expanded">12x</span> <br>
                         <span class="v2-text-xs v2-text-black/50">meses</span><br>
-                        <span class="v2-font-medium v2-text-base v2-text-[#F2600B]">R$00,00</span><br>
+                        <span class="v2-font-medium v2-text-base v2-text-[#F2600B]" class="valor-parcela">R$00,00</span><br>
                     </button>
-                    <button id="btn-parcela-24x" class="v2-bg-[#D9D9D9] v2-p-4 v2-flex-1 v2-rounded-[10px]">
+                    <button id="btn-parcela-24x" class="v2-hidden v2-bg-[#D9D9D9] v2-p-4 v2-rounded-[10px] v2-flex-1 v2-max-w-[202px]">
                         <span class="v2-font-semibold v2-text-4xl font-stretch-ultra-expanded">24x</span> <br>
                         <span class="v2-text-xs v2-text-black/50">meses</span><br>
-                        <span class="v2-font-medium v2-text-base v2-text-[#F2600B]">R$00,00</span><br>
+                        <span class="v2-font-medium v2-text-base v2-text-[#F2600B]" class="valor-parcela">R$00,00</span><br>
                     </button>
-                    <button id="btn-parcela-36x" class="v2-bg-[#D9D9D9] v2-p-4 v2-flex-1 v2-rounded-[10px]">
+                    <button id="btn-parcela-36x" class="v2-hidden v2-bg-[#D9D9D9] v2-p-4 v2-rounded-[10px] v2-flex-1 v2-max-w-[202px]">
                         <span class="v2-font-semibold v2-text-4xl font-stretch-ultra-expanded">36x</span> <br>
                         <span class="v2-text-xs v2-text-black/50">meses</span><br>
-                        <span class="v2-font-medium v2-text-base v2-text-[#F2600B]">R$00,00</span><br>
-                    </button>                </div>
+                        <span class="v2-font-medium v2-text-base v2-text-[#F2600B]" class="valor-parcela">R$00,00</span><br>
+                    </button>                
+                </div>
+
+                <div class="v2-w-full">
+                    <button class="v2-bg-black v2-w-full v2-rounded-[10px] v2-p-2">
+                        <span class="v2-font-semibold v2-text-white v2-text2xl">ANÁLISE FINAL</span>
+                    </button>
+                </div>
 
         </main>
+
+        <footer class="v2-text-black/50">
+            <p>
+                © 2025 MotoCred. Todos os direitos reservados.
+            </p>
+        </footer>
 
         </div>
     </section>

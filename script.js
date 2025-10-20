@@ -1169,16 +1169,40 @@ function attachEditableMoneySpan(span, callback, options = {}) {
 }
 
 
+/*
+ * =================================================================
+ * LÓGICA DOS SLIDERS (v2-APROVADO)
+ * (VERSÃO FINAL: API Serasa 1x, API Valores a cada movimento)
+ * =================================================================
+ */
+
 function initSimuladorV2() {
   // 1. Encontra os elementos na tela
   const rTotal = document.getElementById('valor-moto');
-  const sTotal = document.getElementById('valor-moto-num'); // <- Span ÚNICO
+  const sTotal = document.getElementById('valor-moto-num'); 
   const rEntrada = document.getElementById('valor-entrada');
-  const sEntrada = document.getElementById('valor-entrada-num'); // <- Span ÚNICO
-  const sFin = document.getElementById('valor-financiado-num'); // <- Span ÚNICO
+  const sEntrada = document.getElementById('valor-entrada-num'); 
+  const sFin = document.getElementById('valor-financiado-num'); 
+
+  const btn12x = document.getElementById('btn-parcela-12x');
+  const btn24x = document.getElementById('btn-parcela-24x');
+  const btn36x = document.getElementById('btn-parcela-36x');
+  
+  // ===============================================
+  // !! MODO DE TESTE DE PARCELAS (API SERASA) !!
+  // (0 = Aleatório)
+  // (1 = Mostrar só 36x)
+  // (2 = Mostrar 24x e 36x)
+  // (3 = Mostrar 12x, 24x e 36x)
+  const CASO_TESTE = 0; // <-- MUDE AQUI PARA TESTAR (1, 2, 3 ou 0)
+  // ===============================================
+  
+  // !! NOVO: Cache das parcelas permitidas !!
+  // Guardamos aqui as parcelas que a API Serasa permitiu.
+  let parcelasPermitidasCache = [];
 
   // Se não encontrar os sliders, não faz nada (fail-safe).
-  if (!rTotal || !rEntrada || !sFin || !sTotal || !sEntrada) {
+  if (!rTotal || !rEntrada || !sFin || !sTotal || !sEntrada || !btn12x) {
     console.warn('Elementos do Simulador V2 não encontrados. Abortando initSimuladorV2.');
     return;
   }
@@ -1186,21 +1210,23 @@ function initSimuladorV2() {
   // --- Constantes e Limites ---
   const HARD_MIN_TOTAL = Number(rTotal.dataset.hardMin || rTotal.min || 0);
   const HARD_MIN_ENTRADA = Number(rEntrada.dataset.hardMin || rEntrada.min || 0);
-
-  // Limites VISUAIS (para cálculo de preenchimento)
   const VISUAL_MIN = Number(rTotal.min);
   const VISUAL_MAX = Number(rTotal.max);
 
   // --- REGRA PPA: O Teto do Financiamento ---
   const totalPPA = Number(window.PPA?.total ?? rTotal.value);
   const entradaPPA = Number(window.PPA?.entrada ?? rEntrada.value);
-
   const financiadoInicialPPA = Math.max(0, totalPPA - entradaPPA);
   const MAX_FINANCIADO_PERMITIDO = financiadoInicialPPA;
 
   // --- Variáveis de Estado ---
   let total = totalPPA;
   let entrada = entradaPPA;
+  let financiado = 0; // Será definido na inicialização
+
+  // Helper de formatação (Sem R$, com 2 decimais)
+  const formatBRL = (num) => (num || 0).toLocaleString('pt-BR', { style: 'decimal', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 
   /**
    * Garante que os valores iniciais (PPA) respeitem os mínimos da página atual.
@@ -1229,30 +1255,17 @@ function initSimuladorV2() {
        entrada = Number(rEntrada.value);
     }
 
-
-    // 2. REGRA 0: Garante os limites mínimos (Hard Mins)
+    // 2. REGRAS (Hard Mins, Entrada <= Total)
     total = Math.max(total, HARD_MIN_TOTAL);
     entrada = Math.max(entrada, HARD_MIN_ENTRADA);
-
-    // 3. REGRA 1: "Entrada nunca pode ser maior que o total"
-    if (source === 'total' || source === 'span-total') {
-      if (total < entrada) {
-        entrada = total; 
-      }
-    } else if (source === 'entrada' || source === 'span-entrada') {
-      if (entrada > total) {
-        entrada = total; 
-      }
-    } else if (source === 'init') {
-        if (entrada > total) {
-            entrada = total;
-        }
+    if (entrada > total) {
+        entrada = total;
     }
 
-    // 4. REGRA 2: "Financiado nunca pode aumentar" (Trava da PPA)
-    let financiado = total - entrada;
+    // 3. REGRA 2: "Financiado nunca pode aumentar" (Trava da PPA)
+    let financiadoAtual = total - entrada;
 
-    if (financiado > MAX_FINANCIADO_PERMITIDO) {
+    if (financiadoAtual > MAX_FINANCIADO_PERMITIDO) {
       if (source === 'total' || source === 'span-total') {
         entrada = total - MAX_FINANCIADO_PERMITIDO;
       } else {
@@ -1260,83 +1273,162 @@ function initSimuladorV2() {
       }
     }
     
-    // 5. RE-VALIDAÇÃO (Garante que a Regra 2 não quebrou os Mins)
+    // 4. RE-VALIDAÇÃO
     total = Math.max(total, HARD_MIN_TOTAL);
     entrada = Math.max(entrada, HARD_MIN_ENTRADA);
     if (entrada > total) {
         entrada = total;
     }
 
-    // 6. RECALCULA o financiado final (após todas as correções)
+    // 5. RECALCULA o financiado final
     financiado = Math.max(0, total - entrada);
 
-    // 7. Chama a UI para atualizar a tela
+    // 6. Chama a UI para atualizar a tela
     updateUI(total, entrada, financiado);
+    
+    // !! MUDANÇA !!
+    // Apenas atualiza os valores (chamando a futura API de valores)
+    atualizarValoresParcelas(financiado);
   }
 
   /**
    * Função Visual: Atualiza a Tela (Sliders, Spans, Cores)
    */
   function updateUI(total, entrada, financiado) {
-    // Atualiza os VALORES.
     rTotal.value = total;
     rEntrada.value = entrada;
-
-    // Atualiza os textos (Spans)
     
-    // !! MUDANÇA AQUI !!
-    // Formata com R$ e 2 casas decimais (para o 'financiado' não-editável)
-// Substitua por isto:
-    const formatBRL = (num) => (num || 0).toLocaleString('pt-BR', { style: 'decimal', minimumFractionDigits: 2, maximumFractionDigits: 2 });
     if (sTotal?.setNumberValue) sTotal.setNumberValue(total);
     else if (sTotal) sTotal.textContent = formatBRL(total);
 
     if (sEntrada?.setNumberValue) sEntrada.setNumberValue(entrada);
     else if (sEntrada) sEntrada.textContent = formatBRL(entrada);
     
-    // O 'Valor Financiado' usa o formatBRL local
     if (sFin) sFin.textContent = formatBRL(financiado);
     
-    
-    // Atualiza o preenchimento (CSS custom properties)
+    // Atualiza o preenchimento
     const range = VISUAL_MAX - VISUAL_MIN;
-    
     const totalPct = (total - VISUAL_MIN) / range || 0;
     rTotal.style.setProperty('--pct', (totalPct * 100) + '%');
-    
     const entradaPct = (entrada - VISUAL_MIN) / range || 0;
     rEntrada.style.setProperty('--pct', (entradaPct * 100) + '%');
   }
+
+
+  // ===============================================
+  // LÓGICA DE PARCELAS (CORRIGIDA)
+  // ===============================================
+
+  /**
+   * Simula a chamada à API do Serasa.
+   * (CORRIGIDO com as suas regras de teste)
+   */
+  async function simularAPISerasa() {
+    await new Promise(resolve => setTimeout(resolve, 100)); // Delay
+    
+    // Lógica de Teste (seguindo suas regras)
+    if (CASO_TESTE === 1) return ['36x'];
+    if (CASO_TESTE === 2) return ['24x', '36x'];
+    if (CASO_TESTE === 3) return ['12x', '24x', '36x'];
+
+    // Caso 0 (Aleatório)
+    const opcoesPossiveis = [
+        ['36x'],
+        ['24x', '36x'],
+        ['12x', '24x', '36x']
+    ];
+    // Escolhe aleatoriamente um dos 3 cenários
+    return opcoesPossiveis[Math.floor(Math.random() * 3)];
+  }
+
+  /**
+   * (NOVA FUNÇÃO)
+   * Apenas atualiza o R$ das parcelas (a futura API de valores).
+   * Esta é a função "leve" que o slider vai chamar.
+   */
+  function atualizarValoresParcelas(valorFinanciado) {
+    // (Esta função será chamada a cada movimento do slider)
+    // (No futuro, aqui é o local para chamar a API que CALCULA os valores)
+
+    // Por agora, apenas pomos um placeholder "calculando..."
+    const placeholderValor = "R$ --,--";
+
+    // 4. Atualiza os botões permitidos (lendo do Cache)
+    if (parcelasPermitidasCache.includes('12x')) {
+        const span = btn12x.querySelector('.valor-parcela');
+        if(span) span.textContent = placeholderValor;
+    }
+    
+    if (parcelasPermitidasCache.includes('24x')) {
+        const span = btn24x.querySelector('.valor-parcela');
+        if(span) span.textContent = placeholderValor;
+    }
+    
+    if (parcelasPermitidasCache.includes('36x')) {
+        const span = btn36x.querySelector('.valor-parcela');
+        if(span) span.textContent = placeholderValor;
+    }
+  }
+
+  /**
+   * (NOVA FUNÇÃO)
+   * Chama a API Serasa (1x) e define quais botões ficarão visíveis.
+   */
+  async function carregarParcelasDaAPI() {
+    // 1. Reset: Esconde todos os botões (apenas por segurança)
+    [btn12x, btn24x, btn36x].forEach(btn => btn.classList.add('v2-hidden'));
+
+    // 2. Chama a API Serasa (visibilidade) e guarda no Cache
+    parcelasPermitidasCache = await simularAPISerasa();
+    
+    // 3. Mostra os botões permitidos (ordem de visibilidade crescente)
+    if (parcelasPermitidasCache.includes('12x')) {
+        btn12x.classList.remove('v2-hidden');
+    }
+    if (parcelasPermitidasCache.includes('24x')) {
+        btn24x.classList.remove('v2-hidden');
+    }
+    if (parcelasPermitidasCache.includes('36x')) {
+        btn36x.classList.remove('v2-hidden');
+    }
+    
+    // 4. Agora, calcula o valor inicial
+    // (A variável 'financiado' já foi definida pelo 'updateFinanceiro('init')')
+    atualizarValoresParcelas(financiado);
+  }
+
+  // ===============================================
+  // FIM DA LÓGICA DE PARCELAS
+  // ===============================================
+
 
   // --- Listeners: Gatilhos de Evento ---
   rTotal.addEventListener('input', () => updateFinanceiro('total'));
   rEntrada.addEventListener('input', () => updateFinanceiro('entrada'));
 
-  // Liga os Spans (se a função existir)
+  // Liga os Spans
   if (typeof attachEditableMoneySpan === 'function') {
-      
-      // !! MUDANÇA AQUI !!
-      // Não passamos opções, para que use os DEFAULTS (R$ e 2 decimais)
-      
       attachEditableMoneySpan(sTotal, (novoTotal) => {
           rTotal.value = novoTotal; 
           updateFinanceiro('span-total'); 
-      }); // <-- SEM OPÇÕES
+      }, { showCurrency: false, fractionDigits: 2 });
       
       attachEditableMoneySpan(sEntrada, (novaEntrada) => {
           rEntrada.value = novaEntrada; 
           updateFinanceiro('span-entrada'); 
-      }); // <-- SEM OPÇÕES
-      
+      }, { showCurrency: false, fractionDigits: 2 });
   } else {
       console.warn('Função attachEditableMoneySpan não encontrada.');
   }
 
   // --- Inicialização ---
   clampInitialValues(); 
-  updateFinanceiro('init'); 
+  updateFinanceiro('init'); // Roda 1x para definir os valores de 'total', 'entrada' e 'financiado'
+  
+  // !! MUDANÇA !!
+  // Chama a API Serasa (1x) e mostra os botões corretos
+  carregarParcelasDaAPI(); 
 }
-
 // Inicializa os sliders da V2 assim que este script carregar
 if (document.getElementById('v2-pagina-aprovado')) {
   initSimuladorV2();
