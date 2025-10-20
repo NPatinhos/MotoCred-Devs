@@ -294,26 +294,32 @@
                     <div>
                         <div class="v2-flex v2-flex-row v2-justify-between">
                             <label for="valor moto" class="v2-font-medium v2-text-sm"> Valor da moto:</label>
-                            <span id="valor-moto-num" class="v2-text-sm v2-font-medium v2-text-[#1D46CE]">R$ 0</span>
-                        </div>
-                        <input type="range" id="valor-moto" name="valor-moto" step="50" min="0" data-hard-min="8000" max="60000"
+                            <span class="v2-inline-flex v2-gap-1 v2-text-sm v2-font-medium v2-text-[#1D46CE]">
+                                <span>R$</span>
+                                <span id="valor-moto-num">0</span>
+                            </span>                        </div>
+                        <input type="range" id="valor-moto" name="valor-moto" step="50" min="0" data-hard-min="8000" max="60000" value="8000"
                             class="v2-range">
                     </div>
 
                     <div>
                         <div class="v2-flex v2-flex-row v2-justify-between">
                             <label for="valor entrada" class="v2-font-medium v2-text-sm"> Valor da entrada:</label>
-                            <span id="valor-entrada-num" class="v2-text-sm v2-font-medium v2-text-[#0CAD11]">R$ 0</span>
-                        </div>
-                        <input type="range" id="valor-entrada" name="valor-entrada" step="50" min="0" data-hard-min="4000" max="60000"
+                            <span class="v2-inline-flex v2-gap-1 v2-text-sm v2-font-medium v2-text-[#0CAD11]">
+                                <span>R$</span>
+                                <span id="valor-entrada-num">0</span>
+                            </span>                        </div>
+                        <input type="range" id="valor-entrada" name="valor-entrada" step="50" min="0" data-hard-min="4000" max="60000" value="4000"
                             class="v2-range">
                     </div>
 
                     <hr>
                     <div class="v2-flex v2-flex-row v2-justify-between">
                         <label for="valor financiado" class="v2-font-medium v2-text-sm"> Valor total financiado:</label>
-                        <span class="v2-text-sm v2-font-medium">R$ 0</span>
-
+                        <span class="v2-inline-flex v2-gap-1 v2-text-sm v2-font-medium">
+                            <span>R$</span>
+                            <span id="valor-financiado-num">0</span>
+                        </span>
                     </div>
 
                 </div>

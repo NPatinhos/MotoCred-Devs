@@ -1034,73 +1034,310 @@ function setSubmittingState(on, buttonText = null) {
     });
 
 
-const rangeMoto = document.getElementById('valor-moto');
-const valorMotoNum = document.getElementById('valor-moto-num');
 
-if (rangeMoto) {
-  const hardMin = +rangeMoto.dataset.hardMin || 0; // mínimo real (ex.: 8000)
-  const formatar = v => Number(v).toLocaleString('pt-BR', {
-    style: 'currency', currency: 'BRL', minimumFractionDigits: 0
-  });
+/*
+ * =================================================================
+ * LÓGICA DOS SLIDERS (v2-APROVADO)
+ * CORREÇÃO DE INICIALIZAÇÃO (v3)
+ * =================================================================
+ */
 
-  const atualizar = () => {
-    const max = +rangeMoto.max || 100;
-    let val = +rangeMoto.value || 0;
+/*
+ * =================================================================
+ * LÓGICA DOS SLIDERS (v2-APROVADO)
+ * CORREÇÃO DE PROPORÇÃO (v5)
+ *
+ * Esta versão NÃO altera o 'min' ou 'max' dos sliders,
+ * garantindo que a proporção visual seja sempre 0-60k.
+ * =================================================================
+ */
 
-    // 🔒 trava abaixo do mínimo real
-    if (val < hardMin) {
-      val = hardMin;
-      rangeMoto.value = hardMin;
-    }
+/*
+ * =================================================================
+ * FUNÇÃO UTILITÁRIA DE SPAN EDITÁVEL
+ * (Cole isto ANTES de initSimuladorV2)
+ * =================================================================
+ */
+function attachEditableMoneySpan(span, callback) {
+  if (!span) return;
 
-    // 🎨 min visual = 0 → já aparece preenchido no hardMin
-    const pct = (val / max) * 100;
-    rangeMoto.style.setProperty('--pct', pct + '%');
+  let digits = (span.textContent.match(/\d/g) || []).join('');
+  let blurTimeout = null;
 
-    // 🧾 número do topo (se houver)
-    if (valorMotoNum) valorMotoNum.textContent = formatar(val);
+  const formatBRL = (cents) => {
+    const value = cents / 100;
+    return (value || 0).toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
   };
 
-  // Travar também por teclado/mouse
-  rangeMoto.addEventListener('input', atualizar);
-  rangeMoto.addEventListener('change', atualizar);
-  atualizar(); // inicial
-}
-
-// === RANGE 2: Valor de entrada ===
-const rangeEntrada = document.getElementById('valor-entrada');
-const valorEntradaNum = document.getElementById('valor-entrada-num');
-
-if (rangeEntrada) {
-  const hardMin = +rangeEntrada.dataset.hardMin || 0; // mínimo real (ex.: 4000)
-  const formatar = v => Number(v).toLocaleString('pt-BR', {
-    style: 'currency', currency: 'BRL', minimumFractionDigits: 0
-  });
-
-  const atualizar = () => {
-    const max = +rangeEntrada.max || 100;
-    let val = +rangeEntrada.value || 0;
-
-    // 🔒 trava abaixo do mínimo real
-    if (val < hardMin) {
-      val = hardMin;
-      rangeEntrada.value = hardMin;
-    }
-
-    // 🎨 min visual = 0 → já aparece preenchido no hardMin
-    const pct = (val / max) * 100;
-    rangeEntrada.style.setProperty('--pct', pct + '%');
-
-    // 🧾 número do topo (se houver)
-    if (valorEntradaNum) valorEntradaNum.textContent = formatar(val);
+  const getNumberValue = () => {
+    return Math.max(0, Number(digits) / 100);
   };
 
-  rangeEntrada.addEventListener('input', atualizar);
-  rangeEntrada.addEventListener('change', atualizar);
-  atualizar(); // inicial
+  const render = () => {
+    const cents = Number(digits) || 0;
+    span.textContent = formatBRL(cents);
+  };
+
+  span.setAttribute('contenteditable', 'true');
+  span.style.cursor = 'text';
+
+  // Remove o cursor de texto quando não está focado
+  span.addEventListener('focus', () => {
+    span.style.outline = '2px solid #1D46CE'; // Um outline para sabermos que está ativo
+    span.style.borderRadius = '4px';
+    // Seleciona o texto ao focar para digitação rápida
+    setTimeout(() => {
+      const selection = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(span);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }, 10);
+    
+    // Cancela o 'blur' se clicarmos de volta
+    clearTimeout(blurTimeout);
+  });
+
+  span.addEventListener('blur', () => {
+    // Adiciona um pequeno delay. Se o 'focus' for ativado,
+    // este blur será cancelado.
+    blurTimeout = setTimeout(() => {
+      span.style.outline = 'none';
+      span.removeAttribute('style'); // Limpa o style inline
+      span.style.cursor = 'text'; // Mantém o cursor de texto
+      // Executa o callback com o valor numérico final
+      if (callback) {
+        callback(getNumberValue());
+      }
+    }, 100); // 100ms de delay
+  });
+
+  span.addEventListener('keydown', (e) => {
+    // Permite Backspace, Delete, Tab, Esc, Enter, setas
+    if ([8, 46, 9, 27, 13, 37, 38, 39, 40].includes(e.keyCode)) {
+      if (e.keyCode === 13) { // Enter
+        e.preventDefault(); // Evita nova linha
+        span.blur(); // Trata como um "blur"
+      }
+      return;
+    }
+
+    // Só permite números
+    if (e.key.length === 1 && !/\d/.test(e.key)) {
+      e.preventDefault();
+      return;
+    }
+
+    // Se começar a digitar, limpa o valor atual
+    if (!span.dataset.typing) {
+      digits = '';
+      span.dataset.typing = 'true';
+    }
+  });
+
+  span.addEventListener('keyup', (e) => {
+    // Atualiza os dígitos
+    if (/\d/.test(e.key)) {
+      digits += e.key;
+    }
+    if (e.keyCode === 8 || e.keyCode === 46) { // Backspace/Delete
+      digits = digits.slice(0, -1);
+    }
+
+    // Remove a flag de digitação se limparmos tudo
+    if (digits.length === 0) {
+      delete span.dataset.typing;
+    }
+    
+    // Renderiza o valor formatado
+    render();
+  });
+
+  // API externa pra setar valor por número
+  span.setNumberValue = (num) => {
+    const cents = Math.max(0, Math.round(Number(num || 0) * 100));
+    digits = String(cents);
+    delete span.dataset.typing; // Reseta a flag de digitação
+    render();
+  };
+
+  // API externa para ler o valor
+  span.getNumberValue = getNumberValue;
+
+  // inicial
+  render();
+}
+// =================================================================
+// FIM DA FUNÇÃO
+// =================================================================
+
+
+function initSimuladorV2() {
+  // 1. Encontra os elementos na tela
+  const rTotal = document.getElementById('valor-moto');
+  const sTotal = document.getElementById('valor-moto-num');
+  const rEntrada = document.getElementById('valor-entrada');
+  const sEntrada = document.getElementById('valor-entrada-num');
+  const sFin = document.getElementById('valor-financiado-num');
+
+  // Se não encontrar os sliders, não faz nada (fail-safe).
+  if (!rTotal || !rEntrada || !sFin || !sTotal || !sEntrada) {
+    console.warn('Elementos do Simulador V2 não encontrados. Abortando initSimuladorV2.');
+    return;
+  }
+
+  // --- Constantes e Limites ---
+  const HARD_MIN_TOTAL = Number(rTotal.dataset.hardMin || rTotal.min || 0);
+  const HARD_MIN_ENTRADA = Number(rEntrada.dataset.hardMin || rEntrada.min || 0);
+
+  // Limites VISUAIS (para cálculo de preenchimento)
+  // Ambos os sliders usarão a mesma escala (0 a 60000)
+  const VISUAL_MIN = Number(rTotal.min);
+  const VISUAL_MAX = Number(rTotal.max);
+
+  // --- REGRA PPA: O Teto do Financiamento ---
+  const totalPPA = Number(window.PPA?.total ?? rTotal.value);
+  const entradaPPA = Number(window.PPA?.entrada ?? rEntrada.value);
+
+  const financiadoInicialPPA = Math.max(0, totalPPA - entradaPPA);
+  const MAX_FINANCIADO_PERMITIDO = financiadoInicialPPA;
+
+  // --- Variáveis de Estado ---
+  let total = totalPPA;
+  let entrada = entradaPPA;
+
+  /**
+   * Garante que os valores iniciais (PPA) respeitem os mínimos da página atual.
+   */
+  function clampInitialValues() {
+    total = Math.max(total, HARD_MIN_TOTAL);
+    entrada = Math.max(entrada, HARD_MIN_ENTRADA);
+    if (entrada > total) {
+      entrada = total;
+    }
+  }
+
+  /**
+   * Função Cérebro: Aplica todas as regras de negócio em ordem.
+   */
+  function updateFinanceiro(source) {
+    // 1. Lê os valores atuais (dos sliders)
+    if (source === 'total' || source === 'span-total') {
+      total = Number(rTotal.value);
+    } else if (source === 'entrada' || source === 'span-entrada') {
+      entrada = Number(rEntrada.value);
+    }
+
+    // 2. REGRA 0: Garante os limites mínimos (Hard Mins)
+    total = Math.max(total, HARD_MIN_TOTAL);
+    entrada = Math.max(entrada, HARD_MIN_ENTRADA);
+
+    // 3. REGRA 1: "Entrada nunca pode ser maior que o total"
+    if (source === 'total' || source === 'span-total') {
+      // Usuário arrastou o TOTAL
+      if (total < entrada) {
+        entrada = total; // Entrada segue o total para baixo
+      }
+    } else if (source === 'entrada' || source === 'span-entrada') {
+      // Usuário arrastou a ENTRADA
+      if (entrada > total) {
+        entrada = total; // Entrada é travada no valor do total
+      }
+    }
+
+    // 4. REGRA 2: "Financiado nunca pode aumentar" (Trava da PPA)
+    let financiado = total - entrada;
+
+    if (financiado > MAX_FINANCIADO_PERMITIDO) {
+      // O teto foi excedido! Corrigimos o valor que *não* foi movido.
+      if (source === 'total' || source === 'span-total') {
+        // Se o 'total' aumentou, a 'entrada' deve aumentar junto.
+        entrada = total - MAX_FINANCIADO_PERMITIDO;
+      } else {
+        // Se a 'entrada' diminuiu (ou foi 'init'/'span-entrada'), o 'total' deve diminuir junto.
+        total = entrada + MAX_FINANCIADO_PERMITIDO;
+      }
+    }
+    
+    // 5. RE-VALIDAÇÃO (Garante que a Regra 2 não quebrou os Mins)
+    total = Math.max(total, HARD_MIN_TOTAL);
+    entrada = Math.max(entrada, HARD_MIN_ENTRADA);
+    if (entrada > total) {
+        entrada = total;
+    }
+
+    // 6. RECALCULA o financiado final (após todas as correções)
+    financiado = Math.max(0, total - entrada);
+
+    // 7. Chama a UI para atualizar a tela
+    updateUI(total, entrada, financiado);
+  }
+
+  /**
+   * Função Visual: Atualiza a Tela (Sliders, Spans, Cores)
+   */
+  function updateUI(total, entrada, financiado) {
+    // !! IMPORTANTE !!
+    // NÃO mudamos rEntrada.max ou rTotal.min
+    // Apenas atualizamos os VALORES.
+    rTotal.value = total;
+    rEntrada.value = entrada;
+
+    // Atualiza os textos (Spans)
+    const formatBRL = (num) => (num || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 });
+
+    if (sTotal?.setNumberValue) sTotal.setNumberValue(total);
+    else if (sTotal) sTotal.textContent = formatBRL(total);
+
+    if (sEntrada?.setNumberValue) sEntrada.setNumberValue(entrada);
+    else if (sEntrada) sEntrada.textContent = formatBRL(entrada);
+    
+    if (sFin?.setNumberValue) sFin.setNumberValue(financiado);
+    else if (sFin) sFin.textContent = formatBRL(financiado);
+    
+    // Atualiza o preenchimento (CSS custom properties)
+    // Ambos usam a MESMA escala (VISUAL_MIN e VISUAL_MAX)
+    const range = VISUAL_MAX - VISUAL_MIN;
+    
+    const totalPct = (total - VISUAL_MIN) / range || 0;
+    rTotal.style.setProperty('--pct', (totalPct * 100) + '%');
+    
+    const entradaPct = (entrada - VISUAL_MIN) / range || 0;
+    rEntrada.style.setProperty('--pct', (entradaPct * 100) + '%');
+  }
+
+  // --- Listeners: Gatilhos de Evento ---
+  rTotal.addEventListener('input', () => updateFinanceiro('total'));
+  rEntrada.addEventListener('input', () => updateFinanceiro('entrada'));
+
+  // Liga os Spans (se a função existir)
+  if (typeof attachEditableMoneySpan === 'function') {
+      attachEditableMoneySpan(sTotal, (novoTotal) => {
+          rTotal.value = novoTotal; // Atualiza o range
+          updateFinanceiro('span-total'); // Roda a lógica de regras
+      });
+      attachEditableMoneySpan(sEntrada, (novaEntrada) => {
+          rEntrada.value = novaEntrada; // Atualiza o range
+          updateFinanceiro('span-entrada'); // Roda a lógica de regras
+      });
+  } else {
+      console.warn('Função attachEditableMoneySpan não encontrada.');
+  }
+
+  // --- Inicialização ---
+  clampInitialValues(); // Garante que os valores iniciais estão corretos
+  updateFinanceiro('init'); // Roda a lógica e atualiza a UI
 }
 
-
+// Inicializa os sliders da V2 assim que este script carregar
+if (document.getElementById('v2-pagina-aprovado')) {
+  initSimuladorV2();
+}
 
 
 
