@@ -18,14 +18,10 @@
 }
 
 function openV2AsPage(sectionId) {
-  // entra no "modo V2", mas como página
   document.body.classList.add('v2-mode');
-
-  // esconde o card (formulário V1)
   const mainCard = document.querySelector('.card');
   if (mainCard) mainCard.style.display = 'none';
 
-  // esconde outras telas V2
   ['v2-pagina-negado', 'v2-pagina-aprovado'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -33,22 +29,18 @@ function openV2AsPage(sectionId) {
     el.classList.remove('v2-flex');
   });
 
-  // mostra a tela alvo como CONTEÚDO DE PÁGINA (sem position: fixed)
   const target = document.getElementById(sectionId);
   if (target) {
-    // remove classes de overlay
-    target.classList.remove('v2-fixed', 'v2-inset-0', 'v2-overflow-auto', 'v2-z-50');
-    // garante que esteja visível no fluxo
+    target.classList.remove('v2-fixed','v2-inset-0','v2-overflow-auto','v2-z-50');
     target.classList.remove('v2-hidden');
-    target.classList.add('v2-block');
 
-    // opcional: centralização vertical não é necessária como página
-    target.classList.remove('v2-items-center', 'v2-justify-center', 'v2-min-h-screen');
-
-    // começa do topo
-    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    // ✅ continua usando flex + centralização
+    target.classList.add('v2-flex','v2-items-center','v2-justify-center','v2-min-h-screen');
+    // (remova a linha que trocava para v2-block)
+    // target.classList.add('v2-block');  // ❌ não usar
   }
 }
+
 
 window.addEventListener('DOMContentLoaded', () => {
   // Abre a tela de aprovado como página (fluxo normal, sem overlay)
@@ -1227,6 +1219,35 @@ function initSimuladorV2() {
   const btn12x = document.getElementById('btn-parcela-12x');
   const btn24x = document.getElementById('btn-parcela-24x');
   const btn36x = document.getElementById('btn-parcela-36x');
+
+  // Seleção simples de parcelas (1 único lugar)
+const botoesParcelas = [btn12x, btn24x, btn36x].filter(Boolean);
+let parcelaSelecionada = null; // se quiser usar depois no submit
+
+botoesParcelas.forEach(btn => {
+  btn.addEventListener('click', () => {
+    // visual: só 1 ativo
+    botoesParcelas.forEach(b => b.setAttribute('aria-pressed', 'false'));
+    btn.setAttribute('aria-pressed', 'true');
+
+    // guarda seleção (ex.: "btn-parcela-24x" ou só "24")
+    parcelaSelecionada = btn.id;
+    // Se quiser popular um hidden:
+     const hidden = document.getElementById('parcelas-escolhida');
+     if (hidden) hidden.value = btn.id.replace('btn-parcela-','').replace('x','');
+  });
+
+  // acessibilidade via teclado
+  btn.addEventListener('keydown', (e) => {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      btn.click();
+    }
+  });
+
+  if (!btn.hasAttribute('tabindex')) btn.tabIndex = 0;
+});
+
   
   // ===============================================
   // !! MODO DE TESTE DE PARCELAS (API SERASA) !!
@@ -1473,7 +1494,6 @@ function initSimuladorV2() {
 if (document.getElementById('v2-pagina-aprovado')) {
   initSimuladorV2();
 }
-
 
 
 
