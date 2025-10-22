@@ -467,12 +467,15 @@ input.v2-range::-webkit-slider-runnable-track {
 }
 input.v2-range::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 18px; height: 18px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: #000;
-  border: none;
-  margin-top: -5px; /* centraliza (track 7px, thumb 18px) */
-  box-shadow: 0 1px 3px rgba(0,0,0,.25);
+  /* MUDANÇAS: Cor e Borda */
+  background: white; 
+  border: 2px solid #000; 
+  /* FIM MUDANÇAS */
+  margin-top: -6px; /* Ajustado para centralizar com a borda de 2px */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
 /* Firefox */
@@ -487,11 +490,14 @@ input.v2-range::-moz-range-progress {
   background: #000;
 }
 input.v2-range::-moz-range-thumb {
-  width: 18px; height: 18px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: #000;
-  border: none;
-  box-shadow: 0 1px 3px rgba(0,0,0,.25);
+  /* MUDANÇAS: Cor e Borda */
+  background: white; 
+  border: 2px solid #000; 
+  /* FIM MUDANÇAS */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
 /* (Opcional) Especificidade máxima por id */

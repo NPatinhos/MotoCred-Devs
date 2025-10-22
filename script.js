@@ -42,12 +42,12 @@ function openV2AsPage(sectionId) {
 }
 
 //MODO DEV
-
+/*
 window.addEventListener('DOMContentLoaded', () => {
   // Abre a tela de aprovado como página (fluxo normal, sem overlay)
   openV2AsPage('v2-pagina-aprovado');
 });
-
+*/
 
 
 
