@@ -328,31 +328,39 @@
                     <!--PARCELAS-->
                     <div class="v2-w-full v2-flex md:v2-flex-row v2-gap-2 justify-center v2-flex-col v2-pl-6 v2-pr-6 md:v2-p-0">
 
-                        <button id="btn-parcela-12x" data-prazo="12" type="button" aria-pressed="false"
+                            <button id="btn-parcela-12x" data-prazo="12" type="button" aria-pressed="false"
                                 class="v2-group
                                         v2-bg-[#D9D9D9] v2-p-4 v2-rounded-[10px] v2-flex-1 md:v2-max-w-[202px]
                                         v2-w-full
                                         v2-transition-all v2-duration-300 v2-ease-in-out
                                         hover:v2-bg-[#F2600B] hover:v2-scale-105
-                                        aria-pressed:v2-bg-[#F2600B] aria-pressed:v2-scale-105">
+                                        aria-pressed:v2-bg-[#F2600B] aria-pressed:v2-scale-105
+                                        v2-pl-6 v2-pr-6
+                                        
+                                        v2-flex v2-flex-row v2-justify-between v2-items-baseline
+                                        md:v2-flex-col md:v2-justify-center md:v2-items-center ">
 
-                                <span class="v2-font-semibold v2-text-4xl v2-transition-all v2-duration-300
-                                            group-hover:v2-text-white
-                                            group-aria-pressed:v2-text-white">12x</span>
+                                <div class="v2-flex v2-flex-row v2-items-baseline v2-items-end md:v2-flex-col md:v2-items-center ">
+                                    <span class="v2-font-semibold v2-text-4xl v2-transition-all v2-duration-300
+                                                group-hover:v2-text-white
+                                                group-aria-pressed:v2-text-white">12x</span>
 
-                                <span class="v2-hidden md:v2-block"></span>
+                                    <span class="v2-hidden md:v2-block"></span> <!-- <br> ocorrendo somente em desktop -->
+                                    <span class="v2-inline md:v2-hidden">&nbsp;</span> <!-- &nbsp; ocorrendo somente em desktop -->
 
-                                <span class="v2-text-xs v2-text-black/50 v2-transition-all v2-duration-300
-                                            group-hover:v2-text-white
-                                            group-aria-pressed:v2-text-white">meses</span>
+                                    <span class="v2-text-xs v2-text-black/50 v2-transition-all v2-duration-300
+                                                group-hover:v2-text-white
+                                                group-aria-pressed:v2-text-white">meses</span>
 
-                                <span class="v2-hidden md:v2-block"></span>
+                                    <span class="v2-hidden md:v2-block"></span>
+                                </div>
 
-                                <span class="valor-parcela v2-font-medium v2-text-xl v2-text-[#F2600B]
-                                            v2-transition-all v2-duration-300
-                                            group-hover:v2-text-white
-                                            group-aria-pressed:v2-text-white">R$00,00</span>
-                                </button>
+                                    <span class="valor-parcela v2-font-medium v2-text-xl v2-text-[#F2600B]
+                                                v2-transition-all v2-duration-300
+                                                group-hover:v2-text-white
+                                                group-aria-pressed:v2-text-white md:v2-mt-2">R$00,00</span>
+                                
+                            </button>
 
                             <button id="btn-parcela-24x" data-prazo="24" type="button" aria-pressed="false"
                                 class="v2-group
@@ -360,24 +368,32 @@
                                         v2-w-full
                                         v2-transition-all v2-duration-300 v2-ease-in-out
                                         hover:v2-bg-[#F2600B] hover:v2-scale-105
-                                        aria-pressed:v2-bg-[#F2600B] aria-pressed:v2-scale-105">
+                                        aria-pressed:v2-bg-[#F2600B] aria-pressed:v2-scale-105
+                                        v2-pl-6 v2-pr-6
+                                        
+                                        v2-flex v2-flex-row v2-justify-between v2-items-baseline
+                                        md:v2-flex-col md:v2-justify-center md:v2-items-center ">
 
-                                <span class="v2-font-semibold v2-text-4xl v2-transition-all v2-duration-300
-                                            group-hover:v2-text-white
-                                            group-aria-pressed:v2-text-white">24x</span>
+                                <div class="v2-flex v2-flex-row v2-items-baseline v2-items-end md:v2-flex-col md:v2-items-center ">
+                                    <span class="v2-font-semibold v2-text-4xl v2-transition-all v2-duration-300
+                                                group-hover:v2-text-white
+                                                group-aria-pressed:v2-text-white">24x</span>
+
+                                    <span class="v2-hidden md:v2-block"></span> <!-- <br> ocorrendo somente em desktop -->
+                                    <span class="v2-inline md:v2-hidden">&nbsp;</span> <!-- &nbsp; ocorrendo somente em desktop -->
+
+                                    <span class="v2-text-xs v2-text-black/50 v2-transition-all v2-duration-300
+                                                group-hover:v2-text-white
+                                                group-aria-pressed:v2-text-white">meses</span>
+
+                                    <span class="v2-hidden md:v2-block"></span>
+                                </div>
+
+                                    <span class="valor-parcela v2-font-medium v2-text-xl v2-text-[#F2600B]
+                                                v2-transition-all v2-duration-300
+                                                group-hover:v2-text-white
+                                                group-aria-pressed:v2-text-white md:v2-mt-2">R$00,00</span>
                                 
-                                <span class="v2-hidden md:v2-block"></span>
-
-                                <span class="v2-text-xs v2-text-black/50 v2-transition-all v2-duration-300
-                                            group-hover:v2-text-white
-                                            group-aria-pressed:v2-text-white">meses</span>
-
-                                <span class="v2-hidden md:v2-block"></span>
-
-                                <span class="valor-parcela v2-font-medium v2-text-xl v2-text-[#F2600B]
-                                            v2-transition-all v2-duration-300
-                                            group-hover:v2-text-white
-                                            group-aria-pressed:v2-text-white">R$00,00</span>
                             </button>
 
                             <button id="btn-parcela-36x" data-prazo="36" type="button" aria-pressed="false"
