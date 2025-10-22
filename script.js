@@ -41,25 +41,60 @@ function openV2AsPage(sectionId) {
   }
 }
 
-
+//MODO DEV
+/*
 window.addEventListener('DOMContentLoaded', () => {
   // Abre a tela de aprovado como página (fluxo normal, sem overlay)
-  openV2AsPage('v2-pagina-aprovado');
+  openV2AsPage('v2-pagina-negado');
 });
-
-
-
-
-//TESTANDO TELAS DE SIMULAÇÃO NEGATIVADA
-    // 🔹 Mostra a tela de simulação negada ao abrir a página (modo dev)
-// MODO DEV: escolha qual página abrir ao carregar
-    /*window.addEventListener('DOMContentLoaded', () => {
-        showV2Overlay('v2-pagina-aprovado'); // ou 'v2-pagina-aprovado'
-    });*/
+*/
 
 
 
 (function () {
+    console.log('[PPA] Script carregado. Versão:', new Date().toISOString());
+
+    function loadPPA() {
+        try {
+            const p = JSON.parse(localStorage.getItem('ppa'));
+            if (p && Number.isFinite(p.total) && Number.isFinite(p.entrada)) {
+                window.PPA = { 
+                    total: Number(p.total), 
+                    entrada: Number(p.entrada), 
+                    financiado: Math.max(0, Number(p.total) - Number(p.entrada))
+                };
+            }
+        } catch {}
+    }
+
+    function setInitialPPA(total, entrada) {
+  const t = Number(total) || 0;
+  const e = Number(entrada) || 0;
+  const f = Math.max(0, t - e);
+  window.PPA = { total: t, entrada: e, financiado: f };
+  console.log('[PPA] setInitialPPA →', window.PPA);
+  try { localStorage.setItem('ppa', JSON.stringify(window.PPA)); } catch (err) {
+    console.warn('[PPA] Erro ao salvar localStorage', err);
+  }
+  window.dispatchEvent(new CustomEvent('ppa:changed', { detail: window.PPA }));
+}
+
+function loadPPA() {
+  try {
+    const p = JSON.parse(localStorage.getItem('ppa'));
+    console.log('[PPA] loadPPA →', p);
+    if (p && Number.isFinite(p.total) && Number.isFinite(p.entrada)) {
+      window.PPA = {
+        total: Number(p.total),
+        entrada: Number(p.entrada),
+        financiado: Math.max(0, Number(p.total) - Number(p.entrada))
+      };
+    }
+  } catch (err) {
+    console.warn('[PPA] Erro ao ler localStorage', err);
+  }
+}
+
 
     // 1️⃣  Pega o formulário
     const form = document.getElementById('formCadastro');
@@ -101,7 +136,7 @@ function setSubmittingState(on, buttonText = null) {
 
 
   // 2️⃣  Config: coloque aqui sua URL do Apps Script
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz230px12xx6GJ7PX9DocFtO62xI9dLogqM7c-wuouS5UcZWphCbtSGLISvm_hqcogSCg/exec";
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw6PqzZUg7oD9dH9CjxN8ZqhBT00r7kwf_cGW0H8Ag2yMSkVUqvBbw-1Ng8eZ4OY4SocA/exec";
 
   // 3️⃣  Função que monta o JSON com os dados
 
@@ -977,6 +1012,38 @@ function setSubmittingState(on, buttonText = null) {
     attachBRLMoneyMask(document.getElementById('valor_entrada'));
     attachBRLMoneyMask(document.getElementById('renda_mensal'));
 
+    // === Sobe os valores da 1ª parte para o PPA global ===
+const vmEl = document.getElementById('valor_moto');
+const veEl = document.getElementById('valor_entrada');
+
+const commitPPA = () => {
+  const vm = numFromInput(vmEl);
+  const ve = numFromInput(veEl);
+  if (Number.isFinite(vm) && Number.isFinite(ve) && vm > 0 && ve >= 0 && ve <= vm) {
+    console.log('[PPA] commitPPA: valorMoto=', vm, 'entrada=', ve);
+    setInitialPPA(vm, ve);
+  }
+};
+
+// na carga, tenta usar o que já tiver no localStorage…
+loadPPA();
+// …mas, se já houver valores digitados na Etapa 4, eles prevalecem
+commitPPA();
+
+vmEl?.addEventListener('input', () => {
+  console.log('[PPA] valorMoto alterado →', vmEl.value);
+  commitPPA();
+});
+veEl?.addEventListener('input', () => {
+  console.log('[PPA] entrada alterada →', veEl.value);
+  commitPPA();
+});
+
+// manter o PPA atualizado enquanto o usuário edita
+vmEl?.addEventListener('input', commitPPA);
+veEl?.addEventListener('input', commitPPA);
+
+
 // Substitua todo o seu bloco addEventListener por este:
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -989,9 +1056,10 @@ function setSubmittingState(on, buttonText = null) {
         feedbackArea.innerHTML = '';
 
         // Coleta os valores numéricos uma única vez no início
-        const valorMoto = cleanAndParse(document.getElementById('valor_moto'));
-        const entrada = cleanAndParse(document.getElementById('valor_entrada'));
-        const renda = cleanAndParse(document.getElementById('renda_mensal'));
+        const valorMoto = numFromInput(document.getElementById('valor_moto'));
+        const entrada   = numFromInput(document.getElementById('valor_entrada'));
+        const renda     = numFromInput(document.getElementById('renda_mensal'));
+
 
         // Pequeno atraso para o usuário perceber a mudança no botão
         await new Promise(resolve => setTimeout(resolve, 300));
@@ -1050,7 +1118,8 @@ function setSubmittingState(on, buttonText = null) {
 
             if (result && result.ok) {
                 // Sucesso no envio abre a etapa de sucesso
-                showConfirmacao();
+                setInitialPPA(valorMoto, entrada);
+                openV2AsPage('v2-pagina-aprovado');
     
             } else {
                 // Falha no envio (erro retornado pelo servidor)
@@ -1209,6 +1278,24 @@ function attachEditableMoneySpan(span, callback, options = {}) {
  */
 
 function initSimuladorV2() {
+
+// se o usuário ajustar valores na Etapa 4 depois, a V2 atualiza em tempo real
+window.addEventListener('ppa:changed', (e) => {
+  const p = e.detail || window.PPA || {};
+  // força os novos valores como ponto de partida
+  total = Number(p.total) || total;
+  entrada = Number(p.entrada) || entrada;
+
+  // respeita o “teto” (max financiado permitido no primeiro cálculo)
+  const finInit = Math.max(0, total - entrada);
+  if (typeof MAX_FINANCIADO_PERMITIDO !== 'undefined' && finInit > MAX_FINANCIADO_PERMITIDO) {
+    // puxa 'total' ou 'entrada' para respeitar o teto
+    total = entrada + MAX_FINANCIADO_PERMITIDO;
+  }
+
+  updateFinanceiro('init');
+});
+
   // 1. Encontra os elementos na tela
   const rTotal = document.getElementById('valor-moto');
   const sTotal = document.getElementById('valor-moto-num'); 
