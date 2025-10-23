@@ -1,4 +1,100 @@
-﻿(function () {
+﻿function showV2Overlay(sectionId) {
+  document.body.classList.add('mode');
+  const mainCard = document.querySelector('.card');
+  if (mainCard) mainCard.style.display = 'none';
+
+  ['pagina-negado','pagina-aprovado'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.add('hidden');           // <- aqui
+    el.classList.remove('flex');
+  });
+
+  const target = document.getElementById(sectionId);
+  if (target) {
+    target.classList.remove('hidden');    // <- e aqui
+    target.classList.add('flex','items-center','justify-center','min-h-screen');
+  }
+}
+
+function openV2AsPage(sectionId) {
+  document.body.classList.add('mode');
+  const mainCard = document.querySelector('.card');
+  if (mainCard) mainCard.style.display = 'none';
+
+  ['pagina-negado', 'pagina-aprovado'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.add('hidden');
+    el.classList.remove('flex');
+  });
+
+  const target = document.getElementById(sectionId);
+  if (target) {
+    target.classList.remove('fixed','inset-0','overflow-auto','z-50');
+    target.classList.remove('hidden');
+
+    // ✅ continua usando flex + centralização
+    target.classList.add('flex','items-center','justify-center','min-h-screen');
+    // (remova a linha que trocava para block)
+    // target.classList.add('block');  // ❌ não usar
+  }
+}
+
+//MODO DEV
+/*
+window.addEventListener('DOMContentLoaded', () => {
+  // Abre a tela de aprovado como página (fluxo normal, sem overlay)
+  openV2AsPage('pagina-aprovado');
+});
+*/
+
+
+
+(function () {
+    console.log('[PPA] Script carregado. Versão:', new Date().toISOString());
+
+    function loadPPA() {
+        try {
+            const p = JSON.parse(localStorage.getItem('ppa'));
+            if (p && Number.isFinite(p.total) && Number.isFinite(p.entrada)) {
+                window.PPA = { 
+                    total: Number(p.total), 
+                    entrada: Number(p.entrada), 
+                    financiado: Math.max(0, Number(p.total) - Number(p.entrada))
+                };
+            }
+        } catch {}
+    }
+
+    function setInitialPPA(total, entrada) {
+  const t = Number(total) || 0;
+  const e = Number(entrada) || 0;
+  const f = Math.max(0, t - e);
+  window.PPA = { total: t, entrada: e, financiado: f };
+  console.log('[PPA] setInitialPPA →', window.PPA);
+  try { localStorage.setItem('ppa', JSON.stringify(window.PPA)); } catch (err) {
+    console.warn('[PPA] Erro ao salvar localStorage', err);
+  }
+  window.dispatchEvent(new CustomEvent('ppa:changed', { detail: window.PPA }));
+}
+
+function loadPPA() {
+  try {
+    const p = JSON.parse(localStorage.getItem('ppa'));
+    console.log('[PPA] loadPPA →', p);
+    if (p && Number.isFinite(p.total) && Number.isFinite(p.entrada)) {
+      window.PPA = {
+        total: Number(p.total),
+        entrada: Number(p.entrada),
+        financiado: Math.max(0, Number(p.total) - Number(p.entrada))
+      };
+    }
+  } catch (err) {
+    console.warn('[PPA] Erro ao ler localStorage', err);
+  }
+}
+
 
     // 1️⃣  Pega o formulário
     const form = document.getElementById('formCadastro');
@@ -40,7 +136,7 @@ function setSubmittingState(on, buttonText = null) {
 
 
   // 2️⃣  Config: coloque aqui sua URL do Apps Script
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz230px12xx6GJ7PX9DocFtO62xI9dLogqM7c-wuouS5UcZWphCbtSGLISvm_hqcogSCg/exec";
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw6PqzZUg7oD9dH9CjxN8ZqhBT00r7kwf_cGW0H8Ag2yMSkVUqvBbw-1Ng8eZ4OY4SocA/exec";
 
   // 3️⃣  Função que monta o JSON com os dados
 
@@ -916,6 +1012,38 @@ function setSubmittingState(on, buttonText = null) {
     attachBRLMoneyMask(document.getElementById('valor_entrada'));
     attachBRLMoneyMask(document.getElementById('renda_mensal'));
 
+    // === Sobe os valores da 1ª parte para o PPA global ===
+const vmEl = document.getElementById('valor_moto');
+const veEl = document.getElementById('valor_entrada');
+
+const commitPPA = () => {
+  const vm = numFromInput(vmEl);
+  const ve = numFromInput(veEl);
+  if (Number.isFinite(vm) && Number.isFinite(ve) && vm > 0 && ve >= 0 && ve <= vm) {
+    console.log('[PPA] commitPPA: valorMoto=', vm, 'entrada=', ve);
+    setInitialPPA(vm, ve);
+  }
+};
+
+// na carga, tenta usar o que já tiver no localStorage…
+loadPPA();
+// …mas, se já houver valores digitados na Etapa 4, eles prevalecem
+commitPPA();
+
+vmEl?.addEventListener('input', () => {
+  console.log('[PPA] valorMoto alterado →', vmEl.value);
+  commitPPA();
+});
+veEl?.addEventListener('input', () => {
+  console.log('[PPA] entrada alterada →', veEl.value);
+  commitPPA();
+});
+
+// manter o PPA atualizado enquanto o usuário edita
+vmEl?.addEventListener('input', commitPPA);
+veEl?.addEventListener('input', commitPPA);
+
+
 // Substitua todo o seu bloco addEventListener por este:
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -928,9 +1056,10 @@ function setSubmittingState(on, buttonText = null) {
         feedbackArea.innerHTML = '';
 
         // Coleta os valores numéricos uma única vez no início
-        const valorMoto = cleanAndParse(document.getElementById('valor_moto'));
-        const entrada = cleanAndParse(document.getElementById('valor_entrada'));
-        const renda = cleanAndParse(document.getElementById('renda_mensal'));
+        const valorMoto = numFromInput(document.getElementById('valor_moto'));
+        const entrada   = numFromInput(document.getElementById('valor_entrada'));
+        const renda     = numFromInput(document.getElementById('renda_mensal'));
+
 
         // Pequeno atraso para o usuário perceber a mudança no botão
         await new Promise(resolve => setTimeout(resolve, 300));
@@ -989,7 +1118,8 @@ function setSubmittingState(on, buttonText = null) {
 
             if (result && result.ok) {
                 // Sucesso no envio abre a etapa de sucesso
-                showConfirmacao();
+                setInitialPPA(valorMoto, entrada);
+                openV2AsPage('pagina-aprovado');
     
             } else {
                 // Falha no envio (erro retornado pelo servidor)
@@ -1003,6 +1133,455 @@ function setSubmittingState(on, buttonText = null) {
             setSubmittingState(false, 'Enviar');
         }
     });
+
+/*
+ * =================================================================
+ * FUNÇÃO UTILITÁRIA DE SPAN EDITÁVEL
+ * (VERSÃO OTIMIZADA: Lógica de REAIS + Formatação no "blur" para evitar "lag")
+ * =================================================================
+ */
+function attachEditableMoneySpan(span, callback, options = {}) {
+  if (!span) return;
+
+  // Configuração: Default é SEM R$ e COM 2 decimais (para Etapa 2)
+  const config = {
+    showCurrency: options.showCurrency ?? false,
+    fractionDigits: options.fractionDigits ?? 2
+  };
+
+  // 'digits' agora armazena a string de REAIS (ex: "8000")
+  let digits = (span.textContent.match(/\d/g) || []).join('');
+  let blurTimeout = null;
+
+  const formatBRL = (reaisString) => {
+    const value = Number(reaisString) || 0;
+    
+    const styleOptions = {
+        minimumFractionDigits: config.fractionDigits,
+        maximumFractionDigits: config.fractionDigits
+    };
+
+    if (config.showCurrency) {
+      return (value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', ...styleOptions });
+    } else {
+      return (value).toLocaleString('pt-BR', { style: 'decimal', ...styleOptions });
+    }
+  };
+
+  const getNumberValue = () => {
+    // Retorna o valor em REAIS
+    return Math.max(0, Number(digits)); 
+  };
+
+  const render = () => {
+    // Só formata se NÃO estiver focado
+    if (document.activeElement !== span) {
+        span.textContent = formatBRL(digits);
+    }
+  };
+  
+  const showRawDigits = () => {
+    // Mostra os dígitos puros (REAIS) para edição
+    span.textContent = (digits === '0' || digits === '') ? '' : digits;
+  }
+  
+  span.setAttribute('contenteditable', 'true');
+  span.style.cursor = 'text';
+  span.style.minWidth = '3ch'; 
+
+  span.addEventListener('focus', () => {
+    span.style.outline = '2px solid #1D46CE';
+    span.style.borderRadius = '4px';
+    span.style.paddingLeft = '4px';
+    span.style.paddingRight = '4px';
+    
+    // !! OTIMIZAÇÃO !!
+    // Mostra os dígitos puros (ex: "8000")
+    showRawDigits(); 
+    
+    setTimeout(() => {
+      const selection = window.getSelection();
+      const range = document.createRange();
+      if(span.firstChild) range.selectNodeContents(span);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }, 10);
+    
+    clearTimeout(blurTimeout);
+  });
+
+  span.addEventListener('blur', () => {
+    blurTimeout = setTimeout(() => {
+      span.style.outline = 'none';
+      span.removeAttribute('style'); 
+      span.style.cursor = 'text'; 
+      span.style.minWidth = '3ch';
+      
+      // !! OTIMIZAÇÃO !!
+      // Lê os dígitos puros (REAIS) que o usuário deixou no span
+      let newDigits = (span.textContent.match(/\d/g) || []).join('');
+      if (newDigits.length === 0) newDigits = '0';
+      digits = newDigits; // Atualiza o valor de 'Reais'
+      
+      render(); // Formata (ex: "8000,00")
+      
+      if (callback) {
+        callback(getNumberValue()); // Envia o valor em REAIS (ex: 8000)
+      }
+    }, 100); 
+  });
+
+  span.addEventListener('keydown', (e) => {
+    // Permite teclas de controle
+    if ([8, 46, 9, 27, 13, 37, 38, 39, 40].includes(e.keyCode)) {
+      if (e.keyCode === 13) { // Enter
+        e.preventDefault(); 
+        span.blur(); 
+      }
+      return;
+    }
+    // Só permite números
+    if (e.key.length === 1 && !/\d/.test(e.key)) {
+      e.preventDefault();
+      return;
+    }
+  });
+
+  // (Removemos o 'keyup' pois ele era a causa do "lag")
+
+
+  // API externa pra setar valor por número
+  span.setNumberValue = (num) => {
+    // 'num' é REAIS (ex: 8000)
+    digits = String(Math.round(Number(num || 0)));
+    render(); 
+  };
+
+  span.getNumberValue = getNumberValue;
+
+  // inicial
+  // Na carga, o texto (ex: "8000") é REAIS.
+  const initialValue = (span.textContent.match(/\d/g) || []).join('');
+  if (initialValue) {
+      span.setNumberValue(initialValue);
+  } else {
+      span.setNumberValue(0);
+  }
+}
+
+
+/*
+ * =================================================================
+ * LÓGICA DOS SLIDERS (APROVADO)
+ * (VERSÃO FINAL: API Serasa 1x, API Valores a cada movimento)
+ * =================================================================
+ */
+
+function initSimuladorV2() {
+
+// se o usuário ajustar valores na Etapa 4 depois, a V2 atualiza em tempo real
+window.addEventListener('ppa:changed', (e) => {
+  const p = e.detail || window.PPA || {};
+  // força os novos valores como ponto de partida
+  total = Number(p.total) || total;
+  entrada = Number(p.entrada) || entrada;
+
+  // respeita o “teto” (max financiado permitido no primeiro cálculo)
+  const finInit = Math.max(0, total - entrada);
+  if (typeof MAX_FINANCIADO_PERMITIDO !== 'undefined' && finInit > MAX_FINANCIADO_PERMITIDO) {
+    // puxa 'total' ou 'entrada' para respeitar o teto
+    total = entrada + MAX_FINANCIADO_PERMITIDO;
+  }
+
+  updateFinanceiro('init');
+});
+
+  // 1. Encontra os elementos na tela
+  const rTotal = document.getElementById('valor-moto');
+  const sTotal = document.getElementById('valor-moto-num'); 
+  const rEntrada = document.getElementById('valor-entrada');
+  const sEntrada = document.getElementById('valor-entrada-num'); 
+  const sFin = document.getElementById('valor-financiado-num'); 
+
+  const btn12x = document.getElementById('btn-parcela-12x');
+  const btn24x = document.getElementById('btn-parcela-24x');
+  const btn36x = document.getElementById('btn-parcela-36x');
+
+  // Seleção simples de parcelas (1 único lugar)
+const botoesParcelas = [btn12x, btn24x, btn36x].filter(Boolean);
+let parcelaSelecionada = null; // se quiser usar depois no submit
+
+botoesParcelas.forEach(btn => {
+  btn.addEventListener('click', () => {
+    // visual: só 1 ativo
+    botoesParcelas.forEach(b => b.setAttribute('aria-pressed', 'false'));
+    btn.setAttribute('aria-pressed', 'true');
+
+    // guarda seleção (ex.: "btn-parcela-24x" ou só "24")
+    parcelaSelecionada = btn.id;
+    // Se quiser popular um hidden:
+     const hidden = document.getElementById('parcelas-escolhida');
+     if (hidden) hidden.value = btn.id.replace('btn-parcela-','').replace('x','');
+  });
+
+  // acessibilidade via teclado
+  btn.addEventListener('keydown', (e) => {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      btn.click();
+    }
+  });
+
+  if (!btn.hasAttribute('tabindex')) btn.tabIndex = 0;
+});
+
+  
+  // ===============================================
+  // !! MODO DE TESTE DE PARCELAS (API SERASA) !!
+  // (0 = Aleatório)
+  // (1 = Mostrar só 36x)
+  // (2 = Mostrar 24x e 36x)
+  // (3 = Mostrar 12x, 24x e 36x)
+  const CASO_TESTE = 0; // <-- MUDE AQUI PARA TESTAR (1, 2, 3 ou 0)
+  // ===============================================
+  
+  // !! NOVO: Cache das parcelas permitidas !!
+  // Guardamos aqui as parcelas que a API Serasa permitiu.
+  let parcelasPermitidasCache = [];
+
+  // Se não encontrar os sliders, não faz nada (fail-safe).
+  if (!rTotal || !rEntrada || !sFin || !sTotal || !sEntrada || !btn12x) {
+    console.warn('Elementos do Simulador V2 não encontrados. Abortando initSimuladorV2.');
+    return;
+  }
+
+  // --- Constantes e Limites ---
+  const HARD_MIN_TOTAL = Number(rTotal.dataset.hardMin || rTotal.min || 0);
+  const HARD_MIN_ENTRADA = Number(rEntrada.dataset.hardMin || rEntrada.min || 0);
+  const VISUAL_MIN = Number(rTotal.min);
+  const VISUAL_MAX = Number(rTotal.max);
+
+  // --- REGRA PPA: O Teto do Financiamento ---
+  const totalPPA = Number(window.PPA?.total ?? rTotal.value);
+  const entradaPPA = Number(window.PPA?.entrada ?? rEntrada.value);
+  const financiadoInicialPPA = Math.max(0, totalPPA - entradaPPA);
+  const MAX_FINANCIADO_PERMITIDO = financiadoInicialPPA;
+
+  // --- Variáveis de Estado ---
+  let total = totalPPA;
+  let entrada = entradaPPA;
+  let financiado = 0; // Será definido na inicialização
+
+  // Helper de formatação (Sem R$, com 2 decimais)
+  const formatBRL = (num) => (num || 0).toLocaleString('pt-BR', { style: 'decimal', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+
+  /**
+   * Garante que os valores iniciais (PPA) respeitem os mínimos da página atual.
+   */
+  function clampInitialValues() {
+    total = Math.max(total, HARD_MIN_TOTAL);
+    entrada = Math.max(entrada, HARD_MIN_ENTRADA);
+    if (entrada > total) {
+      entrada = total;
+    }
+  }
+
+  /**
+   * Função Cérebro: Aplica todas as regras de negócio em ordem.
+   */
+  function updateFinanceiro(source) {
+    // 1. Lê os valores atuais (dos sliders)
+    if (source === 'total') {
+      total = Number(rTotal.value);
+    } else if (source === 'entrada') {
+      entrada = Number(rEntrada.value);
+    } 
+    else if (source === 'span-total') {
+       total = Number(rTotal.value);
+    } else if (source === 'span-entrada') {
+       entrada = Number(rEntrada.value);
+    }
+
+    // 2. REGRAS (Hard Mins, Entrada <= Total)
+    total = Math.max(total, HARD_MIN_TOTAL);
+    entrada = Math.max(entrada, HARD_MIN_ENTRADA);
+    if (entrada > total) {
+        entrada = total;
+    }
+
+    // 3. REGRA 2: "Financiado nunca pode aumentar" (Trava da PPA)
+    let financiadoAtual = total - entrada;
+
+    if (financiadoAtual > MAX_FINANCIADO_PERMITIDO) {
+      if (source === 'total' || source === 'span-total') {
+        entrada = total - MAX_FINANCIADO_PERMITIDO;
+      } else {
+        total = entrada + MAX_FINANCIADO_PERMITIDO;
+      }
+    }
+    
+    // 4. RE-VALIDAÇÃO
+    total = Math.max(total, HARD_MIN_TOTAL);
+    entrada = Math.max(entrada, HARD_MIN_ENTRADA);
+    if (entrada > total) {
+        entrada = total;
+    }
+
+    // 5. RECALCULA o financiado final
+    financiado = Math.max(0, total - entrada);
+
+    // 6. Chama a UI para atualizar a tela
+    updateUI(total, entrada, financiado);
+    
+    // !! MUDANÇA !!
+    // Apenas atualiza os valores (chamando a futura API de valores)
+    atualizarValoresParcelas(financiado);
+  }
+
+  /**
+   * Função Visual: Atualiza a Tela (Sliders, Spans, Cores)
+   */
+  function updateUI(total, entrada, financiado) {
+    rTotal.value = total;
+    rEntrada.value = entrada;
+    
+    if (sTotal?.setNumberValue) sTotal.setNumberValue(total);
+    else if (sTotal) sTotal.textContent = formatBRL(total);
+
+    if (sEntrada?.setNumberValue) sEntrada.setNumberValue(entrada);
+    else if (sEntrada) sEntrada.textContent = formatBRL(entrada);
+    
+    if (sFin) sFin.textContent = formatBRL(financiado);
+    
+    // Atualiza o preenchimento
+    const range = VISUAL_MAX - VISUAL_MIN;
+    const totalPct = (total - VISUAL_MIN) / range || 0;
+    rTotal.style.setProperty('--pct', (totalPct * 100) + '%');
+    const entradaPct = (entrada - VISUAL_MIN) / range || 0;
+    rEntrada.style.setProperty('--pct', (entradaPct * 100) + '%');
+  }
+
+
+  // ===============================================
+  // LÓGICA DE PARCELAS (CORRIGIDA)
+  // ===============================================
+
+  /**
+   * Simula a chamada à API do Serasa.
+   * (CORRIGIDO com as suas regras de teste)
+   */
+  async function simularAPISerasa() {
+    await new Promise(resolve => setTimeout(resolve, 100)); // Delay
+    
+    // Lógica de Teste (seguindo suas regras)
+    if (CASO_TESTE === 1) return ['36x'];
+    if (CASO_TESTE === 2) return ['24x', '36x'];
+    if (CASO_TESTE === 3) return ['12x', '24x', '36x'];
+
+    // Caso 0 (Aleatório)
+    const opcoesPossiveis = [
+        ['36x'],
+        ['24x', '36x'],
+        ['12x', '24x', '36x']
+    ];
+    // Escolhe aleatoriamente um dos 3 cenários
+    return opcoesPossiveis[Math.floor(Math.random() * 3)];
+  }
+
+  /**
+   * (NOVA FUNÇÃO)
+   * Apenas atualiza o R$ das parcelas (a futura API de valores).
+   * Esta é a função "leve" que o slider vai chamar.
+   */
+  function atualizarValoresParcelas(valorFinanciado) {
+    // (Esta função será chamada a cada movimento do slider)
+    // (No futuro, aqui é o local para chamar a API que CALCULA os valores)
+
+    // Por agora, apenas pomos um placeholder "calculando..."
+    const placeholderValor = "R$ --,--";
+
+    // 4. Atualiza os botões permitidos (lendo do Cache)
+    if (parcelasPermitidasCache.includes('12x')) {
+        const span = btn12x.querySelector('.valor-parcela');
+        if(span) span.textContent = placeholderValor;
+    }
+    
+    if (parcelasPermitidasCache.includes('24x')) {
+        const span = btn24x.querySelector('.valor-parcela');
+        if(span) span.textContent = placeholderValor;
+    }
+    
+    if (parcelasPermitidasCache.includes('36x')) {
+        const span = btn36x.querySelector('.valor-parcela');
+        if(span) span.textContent = placeholderValor;
+    }
+  }
+
+  /**
+   * (NOVA FUNÇÃO)
+   * Chama a API Serasa (1x) e define quais botões ficarão visíveis.
+   */
+  async function carregarParcelasDaAPI() {
+    // 1. Reset: Esconde todos os botões (apenas por segurança)
+    [btn12x, btn24x, btn36x].forEach(btn => btn.classList.add('hidden'));
+
+    // 2. Chama a API Serasa (visibilidade) e guarda no Cache
+    parcelasPermitidasCache = await simularAPISerasa();
+    
+    // 3. Mostra os botões permitidos (ordem de visibilidade crescente)
+    if (parcelasPermitidasCache.includes('12x')) {
+        btn12x.classList.remove('hidden');
+    }
+    if (parcelasPermitidasCache.includes('24x')) {
+        btn24x.classList.remove('hidden');
+    }
+    if (parcelasPermitidasCache.includes('36x')) {
+        btn36x.classList.remove('hidden');
+    }
+    
+    // 4. Agora, calcula o valor inicial
+    // (A variável 'financiado' já foi definida pelo 'updateFinanceiro('init')')
+    atualizarValoresParcelas(financiado);
+  }
+
+  // ===============================================
+  // FIM DA LÓGICA DE PARCELAS
+  // ===============================================
+
+
+  // --- Listeners: Gatilhos de Evento ---
+  rTotal.addEventListener('input', () => updateFinanceiro('total'));
+  rEntrada.addEventListener('input', () => updateFinanceiro('entrada'));
+
+  // Liga os Spans
+  if (typeof attachEditableMoneySpan === 'function') {
+      attachEditableMoneySpan(sTotal, (novoTotal) => {
+          rTotal.value = novoTotal; 
+          updateFinanceiro('span-total'); 
+      }, { showCurrency: false, fractionDigits: 2 });
+      
+      attachEditableMoneySpan(sEntrada, (novaEntrada) => {
+          rEntrada.value = novaEntrada; 
+          updateFinanceiro('span-entrada'); 
+      }, { showCurrency: false, fractionDigits: 2 });
+  } else {
+      console.warn('Função attachEditableMoneySpan não encontrada.');
+  }
+
+  // --- Inicialização ---
+  clampInitialValues(); 
+  updateFinanceiro('init'); // Roda 1x para definir os valores de 'total', 'entrada' e 'financiado'
+  
+  // !! MUDANÇA !!
+  // Chama a API Serasa (1x) e mostra os botões corretos
+  carregarParcelasDaAPI(); 
+}
+// Inicializa os sliders da V2 assim que este script carregar
+if (document.getElementById('pagina-aprovado')) {
+  initSimuladorV2();
+}
+
 
 
 })(); // 🛑 FIM DA IIFE GERAL (FINAL DO ARQUIVO)
