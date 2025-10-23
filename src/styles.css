@@ -4,21 +4,9 @@
 
 @layer base {
   body {
-    @apply m-0 min-h-screen bg-brand text-brand flex justify-center items-start font-sans;
-  }
-
-  .v1-shell {
-    /* bg, layout da V1 */
-  }
-
-  .v1-shell h1,
-  .v1-shell h2,
-  .v1-shell h3,
-  .v1-shell h4 {
-    @apply font-heading text-brand;
+    @apply m-0 min-h-screen bg-[#E0E0E0] text-brand flex justify-center items-start font-sans;
   }
 }
-
 
 /* Componentes com visual alinhado ao design atual */
 @layer components {
@@ -188,101 +176,6 @@ body.confirmado #tela_confirmacao {
 /* INÍCIO DO CÓDIGO CORRIGIDO PARA AS ETAPAS                            */
 /* ======================================================================== */
 
-#etapas_processo {
-  @apply mb-10 w-full flex flex-col items-center gap-3 text-center;
-}
-
-/* O contêiner que segura as 4 abas */
-.step-tabs {
-  @apply w-full max-w-[520px] flex justify-center items-center gap-4;
-}
-
-/* A base para CADA UMA das 4 abas (TAMANHO X) */
-.step-tab {
-  height: 44px;
-  /* Define uma LARGURA FIXA de 99px, impedindo que o texto a alargue */
-  flex: 0 0 70px; 
-  @apply flex justify-center items-center text-center relative py-1 px-2 border-0 bg-transparent cursor-pointer;
-  /* Anima a mudança de altura e largura */
-  transition: flex-basis 0.4s ease, height 0.4s ease;
-}
-
-/* A aba ATIVA (TAMANHO Y) */
-.step-tab.is-active {
-  height: 50px;
-  /* Define uma LARGURA FIXA e MAIOR de 109px para a aba ativa */
-  flex: 0 0 129px; 
-}
-
-/* O texto (<span>) dentro de cada aba */
-.step-tab span {
-  @apply hidden;
-}
-
-/* O texto (<span>) dentro da aba ATIVA */
-.step-tab.is-active span {
-  @apply inline-block text-white text-sm font-semibold;
-  position: relative;
-  z-index: 1;
-  line-height: 1.2; /* Bom para textos com quebra de linha */
-}
-
-/* O fundo de CADA aba (formato de barrinha) */
-.step-tab::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  height: 6px;
-  transform: translateY(-50%);
-  border-radius: 999px;
-  background-color: #F8E5DB;
-  transition: all 0.3s ease;
-  z-index: 0;
-}
-
-/* Cor laranja para abas ATIVAS ou COMPLETAS */
-.step-tab.is-active::after,
-.step-tab.is-complete::after {
-  background-color: #F37521;
-}
-
-/* Expansão do fundo para a aba ATIVA (formato de pílula) */
-.step-tab.is-active::after {
-  top: 0;
-  bottom: 0;
-  height: auto;
-  transform: none;
-  /*box-shadow: 0 6px 18px rgba(243, 117, 33, 0.25);*/
-}
-
-/* Novo estado para abas que foram puladas, mas devem ser marcadas como concluídas */
-.step-tab.is-skipped-complete::after {
-  background-color: #F37521; /* Laranja */
-}
-
-/* Estilos de abas desabilitadas e de foco */
-.step-tab:disabled {
-  cursor: default;
-}
-.step-tab:focus-visible {
-  outline: none;
-}
-.step-tab:focus-visible::after {
-  box-shadow: 0 0 0 3px rgba(243, 117, 33, 0.35);
-}
-
-/* ======================================================================== */
-/* FIM DO CÓDIGO CORRIGIDO                                              */
-/* ======================================================================== */
-
-.step-current-label {
-    @apply mt-1.5 text-lg font-semibold text-white;
-  }
-
-  /* .step-current-label { display: none; } */
-
 
   .main {
     @apply flex flex-col;
@@ -428,17 +321,17 @@ body.confirmado #tela_confirmacao {
 /* WRAPPER PARA TIRAR DESIGN DO BODY NA V2*/
 /* no final do styles.css */
   /* no final do styles.css */
-  .v2-wrapper {
+  .wrapper {
     display: block;
     font-family: Inter, system-ui, sans-serif;
     color: #111 !important;
   }
-  .v2-wrapper, .v2-wrapper * { box-sizing: border-box; }
-  .v2-wrapper h1, .v2-wrapper h2, .v2-wrapper h3, .v2-wrapper h4 { color: inherit; }
+  .wrapper, .wrapper * { box-sizing: border-box; }
+  .wrapper h1, .wrapper h2, .wrapper h3, .wrapper h4 { color: inherit; }
 
 
   /* Quando o body estiver em modo V2, zera o estilo global dele */
-body.v2-mode {
+body.mode {
   background: transparent !important;
   color: initial !important;
   padding: 0 !important;
@@ -447,17 +340,17 @@ body.v2-mode {
 
 /* ========= Range V2 (puro CSS) ========= */
 /* Base */
-input.v2-range {
+input.range {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
   background: transparent;
   cursor: pointer;
 }
-input.v2-range:focus { outline: none; }
+input.range:focus { outline: none; }
 
 /* WebKit (Chrome/Edge/Safari) */
-input.v2-range::-webkit-slider-runnable-track {
+input.range::-webkit-slider-runnable-track {
   height: 7px;
   border-radius: 9999px;
   background: linear-gradient(to right,
@@ -465,7 +358,7 @@ input.v2-range::-webkit-slider-runnable-track {
     #D1D5DB var(--pct, 0%)
   );
 }
-input.v2-range::-webkit-slider-thumb {
+input.range::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 18px;
   height: 18px;
@@ -479,17 +372,17 @@ input.v2-range::-webkit-slider-thumb {
 }
 
 /* Firefox */
-input.v2-range::-moz-range-track {
+input.range::-moz-range-track {
   height: 7px;
   border-radius: 9999px;
   background: #D1D5DB;
 }
-input.v2-range::-moz-range-progress {
+input.range::-moz-range-progress {
   height: 7px;
   border-radius: 9999px;
   background: #000;
 }
-input.v2-range::-moz-range-thumb {
+input.range::-moz-range-thumb {
   width: 18px;
   height: 18px;
   border-radius: 50%;
@@ -501,8 +394,8 @@ input.v2-range::-moz-range-thumb {
 }
 
 /* (Opcional) Especificidade máxima por id */
-#valor-moto.v2-range, 
-#valor-entrada.v2-range { -webkit-appearance:none; appearance:none; }
+#valor-moto.range, 
+#valor-entrada.range { -webkit-appearance:none; appearance:none; }
 
 
 

@@ -7,17 +7,10 @@ module.exports = {
     "./scripts/**/*.{js,ts}",
   ],
 
-  // 👇👇 Adicione estas duas linhas:
-  prefix: "v2-",              // prefixo das classes (v2-bg..., v2-flex...)
-  corePlugins: { preflight: false }, // desativa reset global (igual ao usado no HTML)
-
   theme: {
     extend: {
       colors: {
         brand: {
-          DEFAULT: "#F37521",
-          dark: "#d4631c",
-          light: "#f99857",
         },
       },
       fontFamily: {

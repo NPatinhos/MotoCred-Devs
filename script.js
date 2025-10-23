@@ -1,43 +1,43 @@
 ﻿function showV2Overlay(sectionId) {
-  document.body.classList.add('v2-mode');
+  document.body.classList.add('mode');
   const mainCard = document.querySelector('.card');
   if (mainCard) mainCard.style.display = 'none';
 
-  ['v2-pagina-negado','v2-pagina-aprovado'].forEach(id => {
+  ['pagina-negado','pagina-aprovado'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.classList.add('v2-hidden');           // <- aqui
-    el.classList.remove('v2-flex');
+    el.classList.add('hidden');           // <- aqui
+    el.classList.remove('flex');
   });
 
   const target = document.getElementById(sectionId);
   if (target) {
-    target.classList.remove('v2-hidden');    // <- e aqui
-    target.classList.add('v2-flex','v2-items-center','v2-justify-center','v2-min-h-screen');
+    target.classList.remove('hidden');    // <- e aqui
+    target.classList.add('flex','items-center','justify-center','min-h-screen');
   }
 }
 
 function openV2AsPage(sectionId) {
-  document.body.classList.add('v2-mode');
+  document.body.classList.add('mode');
   const mainCard = document.querySelector('.card');
   if (mainCard) mainCard.style.display = 'none';
 
-  ['v2-pagina-negado', 'v2-pagina-aprovado'].forEach(id => {
+  ['pagina-negado', 'pagina-aprovado'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.classList.add('v2-hidden');
-    el.classList.remove('v2-flex');
+    el.classList.add('hidden');
+    el.classList.remove('flex');
   });
 
   const target = document.getElementById(sectionId);
   if (target) {
-    target.classList.remove('v2-fixed','v2-inset-0','v2-overflow-auto','v2-z-50');
-    target.classList.remove('v2-hidden');
+    target.classList.remove('fixed','inset-0','overflow-auto','z-50');
+    target.classList.remove('hidden');
 
     // ✅ continua usando flex + centralização
-    target.classList.add('v2-flex','v2-items-center','v2-justify-center','v2-min-h-screen');
-    // (remova a linha que trocava para v2-block)
-    // target.classList.add('v2-block');  // ❌ não usar
+    target.classList.add('flex','items-center','justify-center','min-h-screen');
+    // (remova a linha que trocava para block)
+    // target.classList.add('block');  // ❌ não usar
   }
 }
 
@@ -45,7 +45,7 @@ function openV2AsPage(sectionId) {
 /*
 window.addEventListener('DOMContentLoaded', () => {
   // Abre a tela de aprovado como página (fluxo normal, sem overlay)
-  openV2AsPage('v2-pagina-aprovado');
+  openV2AsPage('pagina-aprovado');
 });
 */
 
@@ -1119,7 +1119,7 @@ veEl?.addEventListener('input', commitPPA);
             if (result && result.ok) {
                 // Sucesso no envio abre a etapa de sucesso
                 setInitialPPA(valorMoto, entrada);
-                openV2AsPage('v2-pagina-aprovado');
+                openV2AsPage('pagina-aprovado');
     
             } else {
                 // Falha no envio (erro retornado pelo servidor)
@@ -1272,7 +1272,7 @@ function attachEditableMoneySpan(span, callback, options = {}) {
 
 /*
  * =================================================================
- * LÓGICA DOS SLIDERS (v2-APROVADO)
+ * LÓGICA DOS SLIDERS (APROVADO)
  * (VERSÃO FINAL: API Serasa 1x, API Valores a cada movimento)
  * =================================================================
  */
@@ -1524,20 +1524,20 @@ botoesParcelas.forEach(btn => {
    */
   async function carregarParcelasDaAPI() {
     // 1. Reset: Esconde todos os botões (apenas por segurança)
-    [btn12x, btn24x, btn36x].forEach(btn => btn.classList.add('v2-hidden'));
+    [btn12x, btn24x, btn36x].forEach(btn => btn.classList.add('hidden'));
 
     // 2. Chama a API Serasa (visibilidade) e guarda no Cache
     parcelasPermitidasCache = await simularAPISerasa();
     
     // 3. Mostra os botões permitidos (ordem de visibilidade crescente)
     if (parcelasPermitidasCache.includes('12x')) {
-        btn12x.classList.remove('v2-hidden');
+        btn12x.classList.remove('hidden');
     }
     if (parcelasPermitidasCache.includes('24x')) {
-        btn24x.classList.remove('v2-hidden');
+        btn24x.classList.remove('hidden');
     }
     if (parcelasPermitidasCache.includes('36x')) {
-        btn36x.classList.remove('v2-hidden');
+        btn36x.classList.remove('hidden');
     }
     
     // 4. Agora, calcula o valor inicial
@@ -1578,7 +1578,7 @@ botoesParcelas.forEach(btn => {
   carregarParcelasDaAPI(); 
 }
 // Inicializa os sliders da V2 assim que este script carregar
-if (document.getElementById('v2-pagina-aprovado')) {
+if (document.getElementById('pagina-aprovado')) {
   initSimuladorV2();
 }
 
