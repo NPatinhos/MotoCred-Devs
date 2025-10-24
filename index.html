@@ -15,7 +15,7 @@
                     w-full max-w-2xl min-h-[260px]
 
                     p-6 flex flex-col items-center justify-start
-                    space-y-16">
+                    space-y-8">
 
         <div class="space-y-8">
             <header class="flex flex-col items-center space-y-3">
@@ -23,39 +23,62 @@
                 <h1 class="text-2xl font-medium text-[#F2600B]">Formulário de Financiamento</h1>                   <!--IDENTIFICAÇÃO-->
             </header>
 
-            <nav id="etapas_processo" class="mb-8 w-full">
-                <div id="botoes-etapas" class="step-tabs flex justify-between items-center" role="tablist">
-                    <button id="tab-step-1" type="button" role="tab" class="step-tab is-active bg-black rounded-3xl ">
-                        <span class="text-white text-sm">Identificação</span>
-                    </button>
-                    <button id="tab-step-2" type="button" role="tab" class="step-tab" disabled>
-                        <span class="text-white text-sm">Dados do Vendedor</span>
-                    </button>
-                    <button id="tab-step-3" type="button" role="tab" class="step-tab" disabled>
-                        <span class="text-white text-sm">Dados do Cliente</span>
-                    </button>
-                    <button id="tab-step-4" type="button" role="tab" class="step-tab" disabled>
-                        <span class="text-white text-sm">Dados da Venda</span>
+            <nav id="etapas_processo">
+                <div id="botoes-etapas" class="flex items-center justify-between gap-2" role="tablist">
+
+                    <button id="tab-step-1" type="button" role="tab"
+                    class="step-tab is-active"
+                    aria-selected="true">
+                    <span>Identificação</span>
                     </button>
 
+                    <button id="tab-step-2" type="button" role="tab"
+                    class="step-tab"
+                    aria-disabled="true" disabled>
+                    <span class="hidden">Dados do Vendedor</span>
+                    </button>
+
+                    <button id="tab-step-3" type="button" role="tab"
+                    class="step-tab"
+                    aria-disabled="true" disabled>
+                    <span class="hidden">Dados do Cliente</span>
+                    </button>
+
+                    <button id="tab-step-4" type="button" role="tab"
+                    class="step-tab"
+                    aria-disabled="true" disabled>
+                    <span class="hidden">Dados da Venda</span>
+                    </button>
                 </div>
-            </nav>
+                </nav>
+
         </div>
 
 
     <!--FORMULARIO-->
         <form id="financiamento-form" action="/envio-form" method="post" class="w-full"></form>
-            <section id="etapa-1" class="hidden">
-                </section>
+            <!---etapa 1-->
+            <section id="etapa-1" class="form-step">
+                <div>
+                    <span class="font-medium text-xl">Você é:</span>
+                </div>
 
-            <section id="etapa-2">
-                </section>
+            </section>
+
+            <!---etapa 2-->
+            <section id="etapa-2" class="form-step">
+
+            </section>
+
+            <!---etapa 3-->
+            <section id="etapa-3" class="form-step">
+
+            </section>
             
-            <section id="etapa-3" class="hidden">
-                </section>
-            
-            <section id="etapa-4" class="hidden">
-                </section>
+            <!---etapa 4-->
+            <section id="etapa-4" class="form-step">
+
+            </section>
             
             <div class="flex justify-end mt-8">
                 <button type="button" id="btn-next-step" class="bg-black pt-2 pb-2 pl-8 pr-8 rounded-2xl ">

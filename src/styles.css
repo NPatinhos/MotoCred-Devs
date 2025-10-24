@@ -3,7 +3,40 @@
 @tailwind utilities;
 
 
-/* ========= Range V2 (puro CSS) ========= */
+/*ESTADOS PARA ANIMAÇÃO DOS BOTOES DE NAVEGAÇÃO*/
+   @layer components {
+    /*config geral de todas as barras*/
+  .step-tab {
+    @apply inline-flex items-center justify-center transition rounded-full;
+  }
+
+  /* futura */
+  .step-tab.is-future {
+    @apply w-max-[70px] h-[10px] bg-gray-300 cursor-default pointer-events-none;
+  }
+
+  /* concluída */
+  .step-tab.is-complete {
+    @apply w-max-[70px] h-[10px] bg-black cursor-pointer;
+  }
+
+  /* atual */
+  .step-tab.is-active {
+    @apply w-max-[90px] h-[50px] bg-black text-white rounded-3xl cursor-default pointer-events-none;
+  }
+/*texto no span na barra ativa*/
+  .step-tab.is-active span {
+    @apply inline font-semibold text-sm leading-[1.1] whitespace-nowrap;
+  }
+ /*texto do span na barra inativa*/
+  .step-tab:not(.is-active) span {
+    @apply hidden;
+  }
+}
+/*FIM DOS BOTOES DE NAVEGAÇÃO*/
+
+
+/* ANIMAÇÃO RANGE SIMULAÇÃO*/
 /* Base */
 input.range {
   -webkit-appearance: none;
@@ -62,7 +95,7 @@ input.range::-moz-range-thumb {
 #valor-moto.range, 
 #valor-entrada.range { -webkit-appearance:none; appearance:none; }
 
-
+/*FIM RANGE*/
 
 
 

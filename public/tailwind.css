@@ -929,6 +929,74 @@ select {
   background-color: currentColor;
 }
 
+/*config geral de todas as barras*/
+
+.step-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* futura */
+
+.step-tab.is-future {
+  pointer-events: none;
+  height: 10px;
+  width: 70px;
+  cursor: default;
+  --tw-bg-opacity: 1;
+  background-color: rgb(209 213 219 / var(--tw-bg-opacity));
+}
+
+/* concluída */
+
+.step-tab.is-complete {
+  height: 10px;
+  width: 70px;
+  cursor: pointer;
+  --tw-bg-opacity: 1;
+  background-color: rgb(0 0 0 / var(--tw-bg-opacity));
+}
+
+/* atual */
+
+.step-tab.is-active {
+  pointer-events: none;
+  height: 50px;
+  width: 90px;
+  cursor: default;
+  border-radius: 1.5rem;
+  --tw-bg-opacity: 1;
+  background-color: rgb(0 0 0 / var(--tw-bg-opacity));
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+
+/*texto no span na barra ativa*/
+
+.step-tab.is-active span {
+  display: inline;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+/*texto do span na barra inativa*/
+
+.step-tab:not(.is-active) span {
+  display: none;
+}
+
+.pointer-events-none {
+  pointer-events: none;
+}
+
 .fixed {
   position: fixed;
 }
@@ -948,10 +1016,6 @@ select {
 .mx-auto {
   margin-left: auto;
   margin-right: auto;
-}
-
-.mb-8 {
-  margin-bottom: 2rem;
 }
 
 .ml-2 {
@@ -1006,6 +1070,14 @@ select {
   height: 6rem;
 }
 
+.h-\[10px\] {
+  height: 10px;
+}
+
+.h-\[50px\] {
+  height: 50px;
+}
+
 .h-auto {
   height: auto;
 }
@@ -1024,6 +1096,14 @@ select {
 
 .w-80 {
   width: 20rem;
+}
+
+.w-\[70px\] {
+  width: 70px;
+}
+
+.w-\[90px\] {
+  width: 90px;
 }
 
 .w-full {
@@ -1056,6 +1136,16 @@ select {
 
 .transform {
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.cursor-default {
+  cursor: default;
+}
+
+.select-none {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
 }
 
 .grid-cols-1 {
@@ -1188,16 +1278,20 @@ select {
   border-radius: 1rem;
 }
 
+.rounded-3xl {
+  border-radius: 1.5rem;
+}
+
 .rounded-\[10px\] {
   border-radius: 10px;
 }
 
-.rounded-md {
-  border-radius: 0.375rem;
+.rounded-full {
+  border-radius: 9999px;
 }
 
-.rounded-3xl {
-  border-radius: 1.5rem;
+.rounded-md {
+  border-radius: 0.375rem;
 }
 
 .border {
@@ -1280,6 +1374,11 @@ select {
 .bg-gray-200 {
   --tw-bg-opacity: 1;
   background-color: rgb(229 231 235 / var(--tw-bg-opacity));
+}
+
+.bg-gray-300 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(209 213 219 / var(--tw-bg-opacity));
 }
 
 .bg-white {
@@ -1434,6 +1533,10 @@ select {
   font-weight: 600;
 }
 
+.leading-\[1\.1\] {
+  line-height: 1.1;
+}
+
 .text-\[\#0CAD11\] {
   --tw-text-opacity: 1;
   color: rgb(12 173 17 / var(--tw-text-opacity));
@@ -1531,7 +1634,11 @@ select {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ========= Range V2 (puro CSS) ========= */
+/*ESTADOS PARA ANIMAÇÃO DOS BOTOES DE NAVEGAÇÃO*/
+
+/*FIM DOS BOTOES DE NAVEGAÇÃO*/
+
+/* ANIMAÇÃO RANGE SIMULAÇÃO*/
 
 /* Base */
 
@@ -1606,6 +1713,8 @@ input.range::-moz-range-thumb {
   -moz-appearance:none;
        appearance:none;
 }
+
+/*FIM RANGE*/
 
 @keyframes aparecerErro {
   from {

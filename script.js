@@ -97,7 +97,7 @@ function loadPPA() {
 
 
     // 1️⃣  Pega o formulário
-    const form = document.getElementById('formCadastro');
+    const form = document.getElementById('financiamento-form');
     if (!form) return;
 
     // ✅ ID único por envio (usado no back para deduplicar)
@@ -525,24 +525,50 @@ function setSubmittingState(on, buttonText = null) {
         }
     };
 
-    const renderTabs = () => {
+    const FUTURE = ['is-future'];
+    const COMPLETE = ['is-complete'];
+    const ACTIVE = ['is-active'];
+
+    function applyStepClasses(tabEl, state) {
+    // limpa estados conhecidos
+    tabEl.classList.remove(...FUTURE, ...COMPLETE, ...ACTIVE);
+    // aplica estado novo
+    const set = state === 'active' ? ACTIVE : state === 'complete' ? COMPLETE : FUTURE;
+    set.forEach(c => tabEl.classList.add(c));
+
+    // texto: só na ativa
+    const label = tabEl.querySelector('span');
+    if (label) {
+        if (state === 'active') {
+        label.classList.remove('hidden');
+        label.classList.add('inline','font-semibold','text-[0.9rem]','leading-[1.1]','whitespace-nowrap');
+        } else {
+        label.classList.add('hidden');
+        label.classList.remove('inline','font-semibold','text-[0.9rem]','leading-[1.1]','whitespace-nowrap');
+        }
+    }
+
+    // acessibilidade + clique
+    const isFuture = state === 'future';
+    const isActive = state === 'active';
+    tabEl.disabled = isFuture;
+    tabEl.setAttribute('aria-disabled', isFuture ? 'true' : 'false');
+    tabEl.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    tabEl.tabIndex = (state === 'complete' || isActive) ? 0 : -1;
+    }
+
+    function renderTabsTailwind() {
         tabs.forEach((tab, index) => {
             const enabled = isStepEnabled(index);
             const isActive = index === currentStepIndex;
-            tab.classList.toggle('is-active', isActive);
-            tab.classList.toggle('is-complete', enabled && index < maxStepIndex);
-            tab.classList.toggle('is-disabled', !enabled);
-            tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
-            tab.setAttribute('aria-disabled', (!enabled).toString());
-            const shouldDisable = !enabled || (!isActive && index > maxStepIndex);
-            tab.disabled = shouldDisable;
-            tab.style.cursor = shouldDisable ? 'default' : '';
-            tab.style.pointerEvents = shouldDisable ? 'none' : '';
+            const state = isActive ? 'active'
+                        : (enabled && index < maxStepIndex) ? 'complete'
+                        : 'future';
+            applyStepClasses(tab, state);
         });
+        atualizarNomeEtapaAtual && atualizarNomeEtapaAtual();
+        }
 
-        // Atualiza o rótulo da etapa atual
-        atualizarNomeEtapaAtual();
-    };
 
 
     const atualizarNomeEtapaAtual = () => {
@@ -628,7 +654,7 @@ function setSubmittingState(on, buttonText = null) {
             currentStepIndex = index;
         }
         renderSteps();
-        renderTabs();
+        renderTabsTailwind();
         renderNavigation();
         // REMOVIDO: requestAnimationFrame(atualizarNomeEtapaAtual);
         // depois de renderSteps(); renderTabs(); renderNavigation();
@@ -712,7 +738,7 @@ function setSubmittingState(on, buttonText = null) {
             currentStepIndex = fallback;
         }
 
-        renderTabs();
+        renderTabsTailwind()
         renderSteps();
         renderNavigation();
         updateCpfHintValidity();
@@ -1581,6 +1607,48 @@ botoesParcelas.forEach(btn => {
 if (document.getElementById('pagina-aprovado')) {
   initSimuladorV2();
 }
+
+
+// === TESTE VISUAL DA BARRA DE ETAPAS ===
+window.addEventListener('DOMContentLoaded', () => {
+  console.log('Teste: barra de etapas');
+
+  // acessa os botões
+  const tabs = Array.from(document.querySelectorAll('.step-tab'));
+
+  // índice inicial
+  let current = 0;
+  let maxStepIndex = 0;
+
+  function updateTabs() {
+    tabs.forEach((tab, i) => {
+      const state =
+        i === current ? 'active' :
+        (i < current ? 'complete' : 'future');
+      applyStepClasses(tab, state);
+    });
+  }
+
+  // botão de avançar (usa o que já existe na tela)
+  const btnNext = document.getElementById('btn-next-step');
+  if (btnNext) {
+    btnNext.addEventListener('click', () => {
+      current = (current + 1) % tabs.length;
+      updateTabs();
+    });
+  }
+
+  // clique direto em uma aba concluída
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => {
+      if (tab.disabled) return;
+      current = index;
+      updateTabs();
+    });
+  });
+
+  updateTabs(); // inicial
+});
 
 
 
