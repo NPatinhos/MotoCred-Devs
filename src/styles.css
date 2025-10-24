@@ -2,42 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
-
-/*ESTADOS PARA ANIMAÇÃO DOS BOTOES DE NAVEGAÇÃO*/
-   @layer components {
-    /*config geral de todas as barras*/
+/* ===========================
+   COMPONENTE: barra de etapas
+   =========================== */
+@layer components {
+  /* base visual da bolinha/aba de etapa */
   .step-tab {
-    @apply inline-flex items-center justify-center transition rounded-full;
+    @apply inline-flex items-center justify-center rounded-full
+           select-none transition-all duration-200 ease-in-out;
   }
 
-  /* futura */
+  /* etapa FUTURA (cinza, pequena, sem clique) */
   .step-tab.is-future {
-    @apply w-max-[70px] h-[10px] bg-gray-300 cursor-default pointer-events-none;
+    @apply w-[70px] h-[10px] bg-gray-300
+           cursor-default pointer-events-none
+           rounded-full text-white px-0;
   }
 
-  /* concluída */
+  /* etapa COMPLETA (preta, pequena, clicável) */
   .step-tab.is-complete {
-    @apply w-max-[70px] h-[10px] bg-black cursor-pointer;
+    @apply w-[70px] h-[10px] bg-black
+           cursor-pointer pointer-events-auto
+           rounded-full text-white px-0;
   }
 
-  /* atual */
+  /* etapa ATUAL (ativa agora): preta grande, mostra texto */
   .step-tab.is-active {
-    @apply w-max-[90px] h-[50px] bg-black text-white rounded-3xl cursor-default pointer-events-none;
+    @apply w-[90px] h-[50px] bg-black text-white
+           rounded-3xl cursor-default pointer-events-none
+           px-4;
   }
-/*texto no span na barra ativa*/
+
+  /* texto VISÍVEL só na etapa ativa */
   .step-tab.is-active span {
-    @apply inline font-semibold text-sm leading-[1.1] whitespace-nowrap;
+    @apply inline font-medium text-sm leading-[1.1] whitespace-nowrap;
   }
- /*texto do span na barra inativa*/
+
+  /* texto ESCONDIDO nas outras */
   .step-tab:not(.is-active) span {
     @apply hidden;
   }
+
+  /* 🚨 importante: esconder steps inativos */
+  .is-hidden-step {
+    @apply hidden;
+  }
+
+  /* ⚠️ REMOVIDO:
+     NÃO defina .is-active global aqui.
+     NÃO force display:block na etapa ativa.
+     deixar sem isso garante que a section mantenha o flex original.
+  */
 }
-/*FIM DOS BOTOES DE NAVEGAÇÃO*/
 
 
-/* ANIMAÇÃO RANGE SIMULAÇÃO*/
-/* Base */
+/* ===========================
+   RANGE SLIDER
+   =========================== */
+
+/* tira aparência nativa do range */
 input.range {
   -webkit-appearance: none;
   appearance: none;
@@ -45,67 +68,71 @@ input.range {
   background: transparent;
   cursor: pointer;
 }
-input.range:focus { outline: none; }
+input.range:focus {
+  outline: none;
+}
 
-/* WebKit (Chrome/Edge/Safari) */
+/* trilho (chrome/safari/edge) */
 input.range::-webkit-slider-runnable-track {
   height: 7px;
   border-radius: 9999px;
-  background: linear-gradient(to right,
+  background: linear-gradient(
+    to right,
     #000 var(--pct, 0%),
     #D1D5DB var(--pct, 0%)
   );
 }
+
+/* thumb (chrome/safari/edge) */
 input.range::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  /* MUDANÇAS: Cor e Borda */
-  background: white; 
-  border: 2px solid #000; 
-  /* FIM MUDANÇAS */
-  margin-top: -6px; /* Ajustado para centralizar com a borda de 2px */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  background: white;
+  border: 2px solid #000;
+  margin-top: -6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
 }
 
-/* Firefox */
+/* trilho (firefox) */
 input.range::-moz-range-track {
   height: 7px;
   border-radius: 9999px;
   background: #D1D5DB;
 }
+
+/* parte preenchida (firefox) */
 input.range::-moz-range-progress {
   height: 7px;
   border-radius: 9999px;
   background: #000;
 }
+
+/* thumb (firefox) */
 input.range::-moz-range-thumb {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  /* MUDANÇAS: Cor e Borda */
-  background: white; 
-  border: 2px solid #000; 
-  /* FIM MUDANÇAS */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  background: white;
+  border: 2px solid #000;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
 }
 
-/* (Opcional) Especificidade máxima por id */
-#valor-moto.range, 
-#valor-entrada.range { -webkit-appearance:none; appearance:none; }
+/* garante consistência específica nesses ids também */
+#valor-moto.range,
+#valor-entrada.range {
+  -webkit-appearance: none;
+  appearance: none;
+}
 
-/*FIM RANGE*/
+/* animação do erro */
+@keyframes aparecerErro {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
-
-
-
-  @keyframes aparecerErro {
-    from { opacity: 0; transform: translateY(-4px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Força espaçamento maior entre os blocos da etapa "Dados da Venda" */
- /* src/styles.css */
-  #dados_venda .grid > :nth-child(2) { margin-top: 1.5rem !important; } /* ~32px */
-
+/* espaçamento maior entre os blocos da etapa "Dados da Venda" */
+#dados_venda .grid > :nth-child(2) {
+  margin-top: 1.5rem !important; /* ~24px */
+}

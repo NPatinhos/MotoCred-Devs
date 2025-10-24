@@ -929,40 +929,54 @@ select {
   background-color: currentColor;
 }
 
-/*config geral de todas as barras*/
+/* base visual da bolinha/aba de etapa */
 
 .step-tab {
   display: inline-flex;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-property: all;
+  transition-duration: 200ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
 }
 
-/* futura */
+/* etapa FUTURA (cinza, pequena, sem clique) */
 
 .step-tab.is-future {
   pointer-events: none;
   height: 10px;
   width: 70px;
   cursor: default;
+  border-radius: 9999px;
   --tw-bg-opacity: 1;
   background-color: rgb(209 213 219 / var(--tw-bg-opacity));
+  padding-left: 0px;
+  padding-right: 0px;
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 
-/* concluída */
+/* etapa COMPLETA (preta, pequena, clicável) */
 
 .step-tab.is-complete {
+  pointer-events: auto;
   height: 10px;
   width: 70px;
   cursor: pointer;
+  border-radius: 9999px;
   --tw-bg-opacity: 1;
   background-color: rgb(0 0 0 / var(--tw-bg-opacity));
+  padding-left: 0px;
+  padding-right: 0px;
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 
-/* atual */
+/* etapa ATUAL (ativa agora): preta grande, mostra texto */
 
 .step-tab.is-active {
   pointer-events: none;
@@ -972,29 +986,47 @@ select {
   border-radius: 1.5rem;
   --tw-bg-opacity: 1;
   background-color: rgb(0 0 0 / var(--tw-bg-opacity));
+  padding-left: 1rem;
+  padding-right: 1rem;
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 
-/*texto no span na barra ativa*/
+/* texto VISÍVEL só na etapa ativa */
 
 .step-tab.is-active span {
   display: inline;
   white-space: nowrap;
   font-size: 0.875rem;
   line-height: 1.25rem;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.1;
 }
 
-/*texto do span na barra inativa*/
+/* texto ESCONDIDO nas outras */
 
 .step-tab:not(.is-active) span {
   display: none;
 }
 
+/* 🚨 importante: esconder steps inativos */
+
+.is-hidden-step {
+  display: none;
+}
+
+/* ⚠️ REMOVIDO:
+     NÃO defina .is-active global aqui.
+     NÃO force display:block na etapa ativa.
+     deixar sem isso garante que a section mantenha o flex original.
+  */
+
 .pointer-events-none {
   pointer-events: none;
+}
+
+.pointer-events-auto {
+  pointer-events: auto;
 }
 
 .fixed {
@@ -1078,6 +1110,10 @@ select {
   height: 50px;
 }
 
+.h-\[56px\] {
+  height: 56px;
+}
+
 .h-auto {
   height: auto;
 }
@@ -1110,12 +1146,20 @@ select {
   width: 100%;
 }
 
+.min-w-0 {
+  min-width: 0px;
+}
+
 .max-w-2xl {
   max-width: 42rem;
 }
 
 .max-w-4xl {
   max-width: 56rem;
+}
+
+.max-w-\[400px\] {
+  max-width: 400px;
 }
 
 .max-w-\[820px\] {
@@ -1140,6 +1184,10 @@ select {
 
 .cursor-default {
   cursor: default;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 
 .select-none {
@@ -1186,10 +1234,6 @@ select {
 
 .justify-start {
   justify-content: flex-start;
-}
-
-.justify-end {
-  justify-content: flex-end;
 }
 
 .justify-center {
@@ -1626,6 +1670,10 @@ select {
   transition-duration: 150ms;
 }
 
+.duration-200 {
+  transition-duration: 200ms;
+}
+
 .duration-300 {
   transition-duration: 300ms;
 }
@@ -1634,13 +1682,15 @@ select {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/*ESTADOS PARA ANIMAÇÃO DOS BOTOES DE NAVEGAÇÃO*/
+/* ===========================
+   COMPONENTE: barra de etapas
+   =========================== */
 
-/*FIM DOS BOTOES DE NAVEGAÇÃO*/
+/* ===========================
+   RANGE SLIDER
+   =========================== */
 
-/* ANIMAÇÃO RANGE SIMULAÇÃO*/
-
-/* Base */
+/* tira aparência nativa do range */
 
 input.range {
   -webkit-appearance: none;
@@ -1655,32 +1705,32 @@ input.range:focus {
   outline: none;
 }
 
-/* WebKit (Chrome/Edge/Safari) */
+/* trilho (chrome/safari/edge) */
 
 input.range::-webkit-slider-runnable-track {
   height: 7px;
   border-radius: 9999px;
-  background: linear-gradient(to right,
+  background: linear-gradient(
+    to right,
     #000 var(--pct, 0%),
     #D1D5DB var(--pct, 0%)
   );
 }
+
+/* thumb (chrome/safari/edge) */
 
 input.range::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  /* MUDANÇAS: Cor e Borda */
   background: white;
   border: 2px solid #000;
-  /* FIM MUDANÇAS */
   margin-top: -6px;
-  /* Ajustado para centralizar com a borda de 2px */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
 }
 
-/* Firefox */
+/* trilho (firefox) */
 
 input.range::-moz-range-track {
   height: 7px;
@@ -1688,33 +1738,35 @@ input.range::-moz-range-track {
   background: #D1D5DB;
 }
 
+/* parte preenchida (firefox) */
+
 input.range::-moz-range-progress {
   height: 7px;
   border-radius: 9999px;
   background: #000;
 }
 
+/* thumb (firefox) */
+
 input.range::-moz-range-thumb {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  /* MUDANÇAS: Cor e Borda */
   background: white;
   border: 2px solid #000;
-  /* FIM MUDANÇAS */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
 }
 
-/* (Opcional) Especificidade máxima por id */
+/* garante consistência específica nesses ids também */
 
-#valor-moto.range, 
+#valor-moto.range,
 #valor-entrada.range {
-  -webkit-appearance:none;
-  -moz-appearance:none;
-       appearance:none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+       appearance: none;
 }
 
-/*FIM RANGE*/
+/* animação do erro */
 
 @keyframes aparecerErro {
   from {
@@ -1722,21 +1774,18 @@ input.range::-moz-range-thumb {
     transform: translateY(-4px);
   }
 
-  to {
+  to   {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* Força espaçamento maior entre os blocos da etapa "Dados da Venda" */
-
-/* src/styles.css */
+/* espaçamento maior entre os blocos da etapa "Dados da Venda" */
 
 #dados_venda .grid > :nth-child(2) {
   margin-top: 1.5rem !important;
+  /* ~24px */
 }
-
-/* ~32px */
 
 .before\:absolute::before {
   content: var(--tw-content);
@@ -1784,6 +1833,11 @@ input.range::-moz-range-thumb {
 .hover\:bg-\[\#F2600B\]:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(242 96 11 / var(--tw-bg-opacity));
+}
+
+.hover\:bg-\[\#d1d1d1\]:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(209 209 209 / var(--tw-bg-opacity));
 }
 
 .focus\:border-black:focus {
@@ -1881,6 +1935,11 @@ input.range::-moz-range-thumb {
   background-color: rgb(242 96 11 / var(--tw-bg-opacity));
 }
 
+.aria-pressed\:text-white[aria-pressed="true"] {
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+
 .group[aria-pressed="true"] .group-aria-pressed\:text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
@@ -1931,4 +1990,3 @@ input.range::-moz-range-thumb {
     padding: 0px;
   }
 }
-

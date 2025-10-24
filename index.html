@@ -10,7 +10,7 @@
 
 </head>
 
-<body class="min-h-svh flex items-stretch justify-center bg-[#E0E0E0] p-6">
+<body class="flex itens-start justify-center bg-[#E0E0E0] p-6">
     <div id="quadro-branco" class="bg-white rounded-2xl
                     w-full max-w-2xl min-h-[260px]
 
@@ -56,32 +56,64 @@
 
 
     <!--FORMULARIO-->
-        <form id="financiamento-form" action="/envio-form" method="post" class="w-full"></form>
+        <form id="financiamento-form" action="/envio-form" method="post" class="w-full">
             <!---etapa 1-->
-            <section id="etapa-1" class="form-step">
-                <div>
-                    <span class="font-medium text-xl">Você é:</span>
+            <section id="etapa-1" class="form-step is-active flex flex-col space-y-4 items-center justify-center ">
+                <div class="w-full flex justify-center">
+                    <span class="font-medium text-xl text-center">Você é:</span>
+                </div>
+                <div class="w-full flex justify-center">
+                    <div class="flex w-full max-w-[400px] gap-6">
+                        <button
+                        type="button"
+                        aria-pressed="false"
+                        class="flex-1 min-w-0 h-[56px] bg-[#E0E0E0] rounded-2xl font-medium text-center 
+                                flex items-center justify-center p-4
+                                 hover:bg-[#d1d1d1] transition-all duration-200 ease-in-out
+                                 aria-pressed:bg-[#F2600B]
+                                 aria-pressed:text-white
+                                 group">
+                        <span class="font-medium group-aria-pressed:text-white">Comprador</span>
+                        </button>
+
+                        <button
+                        type="button"
+                        aria-pressed="false"
+                        class="flex-1 min-w-0 h-[56px] bg-[#E0E0E0] rounded-2xl font-medium text-center 
+                                flex items-center justify-center p-4
+                                 hover:bg-[#d1d1d1] transition-all duration-200 ease-in-out
+                                 aria-pressed:bg-[#F2600B]
+                                 aria-pressed:text-white
+                                 group">
+                        <span class="font-medium group-aria-pressed:text-white">Vendedor</span>
+                        </button>
+                    </div>
                 </div>
 
             </section>
 
             <!---etapa 2-->
-            <section id="etapa-2" class="form-step">
+            <section id="etapa-2" class="form-step is-hidden-step">
+                sjbvik
 
             </section>
 
             <!---etapa 3-->
-            <section id="etapa-3" class="form-step">
+            <section id="etapa-3" class="form-step is-hidden-step">
 
             </section>
             
             <!---etapa 4-->
-            <section id="etapa-4" class="form-step">
+            <section id="etapa-4" class="form-step is-hidden-step">
 
             </section>
             
-            <div class="flex justify-end mt-8">
-                <button type="button" id="btn-next-step" class="bg-black pt-2 pb-2 pl-8 pr-8 rounded-2xl ">
+            <!--BOTOES AVANÇAR VOLTAR-->
+            <div class="flex mt-8 w-full justify-between">
+                <button type="button" class="nav-prev bg-black pt-2 pb-2 pl-8 pr-8 rounded-3xl">
+                    <span class="text-white">Voltar</span>
+                </button>
+                <button type="button" class="nav-next bg-black pt-2 pb-2 pl-8 pr-8 rounded-3xl">
                     <span class="text-white">Avançar</span>
                 </button>
             </div>

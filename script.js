@@ -100,6 +100,26 @@ function loadPPA() {
     const form = document.getElementById('financiamento-form');
     if (!form) return;
 
+    //função botao animaçao etapa 1 - comprador vs vendedor
+    function initSelecaoTipoUsuario() {
+        const botoesTipo = Array.from(document.querySelectorAll('#etapa-1 [aria-pressed]'));
+        if (botoesTipo.length === 0) return;
+
+        botoesTipo.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // visual
+                botoesTipo.forEach(b => b.setAttribute('aria-pressed', 'false'));
+                btn.setAttribute('aria-pressed', 'true');
+
+                // negócio
+                currentUserType = btn.textContent.trim().toLowerCase(); // "comprador" ou "vendedor"
+                updateStepAvailability(); // <- ESSENCIAL
+            });
+        });
+    }
+
+
+    
     // ✅ ID único por envio (usado no back para deduplicar)
     let submissionIdInput = form.querySelector('input[name="submission_id"]');
     if (!submissionIdInput) {
@@ -132,6 +152,9 @@ function setSubmittingState(on, buttonText = null) {
         nextButton.textContent = buttonText;
     }
 }
+// inicializa escolha Comprador/Vendedor
+initSelecaoTipoUsuario();
+
 
 
 
@@ -450,11 +473,10 @@ function setSubmittingState(on, buttonText = null) {
     const setStepEnabled = (index, enabled) => {
         stepAvailability[index] = enabled;
         const step = steps[index];
-        if (!step) {
-            return;
-        }
-        step.classList.toggle('is-hidden-step', !enabled);
+        if (!step) return;
 
+        // não mexe mais em visibilidade aqui
+        // só liga/desliga campos internos
         const elements = step.querySelectorAll('input, select, textarea');
         elements.forEach((element) => {
             if (enabled) {
@@ -474,6 +496,7 @@ function setSubmittingState(on, buttonText = null) {
             }
         });
     };
+
 
     const findEnabledStep = (startIndex, direction, includeStart = false) => {
         let index = includeStart ? startIndex : startIndex + direction;
@@ -585,12 +608,24 @@ function setSubmittingState(on, buttonText = null) {
         steps.forEach((step, index) => {
             const enabled = isStepEnabled(index);
             const isActive = index === currentStepIndex;
+
+            // só a etapa ativa aparece
+            const shouldBeHiddenVisually = !isActive;
+
+            // marca/desmarca ativo
             step.classList.toggle('is-active', isActive);
-            step.classList.toggle('is-hidden-step', !enabled);
-            const shouldHide = !enabled || !isActive;
-            step.setAttribute('aria-hidden', shouldHide ? 'true' : 'false');
+
+            // esconde TODAS as outras
+            step.classList.toggle('is-hidden-step', shouldBeHiddenVisually);
+
+            // acessibilidade
+            const ariaHidden = (!enabled || !isActive);
+            step.setAttribute('aria-hidden', ariaHidden ? 'true' : 'false');
         });
     };
+
+
+
 
     function showConfirmacao() {
         // liga o estado global
@@ -1609,46 +1644,6 @@ if (document.getElementById('pagina-aprovado')) {
 }
 
 
-// === TESTE VISUAL DA BARRA DE ETAPAS ===
-window.addEventListener('DOMContentLoaded', () => {
-  console.log('Teste: barra de etapas');
-
-  // acessa os botões
-  const tabs = Array.from(document.querySelectorAll('.step-tab'));
-
-  // índice inicial
-  let current = 0;
-  let maxStepIndex = 0;
-
-  function updateTabs() {
-    tabs.forEach((tab, i) => {
-      const state =
-        i === current ? 'active' :
-        (i < current ? 'complete' : 'future');
-      applyStepClasses(tab, state);
-    });
-  }
-
-  // botão de avançar (usa o que já existe na tela)
-  const btnNext = document.getElementById('btn-next-step');
-  if (btnNext) {
-    btnNext.addEventListener('click', () => {
-      current = (current + 1) % tabs.length;
-      updateTabs();
-    });
-  }
-
-  // clique direto em uma aba concluída
-  tabs.forEach((tab, index) => {
-    tab.addEventListener('click', () => {
-      if (tab.disabled) return;
-      current = index;
-      updateTabs();
-    });
-  });
-
-  updateTabs(); // inicial
-});
 
 
 
