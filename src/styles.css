@@ -44,7 +44,7 @@
   }
 
   /* 🚨 importante: esconder steps inativos */
-  .is-hidden-step {
+  .form-step.is-hidden-step {
     @apply hidden;
   }
 

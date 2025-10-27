@@ -220,8 +220,8 @@ initSelecaoTipoUsuario();
     const valorMotoInput = document.getElementById('valor_moto');
     const valorEntradaInput = document.getElementById('valor_entrada');
 
-    let currentStepIndex = 0;
-    let maxStepIndex = 0;
+    let currentStepIndex = 1;
+    let maxStepIndex = currentStepIndex;
     let currentUserType = null;
 
     const stepAvailability = steps.map(() => true);
