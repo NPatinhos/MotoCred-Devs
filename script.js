@@ -41,13 +41,6 @@ function openV2AsPage(sectionId) {
   }
 }
 
-//MODO DEV
-/*
-window.addEventListener('DOMContentLoaded', () => {
-  // Abre a tela de aprovado como página (fluxo normal, sem overlay)
-  openV2AsPage('pagina-aprovado');
-});
-*/
 // ===== MODO DEV FLEXÍVEL =====
 window.addEventListener('DOMContentLoaded', () => {
   // altere para true para ativar o modo dev
@@ -57,7 +50,7 @@ window.addEventListener('DOMContentLoaded', () => {
   // exemplos possíveis:
   // "etapa-1", "etapa-2", "etapa-3", "etapa-4"
   // ou "pagina-aprovado", "pagina-negado"
-  const ETAPA_INICIAL = 'etapa-3';
+  const ETAPA_INICIAL = 'etapa-4';
 
   if (MODO_DEV) {
     // se for uma página especial, abre como página isolada
@@ -148,6 +141,28 @@ function loadPPA() {
         });
     }
 
+    // função botao animação etapa 3 - possui CNH (sim/nao)
+    function initSelecaoCNH() {
+        const botoesCNH = Array.from(document.querySelectorAll('#etapa-3 [data-cnh]'));
+        if (botoesCNH.length === 0) return;
+
+        const hiddenCNH = document.getElementById('possui_cnh');
+
+        botoesCNH.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // visual: zera todos e ativa só o clicado
+                botoesCNH.forEach(b => b.setAttribute('aria-pressed', 'false'));
+                btn.setAttribute('aria-pressed', 'true');
+
+                // salvar valor "sim" / "nao"
+                if (hiddenCNH) {
+                    hiddenCNH.value = btn.dataset.cnh || '';
+                }
+            });
+        });
+    }
+
+
 
     
     // ✅ ID único por envio (usado no back para deduplicar)
@@ -184,6 +199,7 @@ function setSubmittingState(on, buttonText = null) {
 }
 // inicializa escolha Comprador/Vendedor
 initSelecaoTipoUsuario();
+initSelecaoCNH();
 
 
 

@@ -127,21 +127,108 @@
             <!---etapa 3-->
             <section id="etapa-3" class="form-step is-hidden-step">
                 <fieldset class="border-0 bg-[#E0E0E0] rounded-2xl p-6 pt-4 relative">
-                    <legend class="absolute -top-3 left-6 text-[#F2600B] 
-                        text-base font-semibold leading-none px-2 py-0.5">
+                    <legend
+                    class="absolute -top-3 left-6 text-[#F2600B] 
+                            text-sm font-semibold leading-none px-2 py-0.5">
                     Dados do Cliente
                     </legend>
 
-                    <label for="nome-cliente" class="block mt-4">Nome do Cliente:</label>
-                    <input type="text" id="nome-cliente" name="nome-cliente" class="rounded-2xl w-full">
+                    <label for="nome-cliente" class="block mt-2">Nome do Cliente:</label>
+                    <input type="text" id="nome-cliente" name="nome-cliente" class="rounded-2xl w-full"
+                    required>
 
-                    <label for="email-cliente" class="block mt-4">Email do cliente:</label>
-                    <input type="text" id="email-cliente" name="email-cliente" class="rounded-2xl w-full">
+                    <label for="cpf-cliente" class="block mt-4">CPF:</label>
+                    <input type="text" id="cpf" name="cpf" maxlength="14" placeholder="000.000.000-00" class="rounded-2xl w-full"
+                    required>
+
+                    <label for="cnh-cliente" class="block mt-4">Possui CNH?</label>
+                    <div class="w-full flex justify-center">
+                        <div class="flex w-full max-w-[400px] gap-6">
+                            <button
+                            type="button"
+                            aria-pressed="false"
+                            class="flex-1 min-w-0 h-[56px] bg-white rounded-2xl font-medium text-center 
+                                    flex items-center justify-center p-4
+                                    hover:bg-[#d1d1d1] transition-all duration-200 ease-in-out
+                                    aria-pressed:bg-[#F2600B]
+                                    aria-pressed:text-white
+                                    group"
+                            data-cnh="sim">
+                            <span class="font-medium group-aria-pressed:text-white">Sim</span>
+                            </button>
+
+                            <button
+                            type="button"
+                            aria-pressed="false"
+                            class="flex-1 min-w-0 h-[56px] bg-white rounded-2xl font-medium text-center 
+                                    flex items-center justify-center p-4
+                                    hover:bg-[#d1d1d1] transition-all duration-200 ease-in-out
+                                    aria-pressed:bg-[#F2600B]
+                                    aria-pressed:text-white
+                                    group"
+                            data-cnh="nao">
+                            <span class="font-medium group-aria-pressed:text-white">Não</span>
+                            </button>
+                        </div>
+                    </div>
+
+                        <input type="hidden" name="possui_cnh" id="possui_cnh" value="">
+
+
+                    <!-- Email -->
+                    <label for="email-cliente" class="block mt-4">Email do Cliente:</label>
+                    <input
+                    type="email"
+                    id="email-cliente"
+                    name="email-cliente"
+                    placeholder="exemplo@email.com"
+                    class="rounded-2xl w-full"
+                    required
+                    >
+
+                    <!-- Telefone -->
+                    <label for="telefone" class="block mt-4">Telefone:</label>
+                    <input
+                    type="tel"
+                    id="telefone"
+                    name="telefone"
+                    placeholder="(00) 00000-0000"
+                    class="rounded-2xl w-full"
+                    required
+                    >
+
+                    <!-- Renda Mensal -->
+                    <label for="renda_mensal" class="block mt-4">Renda Mensal:</label>
+                    <input
+                    type="text"
+                    id="renda_mensal"
+                    name="renda_mensal"
+                    placeholder="R$ 0,00"
+                    class="rounded-2xl w-full"
+                    required
+                    >
                 </fieldset>
-            </section>
+                </section>
+
             
             <!---etapa 4-->
             <section id="etapa-4" class="form-step is-hidden-step">
+                <fieldset class="border-0 bg-[#E0E0E0] rounded-2xl p-6 pt-4 relative">
+                    <legend
+                    class="absolute -top-3 left-6 text-[#F2600B] 
+                            text-sm font-semibold leading-none px-2 py-0.5">
+                    Dados da Venda
+                    </legend>
+
+                    <label for="valor-moto" class="block mt-2">Valor da Moto:</label>
+                    <input type="text" id="valor-moto" name="valor-moto" class="rounded-2xl w-full"
+                    required>
+
+                    <label for="cpf-cliente" class="block mt-4">Valor da Entrada:</label>
+                    <input type="text" id="cpf" name="cpf" maxlength="14" placeholder="000.000.000-00" class="rounded-2xl w-full"
+                    required>
+
+                </fieldset>
 
             </section>
             
