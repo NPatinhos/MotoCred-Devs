@@ -48,6 +48,36 @@ window.addEventListener('DOMContentLoaded', () => {
   openV2AsPage('pagina-aprovado');
 });
 */
+// ===== MODO DEV FLEXÍVEL =====
+window.addEventListener('DOMContentLoaded', () => {
+  // altere para true para ativar o modo dev
+  const MODO_DEV = true;
+
+  // etapa ou página que deseja abrir automaticamente:
+  // exemplos possíveis:
+  // "etapa-1", "etapa-2", "etapa-3", "etapa-4"
+  // ou "pagina-aprovado", "pagina-negado"
+  const ETAPA_INICIAL = 'etapa-3';
+
+  if (MODO_DEV) {
+    // se for uma página especial, abre como página isolada
+    if (ETAPA_INICIAL.startsWith('pagina-')) {
+      openV2AsPage(ETAPA_INICIAL);
+    } else {
+      // mostra a etapa específica
+      document.querySelectorAll('.form-step').forEach(step => {
+        step.classList.add('is-hidden-step');
+        step.classList.remove('is-active');
+      });
+      const alvo = document.getElementById(ETAPA_INICIAL);
+      if (alvo) {
+        alvo.classList.remove('is-hidden-step');
+        alvo.classList.add('is-active');
+      }
+    }
+  }
+});
+
 
 
 
@@ -220,8 +250,8 @@ initSelecaoTipoUsuario();
     const valorMotoInput = document.getElementById('valor_moto');
     const valorEntradaInput = document.getElementById('valor_entrada');
 
-    let currentStepIndex = 1;
-    let maxStepIndex = currentStepIndex;
+    let currentStepIndex = 0;
+    let maxStepIndex = 0;
     let currentUserType = null;
 
     const stepAvailability = steps.map(() => true);
@@ -837,7 +867,7 @@ initSelecaoTipoUsuario();
     }
 
     updateStepAvailability();
-    showStep(0);  //DESCOMENTAR ESSA PARTE DPS QUE SAIR DO MODO DEv
+    showStep(currentStepIndex);  //DESCOMENTAR ESSA PARTE DPS QUE SAIR DO MODO DEv
 
     // Em script.js
 

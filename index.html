@@ -94,16 +94,50 @@
 
             <!---etapa 2-->
             <section id="etapa-2" class="form-step is-hidden-step">
-                <div class="bg-[#E0E0E0]">
-                    <span>Dados do Vendedor</span>
+                <fieldset class="border-0 bg-[#E0E0E0] rounded-2xl p-6 pt-4 relative">
+                    <legend class="absolute -top-3 left-6 text-[#F2600B] 
+                        text-base font-semibold leading-none px-2 py-0.5">
+                    Dados do Vendedor
+                    </legend>
 
-                </div>
+                    <label for="loja" class="block mt-2">Loja/Concessionária:</label>
+                    <select class="rounded-2xl w-full" id="loja" name="loja" required>
+                    <option value="">Selecione</option>
+                    <option value="Moto Certa">Moto Certa</option>
+                    <option value="Carbumotos">Carbumotos</option>
+                    <option value="Fina Motos">Fina Motos</option>
+                    <option value="Charles Motos">Charles Motos</option>
+                    <option value="Brasil Motos">Brasil Motos</option>
+                    <option value="RN Motos">RN Motos</option>
+                    <option value="Flavio Giu Motos">Flavio Giu Motos</option>
+                    <option value="Sertão Motos">Sertão Motos</option>
+                    <option value="Shineray Goianinha">Shineray Goianinha</option>
+                    </select>
 
+                    <label for="nome-vendedor" class="block mt-4">Nome do Vendedor:</label>
+                    <input type="text" id="nome-vendedor" name="nome-vendedor" class="rounded-2xl w-full">
+
+                    <label for="email-vendedor" class="block mt-4">Email do Vendedor:</label>
+                    <input type="text" id="email-vendedor" name="email-vendedor" class="rounded-2xl w-full">
+                </fieldset>
             </section>
+
+
 
             <!---etapa 3-->
             <section id="etapa-3" class="form-step is-hidden-step">
-                <span>oiii</span>
+                <fieldset class="border-0 bg-[#E0E0E0] rounded-2xl p-6 pt-4 relative">
+                    <legend class="absolute -top-3 left-6 text-[#F2600B] 
+                        text-base font-semibold leading-none px-2 py-0.5">
+                    Dados do Cliente
+                    </legend>
+
+                    <label for="nome-cliente" class="block mt-4">Nome do Cliente:</label>
+                    <input type="text" id="nome-cliente" name="nome-cliente" class="rounded-2xl w-full">
+
+                    <label for="email-cliente" class="block mt-4">Email do cliente:</label>
+                    <input type="text" id="email-cliente" name="email-cliente" class="rounded-2xl w-full">
+                </fieldset>
             </section>
             
             <!---etapa 4-->
