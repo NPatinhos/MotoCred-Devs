@@ -44,7 +44,7 @@ function openV2AsPage(sectionId) {
 // ===== MODO DEV FLEXÍVEL =====
 window.addEventListener('DOMContentLoaded', () => {
   // altere para true para ativar o modo dev
-  const MODO_DEV = true;
+  const MODO_DEV = false;
 
   // etapa ou página que deseja abrir automaticamente:
   // exemplos possíveis:
@@ -598,45 +598,114 @@ initSelecaoCNH();
     const COMPLETE = ['is-complete'];
     const ACTIVE = ['is-active'];
 
-    function applyStepClasses(tabEl, state) {
-    // limpa estados conhecidos
-    tabEl.classList.remove(...FUTURE, ...COMPLETE, ...ACTIVE);
-    // aplica estado novo
-    const set = state === 'active' ? ACTIVE : state === 'complete' ? COMPLETE : FUTURE;
-    set.forEach(c => tabEl.classList.add(c));
+    function applyStepClasses(tabEl, state, { index, isSkippedLocked }) {
+        // limpa estados conhecidos
+        tabEl.classList.remove(...FUTURE, ...COMPLETE, ...ACTIVE, 'is-locked');
 
-    // texto: só na ativa
-    const label = tabEl.querySelector('span');
-    if (label) {
-        if (state === 'active') {
-        label.classList.remove('hidden');
-        label.classList.add('inline','font-semibold','text-[0.9rem]','leading-[1.1]','whitespace-nowrap');
-        } else {
-        label.classList.add('hidden');
-        label.classList.remove('inline','font-semibold','text-[0.9rem]','leading-[1.1]','whitespace-nowrap');
+        // aplica estado visual (future / complete / active)
+        const set =
+            state === 'active'
+                ? ACTIVE
+                : state === 'complete'
+                ? COMPLETE
+                : FUTURE;
+        set.forEach(c => tabEl.classList.add(c));
+
+        // se for aquela etapa pulada do vendedor,
+        // marca com classe extra pra estilo
+        if (isSkippedLocked) {
+            tabEl.classList.add('is-locked');
         }
+
+        // texto: só na ativa
+        const label = tabEl.querySelector('span');
+        if (label) {
+            if (state === 'active') {
+                label.classList.remove('hidden');
+                label.classList.add(
+                    'inline',
+                    'font-semibold',
+                    'text-[0.8rem]',
+                    'leading-[1.1]',
+                    'text-center',
+                    'break-words',
+                    'whitespace-normal',
+                    'max-w-[4.5rem]'
+                );
+            } else {
+                label.classList.add('hidden');
+                label.classList.remove(
+                    'inline',
+                    'font-semibold',
+                    'text-[0.8rem]',
+                    'leading-[1.1]',
+                    'text-center',
+                    'break-words',
+                    'whitespace-normal',
+                    'max-w-[4.5rem]'
+                );
+            }
+        }
+
+        // acessibilidade / foco / clique
+        const isFuture = state === 'future';
+        const isActive = state === 'active';
+
+        // bloqueia clique se:
+        // - ainda é future
+        // - OU é a etapa pulada do vendedor (isSkippedLocked)
+        const shouldDisable = isFuture || isSkippedLocked;
+
+        tabEl.disabled = shouldDisable;
+        tabEl.setAttribute('aria-disabled', shouldDisable ? 'true' : 'false');
+        tabEl.setAttribute('aria-selected', isActive ? 'true' : 'false');
+
+        tabEl.tabIndex =
+            !shouldDisable && (state === 'complete' || isActive)
+                ? 0
+                : -1;
     }
 
-    // acessibilidade + clique
-    const isFuture = state === 'future';
-    const isActive = state === 'active';
-    tabEl.disabled = isFuture;
-    tabEl.setAttribute('aria-disabled', isFuture ? 'true' : 'false');
-    tabEl.setAttribute('aria-selected', isActive ? 'true' : 'false');
-    tabEl.tabIndex = (state === 'complete' || isActive) ? 0 : -1;
-    }
+
 
     function renderTabsTailwind() {
         tabs.forEach((tab, index) => {
             const enabled = isStepEnabled(index);
             const isActive = index === currentStepIndex;
-            const state = isActive ? 'active'
-                        : (enabled && index < maxStepIndex) ? 'complete'
-                        : 'future';
-            applyStepClasses(tab, state);
+
+            // define visual (active / complete / future)
+            let state;
+            if (isActive) {
+                state = 'active';
+            } else if (
+                currentUserType === 'comprador' &&
+                index === 1 &&         // etapa 2 (Dados do Vendedor)
+                maxStepIndex >= 2      // já chegou na etapa 3
+            ) {
+                state = 'complete';
+            } else if (enabled && index < maxStepIndex) {
+                state = 'complete';
+            } else {
+                state = 'future';
+            }
+
+            // essa etapa é "pulada", ou seja:
+            // - usuário é comprador
+            // - estamos falando da aba 2
+            // - aba deve parecer completa, mas NÃO deve parecer clicável
+            const isSkippedLocked =
+                currentUserType === 'comprador' &&
+                index === 1 &&
+                maxStepIndex >= 2;
+
+            applyStepClasses(tab, state, { index, isSkippedLocked });
         });
+
         atualizarNomeEtapaAtual && atualizarNomeEtapaAtual();
-        }
+    }
+
+
+
 
 
 

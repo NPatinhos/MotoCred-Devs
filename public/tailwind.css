@@ -976,6 +976,14 @@ select {
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 
+/* estado visual de etapa pulada (ex: Dados do Vendedor quando é comprador):
+   parece concluída (preta), mas NÃO é clicável e cursor NÃO é mãozinha */
+
+.step-tab.is-locked {
+  pointer-events: none;
+  cursor: default;
+}
+
 /* etapa ATUAL (ativa agora): preta grande, mostra texto */
 
 .step-tab.is-active {
@@ -1015,6 +1023,14 @@ select {
   display: none;
 }
 
+/* Qualquer aba que esteja desabilitada deve parecer não clicável */
+
+.step-tab.is-complete[disabled],
+  .step-tab.is-complete[aria-disabled="true"] {
+  pointer-events: none;
+  cursor: default;
+}
+
 /* ⚠️ REMOVIDO:
      NÃO defina .is-active global aqui.
      NÃO force display:block na etapa ativa.
@@ -1033,12 +1049,24 @@ select {
   position: fixed;
 }
 
+.absolute {
+  position: absolute;
+}
+
 .relative {
   position: relative;
 }
 
 .inset-0 {
   inset: 0px;
+}
+
+.-top-3 {
+  top: -0.75rem;
+}
+
+.left-6 {
+  left: 1.5rem;
 }
 
 .z-50 {
@@ -1104,6 +1132,10 @@ select {
 
 .h-\[10px\] {
   height: 10px;
+}
+
+.h-\[40px\] {
+  height: 40px;
 }
 
 .h-\[50px\] {
@@ -1447,9 +1479,19 @@ select {
   padding-right: 0.125rem;
 }
 
+.px-2 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
 .px-6 {
   padding-left: 1.5rem;
   padding-right: 1.5rem;
+}
+
+.py-0\.5 {
+  padding-top: 0.125rem;
+  padding-bottom: 0.125rem;
 }
 
 .py-12 {
@@ -1518,6 +1560,10 @@ select {
   padding-top: 0.5rem;
 }
 
+.pt-4 {
+  padding-top: 1rem;
+}
+
 .pt-8 {
   padding-top: 2rem;
 }
@@ -1579,6 +1625,10 @@ select {
 
 .leading-\[1\.1\] {
   line-height: 1.1;
+}
+
+.leading-none {
+  line-height: 1;
 }
 
 .text-\[\#0CAD11\] {

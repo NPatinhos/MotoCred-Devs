@@ -26,6 +26,13 @@
            rounded-full text-white px-0;
   }
 
+  /* estado visual de etapa pulada (ex: Dados do Vendedor quando é comprador):
+   parece concluída (preta), mas NÃO é clicável e cursor NÃO é mãozinha */
+.step-tab.is-locked {
+  @apply cursor-default pointer-events-none;
+}
+
+
   /* etapa ATUAL (ativa agora): preta grande, mostra texto */
   .step-tab.is-active {
     @apply w-[90px] h-[50px] bg-black text-white
@@ -47,6 +54,14 @@
   .form-step.is-hidden-step {
     @apply hidden;
   }
+
+/* Qualquer aba que esteja desabilitada deve parecer não clicável */
+  .step-tab.is-complete[disabled],
+  .step-tab.is-complete[aria-disabled="true"] {
+    @apply cursor-default pointer-events-none;
+  }
+
+
 
   /* ⚠️ REMOVIDO:
      NÃO defina .is-active global aqui.
