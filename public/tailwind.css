@@ -1004,7 +1004,9 @@ select {
 
 .step-tab.is-active span {
   display: inline;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: break-word;
+  text-align: center;
   font-size: 0.875rem;
   line-height: 1.25rem;
   font-weight: 500;
@@ -1344,6 +1346,10 @@ select {
 
 .overflow-auto {
   overflow: auto;
+}
+
+.whitespace-normal {
+  white-space: normal;
 }
 
 .rounded {

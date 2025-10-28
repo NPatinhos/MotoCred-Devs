@@ -42,7 +42,7 @@
 
   /* texto VISÍVEL só na etapa ativa */
   .step-tab.is-active span {
-    @apply inline font-medium text-sm leading-[1.1] whitespace-nowrap;
+    @apply inline font-medium text-sm leading-[1.1] text-center whitespace-normal break-words;
   }
 
   /* texto ESCONDIDO nas outras */
