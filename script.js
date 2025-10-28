@@ -251,8 +251,10 @@ initSelecaoCNH();
     const tabs = Array.from(document.querySelectorAll('.step-tab'));
     const STEP_TITLES = ['Identificacao','Dados do Vendedor','Dados do Cliente','Dados da Venda'];    
     const stepCurrentLabel = document.querySelector('.step-current-label');
-    const btnPrev = form.querySelector('.nav-prev');
-    const btnNext = form.querySelector('.nav-next');
+        // script.js (Adicione no início do script)
+    const btnPrev = document.getElementById('btnPrev'); 
+    const btnNext = document.getElementById('btnNext'); 
+    // ... outras variáveis e funções
     const navButtonGroup = form.querySelector('.nav-button-group');
     const navButtonGroupParent = navButtonGroup ? navButtonGroup.parentElement : null;
 
@@ -773,6 +775,14 @@ initSelecaoCNH();
         // Habilita/desabilita o botão Voltar
         btnPrev.disabled = currentStepIndex === 0;
 
+        if (currentStepIndex === 0) {
+            // Etapa 1: Aplica opacidade baixa e desativa o ponteiro do mouse
+            btnPrev.classList.add('opacity-0', 'pointer-events-none');
+        } else {
+            // Outras etapas: Remove as classes para habilitar
+            btnPrev.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
         // Determina se a próxima ação deve ser 'submit' (ou seja, não há próxima etapa habilitada).
         // A função findEnabledStep é usada aqui.
         const shouldSubmit = findEnabledStep(currentStepIndex, 1, false) === null;
@@ -788,9 +798,7 @@ initSelecaoCNH();
         btnNext.textContent = isSubmitAction ? 'Enviar' : 'Próximo';
         btnNext.setAttribute('aria-label', isSubmitAction ? 'Enviar formulário' : 'Avançar para a próxima etapa');
         
-        // Lógica de desabilitar o botão de acordo com a validação (opcional)
-        // Você pode ter outras linhas aqui para desabilitar o btnNext que não estão visíveis,
-        // mas a lógica principal está acima.
+
     };
 
     const showStep = (index) => {

@@ -1462,11 +1462,6 @@ select {
   background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 
-.bg-\[\#D56833\] {
-  --tw-bg-opacity: 1;
-  background-color: rgb(213 104 51 / var(--tw-bg-opacity));
-}
-
 .p-2 {
   padding: 0.5rem;
 }
@@ -1646,9 +1641,9 @@ select {
   color: rgb(29 70 206 / var(--tw-text-opacity));
 }
 
-.text-\[\#F2600B\] {
+.text-\[\#D56833\] {
   --tw-text-opacity: 1;
-  color: rgb(242 96 11 / var(--tw-text-opacity));
+  color: rgb(213 104 51 / var(--tw-text-opacity));
 }
 
 .text-black {
@@ -1694,11 +1689,6 @@ select {
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 
-.text-\[\#D56833\] {
-  --tw-text-opacity: 1;
-  color: rgb(213 104 51 / var(--tw-text-opacity));
-}
-
 .underline {
   text-decoration-line: underline;
 }
@@ -1706,6 +1696,10 @@ select {
 .antialiased {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.opacity-0 {
+  opacity: 0;
 }
 
 .shadow-sm {
@@ -1716,12 +1710,6 @@ select {
 
 .outline {
   outline-style: solid;
-}
-
-.transition {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
 }
 
 .transition-all {
@@ -1890,19 +1878,14 @@ input.range::-moz-range-thumb {
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
-.hover\:bg-\[\#F2600B\]:hover {
+.hover\:bg-\[\#D56833\]:hover {
   --tw-bg-opacity: 1;
-  background-color: rgb(242 96 11 / var(--tw-bg-opacity));
+  background-color: rgb(213 104 51 / var(--tw-bg-opacity));
 }
 
 .hover\:bg-\[\#d1d1d1\]:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(209 209 209 / var(--tw-bg-opacity));
-}
-
-.hover\:bg-\[\#D56833\]:hover {
-  --tw-bg-opacity: 1;
-  background-color: rgb(213 104 51 / var(--tw-bg-opacity));
 }
 
 .focus\:border-black:focus {
@@ -1993,11 +1976,6 @@ input.range::-moz-range-thumb {
   --tw-scale-x: 1.05;
   --tw-scale-y: 1.05;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
-.aria-pressed\:bg-\[\#F2600B\][aria-pressed="true"] {
-  --tw-bg-opacity: 1;
-  background-color: rgb(242 96 11 / var(--tw-bg-opacity));
 }
 
 .aria-pressed\:bg-\[\#D56833\][aria-pressed="true"] {
