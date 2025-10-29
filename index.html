@@ -118,7 +118,14 @@
                     <input type="text" id="nome-vendedor" name="nome-vendedor" class="rounded-2xl w-full">
 
                     <label for="email-vendedor" class="block mt-4">Email do Vendedor:</label>
-                    <input type="text" id="email-vendedor" name="email-vendedor" class="rounded-2xl w-full">
+                    <input
+                    type="email"
+                    id="email-vendedor"
+                    name="email-vendedor"
+                    placeholder="exemplo@email.com"
+                    class="rounded-2xl w-full"
+                    required
+                    >
                 </fieldset>
             </section>
 
@@ -127,9 +134,8 @@
             <!---etapa 3-->
             <section id="etapa-3" class="form-step is-hidden-step">
                 <fieldset class="border-0 bg-[#E0E0E0] rounded-2xl p-6 pt-4 relative">
-                    <legend
-                    class="absolute -top-3 left-6 text-[#D56833] 
-                            text-sm font-semibold leading-none px-2 py-0.5">
+                    <legend class="absolute -top-3 left-6 text-[#D56833] 
+                        text-base font-semibold leading-none px-2 py-0.5">
                     Dados do Cliente
                     </legend>
 
@@ -148,11 +154,12 @@
                             type="button"
                             aria-pressed="false"
                             class="flex-1 min-w-0 h-[40px] bg-white rounded-2xl font-medium text-center 
-                                    flex items-center justify-center p-4
-                                    hover:bg-[#d1d1d1] transition-all duration-200 ease-in-out
-                                    aria-pressed:bg-[#D56833]
-                                    aria-pressed:text-white
-                                    group"
+                                flex items-center justify-center p-4 border border-[#757b88]
+                                hover:bg-[#d1d1d1] transition-all duration-200 ease-in-out
+                                aria-pressed:bg-[#D56833]
+                                aria-pressed:text-white
+                                aria-pressed:border-0
+                                group"
                             data-cnh="sim">
                             <span class="font-medium group-aria-pressed:text-white">Sim</span>
                             </button>
@@ -161,20 +168,19 @@
                             type="button"
                             aria-pressed="false"
                             class="flex-1 min-w-0 h-[40px] bg-white rounded-2xl font-medium text-center 
-                                    flex items-center justify-center p-4
+                                    flex items-center justify-center p-4 border border-[#757b88]
                                     hover:bg-[#d1d1d1] transition-all duration-200 ease-in-out
                                     aria-pressed:bg-[#D56833]
                                     aria-pressed:text-white
+                                    aria-pressed:border-0
                                     group"
                             data-cnh="nao">
                             <span class="font-medium group-aria-pressed:text-white">Não</span>
                             </button>
                         </div>
                     </div>
-
-                        <input type="hidden" name="possui_cnh" id="possui_cnh" value="">
-
-
+                    <input type="hidden" name="cnh" id="possui-cnh" value="" required>
+                    
                     <!-- Email -->
                     <label for="email-cliente" class="block mt-4">Email do Cliente:</label>
                     <input

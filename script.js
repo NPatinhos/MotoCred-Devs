@@ -1,4 +1,4 @@
-﻿function showV2Overlay(sectionId) {
+﻿/*function showV2Overlay(sectionId) {
   document.body.classList.add('mode');
   const mainCard = document.querySelector('.card');
   if (mainCard) mainCard.style.display = 'none';
@@ -40,6 +40,7 @@ function openV2AsPage(sectionId) {
     // target.classList.add('block');  // ❌ não usar
   }
 }
+  */
 
 // ===== MODO DEV FLEXÍVEL =====
 window.addEventListener('DOMContentLoaded', () => {
@@ -141,29 +142,6 @@ function loadPPA() {
         });
     }
 
-    // função botao animação etapa 3 - possui CNH (sim/nao)
-    function initSelecaoCNH() {
-        const botoesCNH = Array.from(document.querySelectorAll('#etapa-3 [data-cnh]'));
-        if (botoesCNH.length === 0) return;
-
-        const hiddenCNH = document.getElementById('possui_cnh');
-
-        botoesCNH.forEach(btn => {
-            btn.addEventListener('click', () => {
-                // visual: zera todos e ativa só o clicado
-                botoesCNH.forEach(b => b.setAttribute('aria-pressed', 'false'));
-                btn.setAttribute('aria-pressed', 'true');
-
-                // salvar valor "sim" / "nao"
-                if (hiddenCNH) {
-                    hiddenCNH.value = btn.dataset.cnh || '';
-                }
-            });
-        });
-    }
-
-
-
     
     // ✅ ID único por envio (usado no back para deduplicar)
     let submissionIdInput = form.querySelector('input[name="submission_id"]');
@@ -197,9 +175,6 @@ function setSubmittingState(on, buttonText = null) {
         nextButton.textContent = buttonText;
     }
 }
-// inicializa escolha Comprador/Vendedor
-initSelecaoTipoUsuario();
-initSelecaoCNH();
 
 
 
@@ -271,6 +246,31 @@ initSelecaoCNH();
     let currentStepIndex = 0;
     let maxStepIndex = 0;
     let currentUserType = null;
+
+ 
+
+    
+    // função botao animação etapa 3 - possui CNH (sim/nao)
+    function initSelecaoCNH() {
+        const btnsCNH = document.querySelectorAll('[data-cnh]');
+        const inputCNH = document.getElementById('possui-cnh');
+
+        btnsCNH.forEach(btn => {
+            btn.addEventListener('click', () => {
+                btnsCNH.forEach(b => b.setAttribute('aria-pressed', 'false'));
+                btn.setAttribute('aria-pressed', 'true');
+                inputCNH.value = btn.dataset.cnh;
+
+                // limpa erro se já existia
+                updateCNHValidity(false);
+            });
+        });
+    }
+   // inicializa escolha Comprador/Vendedor
+    initSelecaoTipoUsuario();
+    initSelecaoCNH();
+
+
 
     const stepAvailability = steps.map(() => true);
 
@@ -462,6 +462,29 @@ initSelecaoCNH();
         telefoneInput.setCustomValidity('');
         return true;
     };
+
+    const updateCNHValidity = (showMessage = false) => {
+        const inputCNH = document.getElementById('possui-cnh');
+        const btnsCNH = document.querySelectorAll('[data-cnh]');
+
+        if (!inputCNH || !btnsCNH.length) {
+            return true; // nada pra validar
+        }
+
+        const selecionado = Array.from(btnsCNH).some(
+            (btn) => btn.getAttribute('aria-pressed') === 'true'
+        );
+
+        if (!selecionado) {
+            inputCNH.setCustomValidity(showMessage ? 'Por favor, selecione uma opção.' : '');
+            if (showMessage) inputCNH.reportValidity();
+            return false;
+        }
+
+        inputCNH.setCustomValidity('');
+        return true;
+    };
+
 
         // ❌ sem setCustomValidity / reportValidity
     // ✅ escreve a mensagem no #erro_dados_venda, igual à PPA
@@ -707,10 +730,6 @@ initSelecaoCNH();
     }
 
 
-
-
-
-
     const atualizarNomeEtapaAtual = () => {
         if (!stepCurrentLabel) return;
 
@@ -927,6 +946,14 @@ initSelecaoCNH();
                 updateValorEntradaValidity(true);
             }
 
+            // Validação extra da CNH (etapa 3)
+            if (step.id === 'etapa-3') {
+                if (!updateCNHValidity(true)) {
+                    return false;
+                }
+            }
+
+
             if (field === valorEntradaInput) {
             if (!updateValorEntradaValidity(true)) return false; // mostra erro “normal”
             continue; // NÃO chama checkValidity/reportValidity para evitar balão
@@ -963,6 +990,40 @@ initSelecaoCNH();
     showStep(currentStepIndex);  //DESCOMENTAR ESSA PARTE DPS QUE SAIR DO MODO DEv
 
     // Em script.js
+
+    const cnhButtons = document.querySelectorAll('[data-cnh]');
+    const cnhHiddenInput = document.querySelector('#possui-cnh');
+    const nextBtn = document.querySelector('#btnNext');
+
+    // cria o elemento de erro só uma vez
+    let cnhError = document.createElement('p');
+    cnhError.textContent = 'Por favor, selecione se possui CNH.';
+    cnhError.className = 'text-red-600 text-sm mt-2 hidden';
+    document.querySelector('#etapa-3 fieldset').appendChild(cnhError);
+
+    // escuta os botões para limpar o erro
+    cnhButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            cnhHiddenInput.value = btn.dataset.cnh;
+            cnhError.classList.add('hidden');gh
+        });
+    });
+
+    // no clique de avançar
+    nextBtn.addEventListener('click', () => {
+    const etapaAtiva = document.querySelector('.form-step.is-active');
+    
+    if (etapaAtiva.id === 'etapa-3') {
+        if (!cnhHiddenInput.value) {
+        cnhError.classList.remove('hidden');
+        return; // bloqueia avanço
+        }
+    }
+
+    // continua o fluxo normal de avanço
+    avancarEtapa();
+    });
+
 
     // Em script.js
 

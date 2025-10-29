@@ -1406,6 +1406,11 @@ select {
   border-color: rgb(209 27 27 / var(--tw-border-opacity));
 }
 
+.border-black {
+  --tw-border-opacity: 1;
+  border-color: rgb(0 0 0 / var(--tw-border-opacity));
+}
+
 .border-gray-200 {
   --tw-border-opacity: 1;
   border-color: rgb(229 231 235 / var(--tw-border-opacity));
@@ -1418,6 +1423,11 @@ select {
 
 .border-transparent {
   border-color: transparent;
+}
+
+.border-\[\#757b88\] {
+  --tw-border-opacity: 1;
+  border-color: rgb(117 123 136 / var(--tw-border-opacity));
 }
 
 .bg-\[\#0CAD11\]\/15 {
@@ -1982,6 +1992,10 @@ input.range::-moz-range-thumb {
   --tw-scale-x: 1.05;
   --tw-scale-y: 1.05;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.aria-pressed\:border-0[aria-pressed="true"] {
+  border-width: 0px;
 }
 
 .aria-pressed\:bg-\[\#D56833\][aria-pressed="true"] {
