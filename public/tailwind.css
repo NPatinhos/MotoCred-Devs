@@ -1401,14 +1401,14 @@ select {
   border-color: rgb(12 173 17 / var(--tw-border-opacity));
 }
 
+.border-\[\#757b88\] {
+  --tw-border-opacity: 1;
+  border-color: rgb(117 123 136 / var(--tw-border-opacity));
+}
+
 .border-\[\#D11B1B\] {
   --tw-border-opacity: 1;
   border-color: rgb(209 27 27 / var(--tw-border-opacity));
-}
-
-.border-black {
-  --tw-border-opacity: 1;
-  border-color: rgb(0 0 0 / var(--tw-border-opacity));
 }
 
 .border-gray-200 {
@@ -1423,11 +1423,6 @@ select {
 
 .border-transparent {
   border-color: transparent;
-}
-
-.border-\[\#757b88\] {
-  --tw-border-opacity: 1;
-  border-color: rgb(117 123 136 / var(--tw-border-opacity));
 }
 
 .bg-\[\#0CAD11\]\/15 {
