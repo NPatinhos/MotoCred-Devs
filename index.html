@@ -10,7 +10,7 @@
 
 </head>
 
-<body class="flex itens-start justify-center bg-[#E0E0E0] p-6">
+<body class="flex items-start justify-center bg-[#E0E0E0] p-6">
     <div id="quadro-branco" class="bg-white rounded-2xl
                     w-full max-w-2xl min-h-[260px]
 
@@ -65,7 +65,7 @@
                 <div class="w-full flex justify-center">
                     <div class="flex w-full max-w-[400px] gap-6">
                         <button
-                        type="button"
+                        type="button" data-tipo-usuario="comprador"
                         aria-pressed="false"
                         class="flex-1 min-w-0 h-[56px] bg-[#E0E0E0] rounded-2xl font-medium text-center 
                                 flex items-center justify-center p-4
@@ -78,7 +78,7 @@
 
                         <button
                         type="button"
-                        aria-pressed="false"
+                        aria-pressed="false" data-tipo-usuario="vendedor"
                         class="flex-1 min-w-0 h-[56px] bg-[#E0E0E0] rounded-2xl font-medium text-center 
                                 flex items-center justify-center p-4
                                  hover:bg-[#d1d1d1] transition-all duration-200 ease-in-out
@@ -105,7 +105,7 @@
                     <option value="">Selecione</option>
                     <option value="Moto Certa">Moto Certa</option>
                     <option value="Carbumotos">Carbumotos</option>
-                    <option value="Fina Motos">Fina Motos</option>
+                    <option value="Fina Motos">FinaMotos</option>
                     <option value="Charles Motos">Charles Motos</option>
                     <option value="Brasil Motos">Brasil Motos</option>
                     <option value="RN Motos">RN Motos</option>
@@ -230,9 +230,8 @@
                     <input type="text" id="valor-moto" name="valor-moto" class="rounded-2xl w-full"
                     required>
 
-                    <label for="cpf-cliente" class="block mt-4">Valor da Entrada:</label>
-                    <input type="text" id="cpf" name="cpf" maxlength="14" placeholder="000.000.000-00" class="rounded-2xl w-full"
-                    required>
+                    <label for="valor-entrada" class="block mt-4">Valor da Entrada:</label>
+                    <input type="text" id="valor-entrada" name="valor-entrada" class="rounded-2xl w-full" required>
 
                 </fieldset>
 
@@ -254,7 +253,7 @@
     <section id="pagina-negado"
         class="hidden wrapper fixed inset-0 z-50 overflow-auto
             bg-[#D9D9D9]
-            flex items-center justify-center
+             items-center justify-center
             pt-8 pb-8 pr-14 pl-14">
 
         <!--QUADRADO BRANCO-->
@@ -317,7 +316,7 @@
     <section id="pagina-aprovado"
         class="hidden wrapper fixed inset-0 z-50 overflow-auto
             bg-[#D9D9D9]
-            flex items-center justify-center
+             items-center justify-center
             pt-8 pb-8 pr-8 pl-8">
 
                 <!--QUADRADO BRANCO-->
@@ -410,7 +409,7 @@
                                         flex flex-row justify-between items-baseline
                                         md:flex-col md:justify-center md:items-center ">
 
-                                <div class="flex flex-row items-baseline items-end md:flex-col md:items-center ">
+                                <div class="flex flex-row items-baseline  md:flex-col md:items-center ">
                                     <span class="font-semibold text-4xl transition-all duration-300
                                                 group-hover:text-white
                                                 group-aria-pressed:text-white">12x</span>
@@ -444,7 +443,7 @@
                                         flex flex-row justify-between items-baseline
                                         md:flex-col md:justify-center md:items-center ">
 
-                                <div class="flex flex-row items-baseline items-end md:flex-col md:items-center ">
+                                <div class="flex flex-row items-baseline  md:flex-col md:items-center ">
                                     <span class="font-semibold text-4xl transition-all duration-300
                                                 group-hover:text-white
                                                 group-aria-pressed:text-white">24x</span>
@@ -478,7 +477,7 @@
                                         flex flex-row justify-between items-baseline
                                         md:flex-col md:justify-center md:items-center ">
 
-                                <div class="flex flex-row items-baseline items-end md:flex-col md:items-center ">
+                                <div class="flex flex-row items-baseline  md:flex-col md:items-center ">
                                     <span class="font-semibold text-4xl transition-all duration-300
                                                 group-hover:text-white
                                                 group-aria-pressed:text-white">36x</span>
@@ -525,7 +524,7 @@
 
 
 
-    <script src="script.js"></script>
-    <script src="scripts/calculo-ppa.js"></script>
+    <!--<script src="script.js"></script>-->
+    <script type="module" src="/scripts/main.js"></script>
 </body>
 </html>

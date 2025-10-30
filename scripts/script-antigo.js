@@ -1,4 +1,4 @@
-﻿/*function showV2Overlay(sectionId) {
+/*function showV2Overlay(sectionId) {
   document.body.classList.add('mode');
   const mainCard = document.querySelector('.card');
   if (mainCard) mainCard.style.display = 'none';
