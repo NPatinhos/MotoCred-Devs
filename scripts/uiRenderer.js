@@ -12,6 +12,7 @@
 // Para as etapas, deixo você com as classes que já usa (ex.: .is-hidden-step / .is-active) se quiser manter.
 
 import { getState } from './appState.js';
+import { updateEtapasBarra} from './stepNavigation.js';
 const R = (...a) => console.log('[RENDER]', ...a);
 
 
