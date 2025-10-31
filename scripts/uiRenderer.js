@@ -19,8 +19,15 @@ const R = (...a) => console.log('[RENDER]', ...a);
 const FORM_STEPS = ['etapa-1', 'etapa-2', 'etapa-3', 'etapa-4'];
 const PAGE_APROVADO_ID  = 'pagina-aprovado';
 const PAGE_NEGADO_ID    = 'pagina-negado';
-// se você não tiver uma página separada de "simulação", mantemos mapeado para "pagina-aprovado"
-const PAGE_SIMULACAO_ID = 'pagina-simulacao'; // opcional; se não existir, caímos no aprovado
+
+
+(function __renderSanity() {
+  console.log('[RENDER] sanity: conferindo IDs...');
+  const ids = [...FORM_STEPS, PAGE_APROVADO_ID, PAGE_NEGADO_ID];
+  const report = ids.map(id => ({ id, exists: !!document.getElementById(id) }));
+  console.table(report);
+})();
+
 
 // Cache simples de nós (evita querySelector repetido)
 const cache = new Map();
@@ -43,10 +50,14 @@ function showNodeAsFlexCentered(node) {
 }
 
 function showFormStep(stepId) {
+    console.log('[RENDER] showFormStep ->', stepId);
   // Esconde todas as steps
   for (const id of FORM_STEPS) {
     const section = el(id);
-    if (!section) continue;
+    if (!section) {
+        console.warn('[RENDER] step NÃO encontrada:', id);
+        continue;
+    }
     section.classList.add('hidden'); // você pode trocar por sua classe .is-hidden-step se preferir
     section.classList.remove('is-active');
   }
@@ -55,7 +66,15 @@ function showFormStep(stepId) {
   if (current) {
     current.classList.remove('hidden');
     current.classList.add('is-active');
-  }
+  } else {
+    console.error('[RENDER] step atual inexistente:', stepId);
+    }
+      // Snapshot de classes por etapa (ajuda a ver se Tailwind está removendo classes)
+  const snap = FORM_STEPS.map(id => {
+    const n = el(id);
+    return { id, classes: n ? n.className : '(missing)' };
+  });
+  console.table(snap);
 }
 
 // Zera tudo que não é a view atual
@@ -67,15 +86,12 @@ function hideAllSections() {
   // Esconde páginas finais
   hideNode(el(PAGE_APROVADO_ID));
   hideNode(el(PAGE_NEGADO_ID));
-  // Esconde simulação (se existir)
-  hideNode(el(PAGE_SIMULACAO_ID));
 }
 
 // API principal: renderiza conforme appState.currentView
 export function renderView() {
   const { currentView } = getState();
-  R('renderView currentView=', getState().currentView);
-
+  R('renderView ->', currentView); 
 
   // 1) Esconde tudo
   hideAllSections();
@@ -85,6 +101,7 @@ export function renderView() {
     // Etapas do formulário
     R('-> mostrar step', currentView);
     showFormStep(currentView);
+
     return;
   }
 
@@ -94,10 +111,10 @@ export function renderView() {
     return;
   }
 
-  if (currentView === 'simulacao') {
+  if (currentView === 'aprovado') {
     R('-> mostrar simulacao em #pagina-aprovado');
     // Se você tem uma página dedicada de simulação
-    const nodeSimu = el(PAGE_SIMULACAO_ID);
+    const nodeSimu = el(PAGE_APROVADO_ID);
     if (nodeSimu) {
       showNodeAsFlexCentered(nodeSimu);
     } else {

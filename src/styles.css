@@ -50,10 +50,10 @@
     @apply hidden;
   }
 
-  /* 🚨 importante: esconder steps inativos */
+  /* 🚨 importante: esconder steps inativos 
   .form-step.is-hidden-step {
     @apply hidden;
-  }
+  }*/
 
 /* Qualquer aba que esteja desabilitada deve parecer não clicável */
   .step-tab.is-complete[disabled],

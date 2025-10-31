@@ -1077,11 +1077,10 @@ select {
   display: none;
 }
 
-/* 🚨 importante: esconder steps inativos */
-
-.form-step.is-hidden-step {
-  display: none;
-}
+/* 🚨 importante: esconder steps inativos 
+  .form-step.is-hidden-step {
+    @apply hidden;
+  }*/
 
 /* Qualquer aba que esteja desabilitada deve parecer não clicável */
 
@@ -1180,6 +1179,10 @@ select {
 
 .inline-flex {
   display: inline-flex;
+}
+
+.table {
+  display: table;
 }
 
 .grid {
@@ -1326,10 +1329,6 @@ select {
 
 .items-start {
   align-items: flex-start;
-}
-
-.items-end {
-  align-items: flex-end;
 }
 
 .items-center {

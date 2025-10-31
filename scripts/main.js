@@ -18,7 +18,7 @@ window.__DBG = true;
 // ------------------------------------------------------------
 // Use setDevOverride('etapa-3') ou 'simulacao' para pular direto.
 // Comente/remova esta linha no deploy.
-setDevOverride('etapa-1');
+//setDevOverride('etapa-1');
 
 // ------------------------------------------------------------
 // ⚙️ 2. INJETAR SUAS APIS NO FLOW CONTROLLER
