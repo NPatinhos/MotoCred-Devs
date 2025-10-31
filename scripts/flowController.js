@@ -110,3 +110,4 @@ function calcPMT(taxaMensal, meses, principal) {
   const fator = Math.pow(1 + i, -n);
   return (P * i) / (1 - fator);
 }
+

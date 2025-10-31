@@ -2,12 +2,16 @@
 // Ponto de inicialização da aplicação (modo módulo ES).
 
 import { renderView } from './uiRenderer.js';
-import { initFormSteps } from './formSteps.js';
 import { initResultadoView } from './resultado.js';
 import { initSimulador } from './simulador.js';
 import { getCurrentView, setDevOverride } from './appState.js';
 import { initFlowController } from './flowController.js';
 import { postToAppsScript } from './api.js';
+import {
+  initFormSteps,
+  bindEtapasBarraClick,
+} from './stepNavigation.js';
+
 
 // [DEBUG] util de log
 const D = (...a) => console.log('[MAIN]', ...a);
@@ -59,13 +63,22 @@ D('initResultadoView() OK');
 function checkAndInitSimulador() {
   const v = getCurrentView();
   D('view atual após init:', v);
-  if (v === 'simulacao') 
+  if (v === 'simulacao') {
     D('initSimulador() na carga inicial');
     initSimulador();
+  }
 }
 
+
 // Roda na carga inicial
+D('init start');
+renderView();
+initFormSteps();
+D('initFormSteps() OK');
+bindEtapasBarraClick();
 checkAndInitSimulador();
+D('bootstrap OK');
+
 
 // Se quiser, no futuro você pode amarrar esse check a um observer de mudança de view
 // (ex.: sempre que chamar setView() + renderView(), rodar checkAndInitSimulador()).

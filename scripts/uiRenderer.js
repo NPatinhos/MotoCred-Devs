@@ -21,6 +21,7 @@ const PAGE_APROVADO_ID  = 'pagina-aprovado';
 const PAGE_NEGADO_ID    = 'pagina-negado';
 
 
+
 (function __renderSanity() {
   console.log('[RENDER] sanity: conferindo IDs...');
   const ids = [...FORM_STEPS, PAGE_APROVADO_ID, PAGE_NEGADO_ID];
@@ -101,6 +102,8 @@ export function renderView() {
     // Etapas do formulário
     R('-> mostrar step', currentView);
     showFormStep(currentView);
+    updateEtapasBarra();
+
 
     return;
   }
@@ -133,3 +136,5 @@ export function renderView() {
 export function invalidateCache() {
   cache.clear();
 }
+
+

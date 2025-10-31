@@ -8,12 +8,15 @@
 // -----------------------------------------------------------------------------
 const L = (...a) => console.log('[STATE]', ...a);
 
-const state = {
   // Qual "tela" ou view está ativa no momento.
   // Exemplos esperados:
   // "etapa-1", "etapa-2", "etapa-3", "etapa-4",
   // "aprovado", "reprovado", "simulacao"
-  currentView: "etapa-1",
+  let state = {
+  currentView: 'etapa-1',
+  tipoUsuario: null,
+  possuiCNH: null,
+  maxStepReached: 1, // ✅ progresso mais avançado atingido
 
   // Se você quiser travar uma view específica no modo dev,
   // você seta isso antes de iniciar a aplicação.
@@ -189,25 +192,14 @@ export function vendedorEhObrigatorio() {
   return state.tipoUsuario === "vendedor";
 }
 
-// A próxima etapa depois da atual (levando em conta se pula vendedor ou não)
-// Isso é útil pra navegação
-export function getProximaEtapa(currentEtapaId) {
-  // currentEtapaId esperado tipo "etapa-1", "etapa-2", etc.
-
-  const ordemBase = ["etapa-1", "etapa-2", "etapa-3", "etapa-4"];
-
-  // Se não for vendedor, podemos pular "etapa-2"
-  const ordemFiltrada = vendedorEhObrigatorio()
-    ? ordemBase
-    : ordemBase.filter(e => e !== "etapa-2");
-
-  const idx = ordemFiltrada.indexOf(currentEtapaId);
-  if (idx === -1) return null;
-  return ordemFiltrada[idx + 1] || null;
-}
 
 // Saber se a etapa informada é a última etapa do formulário (antes de chamar API)
 export function etapaEhUltimaDoFormulario(etapaId) {
   // depois da última etapa válida, o próximo passo é análise de crédito (aprovado/reprovado)
   return getProximaEtapa(etapaId) === null;
+}
+
+export function setState(partial) {
+  state = { ...state, ...partial };
+  console.log('[STATE] setState →', partial);
 }
