@@ -141,11 +141,11 @@ export function updateEtapasBarra() {
       return;
     }
 
-    if (viewId === 'etapa-2' && tipoUsuario === 'comprador') {
-      btn.classList.add('is-locked');
-      btn.setAttribute('aria-disabled', 'true');
-      F('→', tabId, 'is-locked (comprador)');
-      return;
+    const isLocked = viewId === 'etapa-2' && tipoUsuario === 'comprador';
+    if (isLocked) {
+        btn.classList.add('is-locked');
+        btn.setAttribute('aria-disabled', 'true');
+        F('→', tabId, 'is-locked (comprador)');
     }
 
     if (stepNum < parseInt(currentView.replace('etapa-', '')) || stepNum <= maxStepReached) {
