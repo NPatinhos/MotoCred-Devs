@@ -21,6 +21,8 @@ const FORM_STEPS = ['etapa-1', 'etapa-2', 'etapa-3', 'etapa-4'];
 const PAGE_APROVADO_ID  = 'pagina-aprovado';
 const PAGE_NEGADO_ID    = 'pagina-negado';
 
+const BTN_PREV_ID = 'btnPrev'; 
+
 
 
 (function __renderSanity() {
@@ -36,6 +38,24 @@ const cache = new Map();
 function el(id) {
   if (!cache.has(id)) cache.set(id, document.getElementById(id));
   return cache.get(id);
+}
+
+function updateBackButtonDisplay(currentView) {
+  const btnPrev = el(BTN_PREV_ID);
+  if (!btnPrev) return;
+
+  const stepNum = parseInt(currentView.replace('etapa-', ''), 10);
+  
+  // O botão de voltar deve estar visível (opacity-100) nas etapas 2, 3 e 4.
+  if (stepNum >= 2 && stepNum <= 4) {
+    // Mostra o botão e o torna clicável
+    btnPrev.classList.add('opacity-100', 'pointer-events-auto');
+    btnPrev.classList.remove('opacity-0', 'pointer-events-none');
+  } else {
+    // Esconde o botão e o torna não clicável (Etapa 1 e telas finais)
+    btnPrev.classList.add('opacity-0', 'pointer-events-none');
+    btnPrev.classList.remove('opacity-100', 'pointer-events-auto');
+  }
 }
 
 // Helpers básicos de visibilidade
@@ -104,7 +124,7 @@ export function renderView() {
     R('-> mostrar step', currentView);
     showFormStep(currentView);
     updateEtapasBarra();
-
+    updateBackButtonDisplay(currentView);
 
     return;
   }
