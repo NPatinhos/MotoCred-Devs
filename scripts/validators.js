@@ -1,234 +1,184 @@
 // validators.js
-// Validações por etapa. Mantém logs detalhados.
+// Exibe balõezinhos de erro (tooltips) junto aos inputs inválidos.
+// Não altera HTML nem CSS, apenas cria/remover elementos <div> temporários.
 
 import { getState } from './stepNavigation.js';
 
+const ORDER = ['etapa-1', 'etapa-2', 'etapa-3', 'etapa-4'];
 const $ = (s) => document.querySelector(s);
 
-function logPrefix(stepId) { return `[VALIDATE:${stepId}]`; }
-
-// ===== Utilitários de marcação visual =====
-function markInvalid(input, message) {
-  if (!input) return;
-  input.setAttribute('aria-invalid', 'true');
-  input.classList.add(
-    'border-2', 'border-[#D11B1B]',
-    'ring-0', 'focus:ring-0', // zera o ring azul
-    'outline-none'
-  );
-  input.dataset.error = message || 'Campo inválido';
-}
-
-function clearInvalid(input) {
-  if (!input) return;
-  input.removeAttribute('aria-invalid');
-  input.classList.remove(
-    'border-2', 'border-[#D11B1B]',
-    'ring-0', 'focus:ring-0',
-    'outline-none'
-  );
-  delete input.dataset.error;
-}
-
-// Limpa erros de uma etapa inteira
-function clearStepErrors(stepId) {
-  document.querySelectorAll(`#${stepId} [aria-invalid="true"]`).forEach(clearInvalid);
-}
-
-// ===== Regex / regras =====
+// ===== Regex util =====
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
-const TEL_RE   = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/; // (00) 0000-0000 ou (00) 00000-0000
-const CURRENCY_RE = /^R?\$?\s?\d{1,3}(\.\d{3})*(,\d{2})?$|^\d+([.,]\d{2})?$/; // aceita "R$ 1.234,56" ou "1234,56"
+const TEL_RE   = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/;
+const CURRENCY_RE = /^R?\$?\s?\d{1,3}(\.\d{3})*(,\d{2})?$|^\d+([.,]\d{2})?$/;
 
-// CPF algorítmico
 function onlyDigits(v) { return (v || '').replace(/\D+/g, ''); }
 function isValidCPF(strCPF) {
   const cpf = onlyDigits(strCPF);
   if (!cpf || cpf.length !== 11) return false;
   if (/^(\d)\1+$/.test(cpf)) return false;
-
   let sum = 0; let rest;
-
   for (let i = 1; i <= 9; i++) sum += parseInt(cpf.substring(i-1, i), 10) * (11 - i);
-  rest = (sum * 10) % 11;
-  if (rest === 10 || rest === 11) rest = 0;
+  rest = (sum * 10) % 11; if (rest >= 10) rest = 0;
   if (rest !== parseInt(cpf.substring(9, 10), 10)) return false;
-
   sum = 0;
   for (let i = 1; i <= 10; i++) sum += parseInt(cpf.substring(i-1, i), 10) * (12 - i);
-  rest = (sum * 10) % 11;
-  if (rest === 10 || rest === 11) rest = 0;
+  rest = (sum * 10) % 11; if (rest >= 10) rest = 0;
   if (rest !== parseInt(cpf.substring(10, 11), 10)) return false;
-
   return true;
 }
 
-// ===== Validadores unitários =====
-function requireNonEmpty(input, name = 'Campo') {
+// ===== helpers =====
+function hasValue(input) { return !!input && String(input.value || '').trim().length > 0; }
+function validEmail(input) { return !!input && EMAIL_RE.test(String(input.value || '').trim()); }
+function validTelefone(input) { return !!input && TEL_RE.test(String(input.value || '').trim()); }
+function validCurrency(input) { return !!input && CURRENCY_RE.test(String(input.value || '').trim()); }
+function validCPF(input) { return !!input && isValidCPF(String(input.value || '').trim()); }
+function validCNHHidden(input) { 
   if (!input) return false;
-  clearInvalid(input);
   const v = String(input.value || '').trim();
-  if (!v) { markInvalid(input, `${name} obrigatório`); return false; }
-  return true;
-}
-function validateEmail(input) {
-  if (!input) return false;
-  clearInvalid(input);
-  const v = String(input.value || '').trim();
-  const ok = EMAIL_RE.test(v);
-  if (!ok) markInvalid(input, 'E-mail inválido');
-  return ok;
-}
-function validateTelefone(input) {
-  if (!input) return false;
-  clearInvalid(input);
-  const v = String(input.value || '').trim();
-  const ok = TEL_RE.test(v);
-  if (!ok) markInvalid(input, 'Telefone inválido');
-  return ok;
-}
-function validateCPF(input) {
-  if (!input) return false;
-  clearInvalid(input);
-  const v = String(input.value || '').trim();
-  const ok = isValidCPF(v);
-  if (!ok) markInvalid(input, 'CPF inválido');
-  return ok;
-}
-function validateCurrency(input) {
-  if (!input) return false;
-  clearInvalid(input);
-  const v = String(input.value || '').trim();
-  const ok = CURRENCY_RE.test(v);
-  if (!ok) markInvalid(input, 'Valor inválido');
-  return ok;
-}
-function validateCNHHidden(input) {
-  if (!input) return false;
-  clearInvalid(input);
-  const v = String(input.value || '').trim();
-  const ok = v === 'sim' || v === 'nao';
-  if (!ok) markInvalid(input, 'Selecione se possui CNH');
-  return ok;
+  return v === 'sim' || v === 'nao';
 }
 
-// ===== Regras por etapa =====
-// Etapa 1: precisa escolher "tipoUsuario"
-function validateStep1() {
-  const stepId = 'etapa-1';
-  console.log(`${logPrefix(stepId)} iniciando...`);
-  clearStepErrors(stepId);
-
-  // Em etapa 1 não há input, usamos estado (definido por botões data-tipo-usuario)
-  const tipo = getState()?.form?.tipoUsuario || null;
-  if (!tipo) {
-    console.warn(`${logPrefix(stepId)} tipoUsuario ausente`);
-    // Destacar o grupo visual dos botões (feedback sutil)
-    const group = document.querySelector('#etapa-1 .max-w-[400px]');
-    if (group) {
-      group.classList.add('ring-2', 'ring-red-500');
-      setTimeout(() => group.classList.remove('ring-2', 'ring-red-500'), 1500);
-    }
-    return { ok: false, firstInvalid: group || null };
+// ===== balão de erro =====
+function createTooltip(input, message) {
+  if (!input) return;
+  const id = input.id || Math.random().toString(36).slice(2);
+  const existing = document.querySelector(`[data-tooltip-for="${id}"]`);
+  if (existing) {
+    existing.textContent = message;
+    return;
   }
 
-  console.log(`${logPrefix(stepId)} OK`);
-  return { ok: true };
+  // container principal do balão
+  const tip = document.createElement('div');
+  tip.setAttribute('data-tooltip-for', id);
+  tip.textContent = message;
+  tip.style.position = 'absolute';
+  tip.style.background = 'white';
+  tip.style.color = 'black';
+  tip.style.fontSize = '0.8rem';
+  tip.style.padding = '4px 8px';
+  tip.style.borderRadius = '6px';
+  tip.style.marginTop = '6px';
+  tip.style.zIndex = 1000;
+  tip.style.whiteSpace = 'nowrap';
+  tip.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+  tip.style.pointerEvents = 'none';
+
+  // cria a setinha
+  const arrow = document.createElement('div');
+  arrow.style.position = 'absolute';
+  arrow.style.width = '0';
+  arrow.style.height = '0';
+  arrow.style.borderLeft = '6px solid transparent';
+  arrow.style.borderRight = '6px solid transparent';
+  arrow.style.borderBottom = '6px solid white'; // cor igual ao fundo do balão
+  arrow.style.top = '-6px';
+  arrow.style.left = '10px';
+  tip.appendChild(arrow);
+
+  // posicionar o balão logo abaixo do input
+  const rect = input.getBoundingClientRect();
+  const scrollY = window.scrollY || document.documentElement.scrollTop;
+  const scrollX = window.scrollX || document.documentElement.scrollLeft;
+  tip.style.left = `${rect.left + scrollX}px`;
+  tip.style.top = `${rect.bottom + scrollY + 4}px`;
+
+  document.body.appendChild(tip);
 }
 
-// Etapa 2: somente quando NÃO estiver travada (ou seja, tipoUsuario !== 'comprador')
-function validateStep2() {
-  const stepId = 'etapa-2';
-  console.log(`${logPrefix(stepId)} iniciando...`);
-  clearStepErrors(stepId);
+function clearTooltip(input) {
+  if (!input) return;
+  const id = input.id || '';
+  const el = document.querySelector(`[data-tooltip-for="${id}"]`);
+  if (el) el.remove();
+}
+
+function clearTooltips(stepId) {
+  document.querySelectorAll(`[data-tooltip-for]`).forEach((el) => el.remove());
+}
+
+// ===== Etapa 1 =====
+function verificaEtapa1() {
+  const stepId = 'etapa-1';
+  clearTooltips(stepId);
+
+  const tipo = getState()?.form?.tipoUsuario || null;
+  if (!tipo) {
+    console.warn('[VALIDATE:etapa-1] faltando tipoUsuario');
+    const btn = document.querySelector('#etapa-1 button[data-tipo-usuario]');
+    createTooltip(btn, 'Selecione se é Comprador ou Vendedor');
+    return false;
+  }
+  return true;
+}
+
+// ===== Etapa 2 =====
+function verificaEtapa2() {
+  const { form } = getState();
+  clearTooltips('etapa-2');
+  if (form?.tipoUsuario === 'comprador') return true;
 
   const loja = $('#loja');
   const nomeVend = $('#nome-vendedor');
   const emailVend = $('#email-vendedor');
+  let ok = true;
 
-  const checks = [
-    requireNonEmpty(loja, 'Loja/Concessionária'),
-    requireNonEmpty(nomeVend, 'Nome do Vendedor'),
-    validateEmail(emailVend),
-  ];
-
-  const ok = checks.every(Boolean);
-  const firstInvalid = [loja, nomeVend, emailVend].find((el) => el?.getAttribute('aria-invalid') === 'true') || null;
-
-  console.log(`${logPrefix(stepId)} ${ok ? 'OK' : 'FALHOU'}`);
-  return { ok, firstInvalid };
+  if (!hasValue(loja))  { createTooltip(loja, 'Informe a loja'); ok = false; }
+  if (!hasValue(nomeVend)) { createTooltip(nomeVend, 'Informe o nome do vendedor'); ok = false; }
+  if (!hasValue(emailVend)) { createTooltip(emailVend, 'Informe o e-mail'); ok = false; }
+  if (hasValue(emailVend) && !validEmail(emailVend)) {
+    createTooltip(emailVend, 'E-mail inválido');
+    ok = false;
+  }
+  return ok;
 }
 
-// Etapa 3: válida para ambos os fluxos — campos do cliente
-function validateStep3() {
-  const stepId = 'etapa-3';
-  console.log(`[VALIDATE:${stepId}] iniciando...`);
-  clearStepErrors(stepId);
-
+// ===== Etapa 3 =====
+function verificaEtapa3() {
   const nome   = $('#nome-cliente');
   const cpf    = $('#cpf');
   const email  = $('#email-cliente');
   const tel    = $('#telefone');
   const renda  = $('#renda_mensal');
-  const cnhHid = $('#possui-cnh'); // hidden preenchido pelos botões
+  const cnhHid = $('#possui-cnh');
+  clearTooltips('etapa-3');
+  let ok = true;
 
-  // ---------- FASE 1: presença ----------
-  const presences = [
-    requireNonEmpty(nome,  'Nome do Cliente'),
-    requireNonEmpty(cpf,   'CPF'),
-    requireNonEmpty(email, 'E-mail'),
-    requireNonEmpty(tel,   'Telefone'),
-    requireNonEmpty(renda, 'Renda Mensal'),
-    requireNonEmpty(cnhHid,'Possui CNH'),
-  ];
+  // presença
+  if (!hasValue(nome))   { createTooltip(nome, 'Informe o nome'); ok = false; }
+  if (!hasValue(cpf))    { createTooltip(cpf, 'Informe o CPF'); ok = false; }
+  if (!hasValue(email))  { createTooltip(email, 'Informe o e-mail'); ok = false; }
+  if (!hasValue(tel))    { createTooltip(tel, 'Informe o telefone'); ok = false; }
+  if (!hasValue(renda))  { createTooltip(renda, 'Informe a renda mensal'); ok = false; }
+  if (!validCNHHidden(cnhHid)) { createTooltip(tel || nome, 'Selecione se possui CNH'); ok = false; }
 
-  if (!presences.every(Boolean)) {
-    const firstInvalidPresence = [nome, cpf, email, tel, renda, cnhHid]
-      .find((el) => el?.getAttribute('aria-invalid') === 'true') || null;
+  // regex
+  if (hasValue(cpf) && !validCPF(cpf)) { createTooltip(cpf, 'CPF inválido'); ok = false; }
+  if (hasValue(email) && !validEmail(email)) { createTooltip(email, 'E-mail inválido'); ok = false; }
+  if (hasValue(tel) && !validTelefone(tel)) { createTooltip(tel, 'Telefone inválido'); ok = false; }
+  if (hasValue(renda) && !validCurrency(renda)) { createTooltip(renda, 'Renda em formato inválido'); ok = false; }
 
-    console.warn('[VALIDATE:etapa-3] FALHOU na presença.');
-    return { ok: false, firstInvalid: firstInvalidPresence };
-  }
-
-  // ---------- FASE 2: formato/regex ----------
-  const formats = [
-    validateCPF(cpf),
-    validateEmail(email),
-    validateTelefone(tel),
-    validateCurrency(renda),
-    validateCNHHidden(cnhHid),
-  ];
-
-  const ok = formats.every(Boolean);
-  const firstInvalidFormat = [cpf, email, tel, renda, cnhHid]
-    .find((el) => el?.getAttribute('aria-invalid') === 'true') || null;
-
-  console.log(`[VALIDATE:${stepId}] ${ok ? 'OK' : 'FALHOU'}`);
-  return { ok, firstInvalid: ok ? null : firstInvalidFormat };
+  return ok;
 }
 
+// ===== Etapa 4 (adiada) =====
+function verificaEtapa4() { return true; }
 
-// ===== Orquestrador por etapa atual =====
-export function validateCurrentStep() {
-  const { currentView, form } = getState();
-  const stepId = currentView;
-  console.log(`[VALIDATE] currentView=${currentView}`);
-
-  if (stepId === 'etapa-1') return validateStep1();
-
-  if (stepId === 'etapa-2') {
-    // Se comprador, etapa 2 está travada no fluxo de navegação
-    // Mas se por algum motivo cair aqui, garantimos a regra:
-    if (form?.tipoUsuario === 'comprador') {
-      console.log('[VALIDATE:etapa-2] pulada (comprador)');
-      return { ok: true }; // não exige vendedor
-    }
-    return validateStep2();
+// ===== API pública =====
+export function verificaEtapaCompleta(stepIndexOrId) {
+  const id = typeof stepIndexOrId === 'number' ? ORDER[stepIndexOrId] : stepIndexOrId;
+  switch (id) {
+    case 'etapa-1': return verificaEtapa1();
+    case 'etapa-2': return verificaEtapa2();
+    case 'etapa-3': return verificaEtapa3();
+    case 'etapa-4': return verificaEtapa4();
+    default: return true;
   }
+}
 
-  if (stepId === 'etapa-3') return validateStep3();
-
-  // Outras etapas (ex.: 4) serão tratadas depois
-  console.log('[VALIDATE] etapa sem validação específica → OK');
-  return { ok: true };
+export function verificaEtapaAtual() {
+  const { currentView } = getState();
+  return verificaEtapaCompleta(currentView);
 }

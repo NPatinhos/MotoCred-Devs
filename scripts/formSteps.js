@@ -2,7 +2,7 @@
 // Controla botões Avançar/Voltar e os botões de "Você é" (tipoUsuario), sem navegar sozinho.
 
 import { nextStep, prevStep, setTipoUsuario } from './stepNavigation.js';
-import { validateCurrentStep } from './validators.js';
+import { verificaEtapaAtual  } from './validators.js';
 
 const $ = (s) => document.querySelector(s);
 
@@ -76,24 +76,17 @@ export function initFormSteps() {
       });
     });
   }
- btnNext?.addEventListener('click', (e) => {
-    e.preventDefault();
+btnNext?.addEventListener('click', (e) => {
+  e.preventDefault();
+  console.log('[CLICK] Botão AVANÇAR');
 
-    console.log('[CLICK] Botão AVANÇAR');
-    const res = validateCurrentStep();
-
-    if (!res.ok) {
-      console.warn('[VALIDATE] bloqueado avanço: etapa inválida');
-      // foca no primeiro inválido, se houver
-      if (res.firstInvalid && typeof res.firstInvalid.focus === 'function') {
-        res.firstInvalid.focus();
-      }
-      return; // NÃO avança
-    }
-
-    // ok, pode avançar
-    nextStep();
-  });
+  const ok = verificaEtapaAtual(); // cria/remover blocos inline por campo
+  if (!ok) {
+    console.warn('[VALIDATE] avanço BLOQUEADO pela validação da etapa atual');
+    return;
+  }
+  nextStep();
+});
 
   console.log('[BIND] initFormSteps() concluído');
 }
