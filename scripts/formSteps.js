@@ -1,84 +1,70 @@
-// formSteps.js (versão refatorada)
+// formSteps.js
+// Controla botões Avançar/Voltar e os botões de "Você é" (tipoUsuario), sem navegar sozinho.
 
-// Importe as funções de navegação necessárias do stepNavigation.js
-// As funções de validação (validate...) e salvamento (merge...) devem ser mantidas.
-import {
-    getCurrentView,
-    mergeVendedorData,
-    mergeClienteData,
-    mergeVendaData,
-} from './appState.js';
-import { submitFormulario } from './flowController.js';
-import {
-    validateEtapaIdentificacao,
-    validateEtapaVendedor,
-    validateEtapaCliente,
-    validateEtapaVenda,
-} from './validators.js';
-// Importa as novas funções de navegação
-import { handleNext, handlePrev } from './stepNavigation.js'; 
-//... restante das importações (moneyMask, etc.)
+import { nextStep, prevStep, setTipoUsuario } from './stepNavigation.js';
 
-// ... (todas as funções auxiliares como setFieldError, getDataFromInputs, etc. são mantidas)
+const $ = (s) => document.querySelector(s);
 
-// -----------------------------------------
-// HANDLERS DE NAVEGAÇÃO
-// -----------------------------------------
+const FORM_SEL = '#financiamento-form';
+const BTN_NEXT = '#btnNext';
+const BTN_PREV = '#btnPrev';
 
-async function onNext() {
-    clearErrors();
-    const currentView = getCurrentView();
-
-    // 1. Validação (mantida)
-    let validationResult;
-    let dataToMerge = {};
-
-    // ... (sua lógica de validação por etapa)
-    
-    // 2. Salvamento (mantido)
-    if (validationResult.ok) {
-        // ... (sua lógica de merge de dados no appState)
-
-        // 3. AÇÃO DE NAVEGAÇÃO CENTRALIZADA
-        if (currentView === 'etapa-4') {
-            // Se for a última etapa, dispara o fluxo de submissão e análise
-            // Aqui ele não chama handleNext, pois o fluxo pós-formulário
-            // (flowController.submitFormulario) assume o controle da view.
-            submitFormulario();
-        } else {
-            // Se não é a última etapa, chama o controlador de navegação.
-            // O handleNext() sabe a próxima etapa e atualiza o DOM via goTo/renderView.
-            handleNext(); // <-- DELEGANDO A NAVEGAÇÃO PARA stepNavigation.js
-        }
-    } else {
-        showErrors(validationResult.errors);
-    }
-}
-
-function onPrev() {
-    clearErrors();
-    // Apenas delega para o controlador de navegação anterior.
-    handlePrev(); // <-- DELEGANDO A NAVEGAÇÃO PARA stepNavigation.js
-}
-
-// -----------------------------------------
-// INICIALIZAÇÃO
-// -----------------------------------------
+// Agora "tipo de usuário" são botões com data-tipo-usuario
+const TIPO_USUARIO_BTNS = 'button[data-tipo-usuario]';
 
 export function initFormSteps() {
-  // Apenas as máscaras e os binds dos botões Next/Prev devem ficar aqui.
+  console.log('[INIT] initFormSteps()');
+  const form = $(FORM_SEL);
+  if (!form) {
+    console.warn('[WARN] Formulário não encontrado:', FORM_SEL);
+    return;
+  }
 
-  // máscaras de dinheiro (etapa 4)
-  initMoneyMasks();
+  // Bloquear Enter no formulário
+  form.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      console.log('[BLOCK] Enter bloqueado no formulário');
+    }
+  });
 
-  // navegação: apenas binds dos botões Next/Prev.
+  // Botões de navegação
   const btnPrev = $(BTN_PREV);
   const btnNext = $(BTN_NEXT);
-  btnPrev?.addEventListener('click', onPrev);
-  btnNext?.addEventListener('click', onNext);
 
-  // **Remova:** bindTipoUsuarioButtons();
-  // **Remova:** bindCNHButtons();
-  // **Remova:** bindEtapasBarraClick(); 
+  if (!btnPrev) console.warn('[WARN] Botão VOLTAR não encontrado:', BTN_PREV);
+  if (!btnNext) console.warn('[WARN] Botão AVANÇAR não encontrado:', BTN_NEXT);
+
+  btnPrev?.addEventListener('click', (e) => {
+    e.preventDefault();
+    console.log('[CLICK] Botão VOLTAR');
+    prevStep();
+  });
+
+  btnNext?.addEventListener('click', (e) => {
+    e.preventDefault();
+    console.log('[CLICK] Botão AVANÇAR');
+    // (Opcional) validar etapa atual aqui antes de avançar
+    nextStep();
+  });
+
+  // “Você é” → define tipoUsuario, não navega
+  const tipoBtns = document.querySelectorAll(TIPO_USUARIO_BTNS);
+  if (!tipoBtns.length) {
+    console.warn('[WARN] Botões de tipoUsuario não encontrados:', TIPO_USUARIO_BTNS);
+  } else {
+    tipoBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const valor = btn.getAttribute('data-tipo-usuario'); // comprador | vendedor
+        console.log(`[INPUT] tipoUsuario alterado → ${valor}`);
+        setTipoUsuario(valor);
+
+        // Atualiza aria-pressed visual do grupo
+        tipoBtns.forEach((b) => b.setAttribute('aria-pressed', 'false'));
+        btn.setAttribute('aria-pressed', 'true');
+      });
+    });
+  }
+
+  console.log('[BIND] initFormSteps() concluído');
 }
-// **Remova:** A função mapTabIdToView() e bindEtapasBarraClick() completa

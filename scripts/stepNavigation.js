@@ -1,166 +1,163 @@
 // stepNavigation.js
+// Controla toda navegação entre etapas + estado global mínimo.
 
-import { getState, setView, setState } from './appState.js';
-import { renderView } from './uiRenderer.js';
-
-const STEP_TABS = [
-  'tab-step-1',
-  'tab-step-2',
-  'tab-step-3',
-  'tab-step-4'
-];
+const ORDER = ['etapa-1', 'etapa-2', 'etapa-3', 'etapa-4'];
 
 const VIEW_TO_TAB = {
   'etapa-1': 'tab-step-1',
   'etapa-2': 'tab-step-2',
   'etapa-3': 'tab-step-3',
-  'etapa-4': 'tab-step-4'
+  'etapa-4': 'tab-step-4',
 };
-
 const TAB_TO_VIEW = {
   'tab-step-1': 'etapa-1',
   'tab-step-2': 'etapa-2',
   'tab-step-3': 'etapa-3',
-  'tab-step-4': 'etapa-4'
+  'tab-step-4': 'etapa-4',
 };
 
-const F = (...args) => console.log('[FORM]', ...args);
+const $ = (s) => document.querySelector(s);
+const byId = (id) => document.getElementById(id);
 
-// --- Navega entre etapas ---
+// ===== Estado mínimo =====
+const state = {
+  currentView: ORDER[0],
+  form: { tipoUsuario: null },
+};
+
+export function getState() {
+  return state;
+}
+export function setState(patch = {}) {
+  Object.assign(state, patch);
+}
+export function setView(viewId) {
+  if (!ORDER.includes(viewId)) return;
+  console.log(`[NAV] setView → ${viewId}`);
+  state.currentView = viewId;
+  document.dispatchEvent(new CustomEvent('nav:changed', { detail: { viewId } }));
+}
+
+function isEtapa2Locked() {
+  return state?.form?.tipoUsuario === 'comprador';
+}
+
+// ===== Navegação =====
 export function goTo(viewId) {
-  const { maxStepReached } = getState();
+  const current = state.currentView;
+  if (!ORDER.includes(viewId)) return;
+
+  const tryingFuture = ORDER.indexOf(viewId) > ORDER.indexOf(current);
+  if (tryingFuture) {
+    console.warn(`[NAV] Ignorado: tentativa de pular etapas → ${viewId}`);
+    return;
+  }
+
+  if (viewId === 'etapa-2' && isEtapa2Locked()) {
+    console.warn('[NAV] Etapa 2 travada para comprador');
+    return;
+  }
+
   setView(viewId);
-
-  const stepNum = parseInt(viewId.replace('etapa-', ''), 10);
-  if (!isNaN(stepNum) && stepNum > maxStepReached) {
-    setState({ maxStepReached: stepNum });
-  }
-
-  renderView();
+  updateEtapasBarra();
 }
 
-export function getProximaEtapa(currentView) {
-  const { tipoUsuario } = getState();
-  if (currentView === 'etapa-1') {
-    return tipoUsuario === 'comprador' ? 'etapa-3' : 'etapa-2';
+export function nextStep() {
+  const i = ORDER.indexOf(state.currentView);
+  if (i === -1 || i >= ORDER.length - 1) return;
+
+  let target = ORDER[i + 1];
+  if (target === 'etapa-2' && isEtapa2Locked()) {
+    target = 'etapa-3';
+    console.log('[NAV] Pulando etapa 2 (travada)');
   }
-  if (currentView === 'etapa-2' || currentView === 'etapa-3') {
-    return 'etapa-4';
-  }
-  return 'etapa-1';
+
+  console.log(`[NAV] nextStep → ${target}`);
+  setView(target);
+  updateEtapasBarra();
 }
 
-export function handleNext() {
-  const current = getState().currentView;
-  const next = getProximaEtapa(current);
-  F('Avançando para', next);
-  goTo(next);
+export function prevStep() {
+  const i = ORDER.indexOf(state.currentView);
+  if (i <= 0) return;
+
+  const target = ORDER[i - 1];
+  console.log(`[NAV] prevStep → ${target}`);
+  setView(target);
+  updateEtapasBarra();
 }
 
-export function handlePrev() {
-  const { currentView, tipoUsuario } = getState();
+// ===== Barra de etapas =====
+export function initStepBar() {
+  console.log('[INIT] initStepBar()');
+  Object.keys(TAB_TO_VIEW).forEach((tabId) => {
+    const el = byId(tabId);
+    if (!el) return;
 
-  if (currentView === 'etapa-2') {
-    return goTo('etapa-1');
-  }
-  if (currentView === 'etapa-3') {
-    return tipoUsuario === 'comprador' ? goTo('etapa-1') : goTo('etapa-2');
-  }
-  if (currentView === 'etapa-4') {
-    return tipoUsuario === 'comprador' ? goTo('etapa-3') : goTo('etapa-3');
-  }
-}
-
-export function bindEtapasBarraClick() {
-  const botoes = document.querySelectorAll('.step-tab');
-  botoes.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const tabId = btn.id;
+    el.addEventListener('click', () => {
       const viewId = TAB_TO_VIEW[tabId];
-      const { tipoUsuario } = getState();
 
-      if (viewId === 'etapa-2' && tipoUsuario === 'comprador') {
-        F('clique ignorado: comprador não pode acessar etapa-2');
-        return;
-      }
+      if (!el.classList.contains('is-complete')) return;
+      if (viewId === 'etapa-2' && isEtapa2Locked()) return;
 
-      if (!btn.classList.contains('is-complete') && !btn.classList.contains('is-active')) {
-        F('clique ignorado: etapa ainda não completa →', tabId);
-        return;
-      }
-
-      F('navegando via barra para:', viewId);
+      console.log(`[CLICK] Barra → ${viewId}`);
       goTo(viewId);
     });
   });
-}
 
-export function bindTipoUsuarioButtons() {
-  const btns = document.querySelectorAll('[data-tipo-usuario]');
-  btns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const tipo = btn.getAttribute('data-tipo-usuario');
-      F('tipoUsuario:', tipo);
-      setState({ tipoUsuario: tipo });
-      handleNext();
-    });
-  });
-}
-
-export function bindCNHButtons() {
-  const btns = document.querySelectorAll('[data-cnh]');
-  btns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const valor = btn.getAttribute('data-cnh');
-      setState({ possuiCNH: valor });
-      F('possuiCNH:', valor);
-      handleNext();
-    });
-  });
+  updateEtapasBarra();
 }
 
 export function updateEtapasBarra() {
-  const { currentView, tipoUsuario, maxStepReached } = getState();
-  const etapaAtualIndex = STEP_TABS.findIndex(tab => VIEW_TO_TAB[currentView] === tab);
+  const current = state.currentView;
+  const locked2 = isEtapa2Locked();
 
-  STEP_TABS.forEach((tabId, index) => {
-    const btn = document.getElementById(tabId);
+  ORDER.forEach((viewId) => {
+    const tabId = VIEW_TO_TAB[viewId];
+    const btn = byId(tabId);
     if (!btn) return;
-
-    const viewId = TAB_TO_VIEW[tabId];
-    const stepNum = parseInt(viewId.replace('etapa-', ''), 10);
 
     btn.classList.remove('is-active', 'is-complete', 'is-future', 'is-locked');
     btn.removeAttribute('disabled');
     btn.setAttribute('aria-disabled', 'false');
+    btn.setAttribute('aria-selected', 'false');
 
-    if (viewId === currentView) {
+    if (viewId === current) {
       btn.classList.add('is-active');
       btn.setAttribute('aria-selected', 'true');
-      F('→', tabId, 'is-active');
       return;
     }
 
-    const isLocked = viewId === 'etapa-2' && tipoUsuario === 'comprador';
-    if (isLocked) {
+    const passed = ORDER.indexOf(viewId) < ORDER.indexOf(current);
+    if (passed) {
+      btn.classList.add('is-complete');
+      if (viewId === 'etapa-2' && locked2) {
         btn.classList.add('is-locked');
         btn.setAttribute('aria-disabled', 'true');
-        F('→', tabId, 'is-locked (comprador)');
+        btn.setAttribute('disabled', 'true');
+      }
+      return;
     }
 
-    if (stepNum < parseInt(currentView.replace('etapa-', '')) || stepNum <= maxStepReached) {
-      btn.classList.add('is-complete');
-      F('→', tabId, 'is-complete');
-    } else {
-      btn.classList.add('is-future');
-      btn.setAttribute('disabled', 'true');
-      btn.setAttribute('aria-disabled', 'true');
-      F('→', tabId, 'is-future');
-    }
+    btn.classList.add('is-future');
+    btn.setAttribute('aria-disabled', 'true');
+    btn.setAttribute('disabled', 'true');
   });
+
+  console.log(`[UI] updateEtapasBarra() → etapa atual: ${current}`);
 }
 
-export function initFormSteps() {
-  bindTipoUsuarioButtons();
-  bindCNHButtons();
+// ===== Campos que afetam navegação =====
+export function setTipoUsuario(value) {
+  state.form.tipoUsuario = value || null;
+  console.log(`[STATE] tipoUsuario = ${state.form.tipoUsuario}`);
+  updateEtapasBarra();
+}
+
+export function initializeNavigation({ initialView } = {}) {
+  console.log('[INIT] initializeNavigation()');
+  if (initialView && ORDER.includes(initialView)) {
+    state.currentView = initialView;
+  }
+  updateEtapasBarra();
 }

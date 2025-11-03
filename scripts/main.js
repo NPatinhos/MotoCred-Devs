@@ -1,84 +1,63 @@
 // main.js
-// Ponto de inicialização da aplicação (modo módulo ES).
+// Bootstrap com checagens de elementos e listeners de navegação.
 
 import { renderView } from './uiRenderer.js';
-import { initResultadoView } from './resultado.js';
-import { initSimulador } from './simulador.js';
-import { getCurrentView, setDevOverride } from './appState.js';
-import { initFlowController } from './flowController.js';
-import { postToAppsScript } from './api.js';
+import { initFormSteps } from './formSteps.js';
 import {
-  initFormSteps,
-  bindEtapasBarraClick,
+  initStepBar,
+  initializeNavigation,
+  updateEtapasBarra,
 } from './stepNavigation.js';
 
+function safeBootstrap() {
+  console.log('[MAIN] Inicializando aplicação...');
 
-// [DEBUG] util de log
-const D = (...a) => console.log('[MAIN]', ...a);
-window.__DBG = true;
+  // Checagem rápida de elementos críticos conforme seu HTML
+  const must = [
+    '#financiamento-form',
+    '#btnNext',
+    '#btnPrev',
+    '#tab-step-1',
+    '#tab-step-2',
+    '#tab-step-3',
+    '#tab-step-4',
+    '#etapa-1',
+    '#etapa-2',
+    '#etapa-3',
+    '#etapa-4',
+  ];
+  must.forEach((sel) => {
+    const ok = !!document.querySelector(sel);
+    console[ok ? 'log' : 'warn'](`[CHECK] ${sel} ${ok ? 'OK' : 'NÃO ENCONTRADO'}`);
+  });
 
-// ------------------------------------------------------------
-// 🧩 1. MODO DEV (opcional)
-// ------------------------------------------------------------
-// Use setDevOverride('etapa-3') ou 'simulacao' para pular direto.
-// Comente/remova esta linha no deploy.
-//setDevOverride('etapa-1');
+  // Suporte a devStep via query (?devStep=etapa-3)
+  const params = new URLSearchParams(window.location.search);
+  const devStep = params.get('devStep');
+  initializeNavigation({ initialView: devStep });
 
-// ------------------------------------------------------------
-// ⚙️ 2. INJETAR SUAS APIS NO FLOW CONTROLLER
-// ------------------------------------------------------------
-initFlowController({
-  enviarFormularioDados: async (payload) => {
-    try {
-      const r = await postToAppsScript(payload);
-      return { ok: r.success };
-    } catch (err) {
-      console.error('Erro no envio:', err);
-      return { ok: false };
-    }
-  },
-  // consultarAnaliseCredito, calcularParcelas, acaoPosPPA
-  // serão adicionadas quando suas APIs estiverem prontas.
-});
+  renderView();
+  updateEtapasBarra();
 
-// ------------------------------------------------------------
-// 🚀 3. INICIALIZAR MÓDULOS DE UI
-// ------------------------------------------------------------
-D('boot');
-D('setDevOverride já chamado');
+  initFormSteps();
+  initStepBar();
 
-D('initFlowController: injetando enviarFormularioDados');
+  document.addEventListener('nav:changed', (e) => {
+    console.log(`[EVENT] nav:changed → ${e.detail.viewId}`);
+    renderView();
+    updateEtapasBarra();
+  });
 
-// Renderiza a view inicial baseada no appState
-renderView();
-D('renderView() inicial chamada');
-
-// Inicializa as seções do app
-initFormSteps();      // etapas 1–4
-D('initFormSteps() OK');
-initResultadoView();  // tela reprovado (negado)
-D('initResultadoView() OK');
-
-// Função que ativa o simulador quando a view mudar pra "simulacao"
-function checkAndInitSimulador() {
-  const v = getCurrentView();
-  D('view atual após init:', v);
-  if (v === 'simulacao') {
-    D('initSimulador() na carga inicial');
-    initSimulador();
-  }
+  console.log('[MAIN] initFormSteps() OK');
+  console.log('[MAIN] initStepBar() OK');
 }
 
-
-// Roda na carga inicial
-D('init start');
-renderView();
-initFormSteps();
-D('initFormSteps() OK');
-bindEtapasBarraClick();
-checkAndInitSimulador();
-D('bootstrap OK');
-
-
-// Se quiser, no futuro você pode amarrar esse check a um observer de mudança de view
-// (ex.: sempre que chamar setView() + renderView(), rodar checkAndInitSimulador()).
+// Garante execução após DOM pronto (ou imediatamente se já estiver)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('[MAIN] DOMContentLoaded');
+    safeBootstrap();
+  });
+} else {
+  safeBootstrap();
+}

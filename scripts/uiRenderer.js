@@ -1,161 +1,46 @@
 // uiRenderer.js
-// Mostra/esconde as sections corretas com base no estado atual (appState.currentView).
-// Não contém regra de negócio. Não chama API. Só lida com DOM e classes de visibilidade.
-//
-// Requisitos de HTML (ajuste os IDs abaixo para bater com o seu index.html):
-// - Etapas do formulário: <section id="etapa-1" class="form-step"> ... </section> (até etapa-4)
-// - Tela aprovado:  <section id="pagina-aprovado"  class="hidden">...</section>
-// - Tela reprovado: <section id="pagina-negado"    class="hidden">...</section>
-// - (Opcional) Tela simulação separada: <section id="pagina-simulacao" class="hidden">...</section>
-//
-// Tailwind: usa .hidden para ocultar e adiciona .flex .items-center .justify-center quando mostra páginas finais.
-// Para as etapas, deixo você com as classes que já usa (ex.: .is-hidden-step / .is-active) se quiser manter.
+// Renderiza a etapa atual e controla opacidade do botão Voltar.
 
-import { getState } from './appState.js';
-import { updateEtapasBarra} from './stepNavigation.js';
-const R = (...a) => console.log('[RENDER]', ...a);
+import { getState } from './stepNavigation.js';
 
+const ORDER = ['etapa-1', 'etapa-2', 'etapa-3', 'etapa-4'];
+const byId = (id) => document.getElementById(id);
+const $ = (s) => document.querySelector(s);
 
-// IDs esperados no DOM (ajuste se necessário)
-const FORM_STEPS = ['etapa-1', 'etapa-2', 'etapa-3', 'etapa-4'];
-const PAGE_APROVADO_ID  = 'pagina-aprovado';
-const PAGE_NEGADO_ID    = 'pagina-negado';
-
-const BTN_PREV_ID = 'btnPrev'; 
-
-
-
-(function __renderSanity() {
-  console.log('[RENDER] sanity: conferindo IDs...');
-  const ids = [...FORM_STEPS, PAGE_APROVADO_ID, PAGE_NEGADO_ID];
-  const report = ids.map(id => ({ id, exists: !!document.getElementById(id) }));
-  console.table(report);
-})();
-
-
-// Cache simples de nós (evita querySelector repetido)
-const cache = new Map();
-function el(id) {
-  if (!cache.has(id)) cache.set(id, document.getElementById(id));
-  return cache.get(id);
+function hide(node) {
+  node?.classList?.add('hidden');
+}
+function show(node) {
+  node?.classList?.remove('hidden');
 }
 
-function updateBackButtonDisplay(currentView) {
-  const btnPrev = el(BTN_PREV_ID);
-  if (!btnPrev) return;
+function setBackButtonOpacity() {
+  const backBtn = $('#btnPrev'); // ← seu ID atual
+  if (!backBtn) return;
 
-  const stepNum = parseInt(currentView.replace('etapa-', ''), 10);
-  
-  // O botão de voltar deve estar visível (opacity-100) nas etapas 2, 3 e 4.
-  if (stepNum >= 2 && stepNum <= 4) {
-    // Mostra o botão e o torna clicável
-    btnPrev.classList.add('opacity-100', 'pointer-events-auto');
-    btnPrev.classList.remove('opacity-0', 'pointer-events-none');
-  } else {
-    // Esconde o botão e o torna não clicável (Etapa 1 e telas finais)
-    btnPrev.classList.add('opacity-0', 'pointer-events-none');
-    btnPrev.classList.remove('opacity-100', 'pointer-events-auto');
-  }
-}
-
-// Helpers básicos de visibilidade
-function hideNode(node) {
-  if (!node) return;
-  node.classList.add('hidden');
-  node.classList.remove('flex');
-}
-
-function showNodeAsFlexCentered(node) {
-  if (!node) return;
-  node.classList.remove('hidden');
-  node.classList.add('flex', 'items-center', 'justify-center', 'min-h-screen');
-}
-
-function showFormStep(stepId) {
-    console.log('[RENDER] showFormStep ->', stepId);
-  // Esconde todas as steps
-  for (const id of FORM_STEPS) {
-    const section = el(id);
-    if (!section) {
-        console.warn('[RENDER] step NÃO encontrada:', id);
-        continue;
-    }
-    section.classList.add('hidden'); // você pode trocar por sua classe .is-hidden-step se preferir
-    section.classList.remove('is-active');
-  }
-  // Mostra a step atual
-  const current = el(stepId);
-  if (current) {
-    current.classList.remove('hidden');
-    current.classList.add('is-active');
-  } else {
-    console.error('[RENDER] step atual inexistente:', stepId);
-    }
-      // Snapshot de classes por etapa (ajuda a ver se Tailwind está removendo classes)
-  const snap = FORM_STEPS.map(id => {
-    const n = el(id);
-    return { id, classes: n ? n.className : '(missing)' };
-  });
-  console.table(snap);
-}
-
-// Zera tudo que não é a view atual
-function hideAllSections() {
-    R('hideAllSections()');
-
-  // Esconde todas as etapas
-  for (const id of FORM_STEPS) hideNode(el(id));
-  // Esconde páginas finais
-  hideNode(el(PAGE_APROVADO_ID));
-  hideNode(el(PAGE_NEGADO_ID));
-}
-
-// API principal: renderiza conforme appState.currentView
-export function renderView() {
   const { currentView } = getState();
-  R('renderView ->', currentView); 
+  const isFirst = ORDER.indexOf(currentView) === 0;
 
-  // 1) Esconde tudo
-  hideAllSections();
-
-  // 2) Roteia pela view
-  if (currentView.startsWith('etapa-')) {
-    // Etapas do formulário
-    R('-> mostrar step', currentView);
-    showFormStep(currentView);
-    updateEtapasBarra();
-    updateBackButtonDisplay(currentView);
-
-    return;
-  }
-
-  if (currentView === 'reprovado') {
-    R('-> mostrar reprovado');
-    showNodeAsFlexCentered(el(PAGE_NEGADO_ID));
-    return;
-  }
-
-  if (currentView === 'aprovado') {
-    R('-> mostrar simulacao em #pagina-aprovado');
-    // Se você tem uma página dedicada de simulação
-    const nodeSimu = el(PAGE_APROVADO_ID);
-    if (nodeSimu) {
-      showNodeAsFlexCentered(nodeSimu);
-    } else {
-      // fallback: usa a página de aprovado (onde a simulação já existia)
-      showNodeAsFlexCentered(el(PAGE_APROVADO_ID));
-    }
-    return;
-  }
-
-  // fallback defensivo: se vier uma view desconhecida, volta pra etapa-1
-  R('fallback -> etapa-1');
-  showFormStep('etapa-1');
+  // Sem transição: 0% só na primeira etapa
+  backBtn.style.transition = 'none';
+  backBtn.style.opacity = isFirst ? '0' : '1';
+  backBtn.style.pointerEvents = isFirst ? 'none' : 'auto';
+  console.log(`[UI] BackButton → ${isFirst ? 'oculto' : 'visível'}`);
 }
 
-// Opcional: se quiser forçar uma re-leitura do DOM (por exemplo, em SPA parcial)
-export function invalidateCache() {
-  cache.clear();
+function showOnlyCurrentView() {
+  const { currentView } = getState();
+  ORDER.forEach((viewId) => hide(byId(viewId)));
+  show(byId(currentView));
+
+  // Ajuste das classes auxiliares se você usa "is-active" visual nas sections
+  ORDER.forEach((id) => byId(id)?.classList?.remove('is-active'));
+  byId(currentView)?.classList?.add('is-active');
+
+  console.log(`[UI] Renderizando view → ${currentView}`);
 }
 
-
+export function renderView() {
+  showOnlyCurrentView();
+  setBackButtonOpacity();
+}
