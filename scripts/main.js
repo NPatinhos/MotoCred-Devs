@@ -8,6 +8,8 @@ import {
   initializeNavigation,
   updateEtapasBarra,
 } from './stepNavigation.js';
+import { clearAllTooltips } from './validators.js';
+
 
 function safeBootstrap() {
   console.log('[MAIN] Inicializando aplicação...');
@@ -42,11 +44,14 @@ function safeBootstrap() {
   initFormSteps();
   initStepBar();
 
-  document.addEventListener('nav:changed', (e) => {
-    console.log(`[EVENT] nav:changed → ${e.detail.viewId}`);
-    renderView();
-    updateEtapasBarra();
-  });
+document.addEventListener('nav:changed', (e) => {
+  console.log(`[EVENT] nav:changed → ${e.detail.viewId}`);
+  initializeNavigation({ initialView: devStep });
+  clearAllTooltips();     // ← remove qualquer balão remanescente
+  renderView();
+  updateEtapasBarra();
+});
+
 
   console.log('[MAIN] initFormSteps() OK');
   console.log('[MAIN] initStepBar() OK');

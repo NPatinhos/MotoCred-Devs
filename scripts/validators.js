@@ -99,6 +99,12 @@ function clearTooltips(stepId) {
   document.querySelectorAll(`[data-tooltip-for]`).forEach((el) => el.remove());
 }
 
+// Remove TODOS os tooltips de qualquer etapa (uso em navegação)
+function clearAllTooltipsInternal() {
+  document.querySelectorAll('[data-tooltip-for]').forEach((el) => el.remove());
+}
+
+
 // ===== Etapa 1 =====
 function verificaEtapa1() {
   const stepId = 'etapa-1';
@@ -130,6 +136,11 @@ function verificaEtapa2() {
   if (!hasValue(emailVend)) { createTooltip(emailVend, 'Informe o e-mail'); ok = false; }
   if (hasValue(emailVend) && !validEmail(emailVend)) {
     createTooltip(emailVend, 'E-mail inválido');
+    ok = false;
+  }
+    // verificação de formato (regex)
+  if (hasValue(emailVend) && !validEmail(emailVend)) {
+    createTooltip(emailVend, 'E-mail do vendedor inválido');
     ok = false;
   }
   return ok;
@@ -182,3 +193,9 @@ export function verificaEtapaAtual() {
   const { currentView } = getState();
   return verificaEtapaCompleta(currentView);
 }
+
+export function clearAllTooltips() {
+  console.log('[TIP] clearAllTooltips()');
+  clearAllTooltipsInternal();
+}
+
