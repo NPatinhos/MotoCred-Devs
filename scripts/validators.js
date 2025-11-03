@@ -1,346 +1,234 @@
 // validators.js
-// Funções puras de validação. Não mexem no DOM.
-// Sempre retornam objetos padronizados para facilitar o uso.
-// Padrões de retorno:
-//   { ok: true, value: ... }                 // validação simples de 1 campo
-//   { ok: false, error: "mensagem de erro" } // erro simples
-//   { ok: true, values: {...} }              // validação de um grupo/etapa
-//   { ok: false, fieldErrors: {campo:"msg"} } // erro por campo em um grupo
+// Validações por etapa. Mantém logs detalhados.
 
-// ----------------------
-// Utilidades internas
-// ----------------------
+import { getState } from './stepNavigation.js';
 
-// remove tudo que não é dígito
-function onlyDigits(str) {
-  return (str || "").replace(/\D/g, "");
+const $ = (s) => document.querySelector(s);
+
+function logPrefix(stepId) { return `[VALIDATE:${stepId}]`; }
+
+// ===== Utilitários de marcação visual =====
+function markInvalid(input, message) {
+  if (!input) return;
+  input.setAttribute('aria-invalid', 'true');
+  input.classList.add(
+    'border-2', 'border-[#D11B1B]',
+    'ring-0', 'focus:ring-0', // zera o ring azul
+    'outline-none'
+  );
+  input.dataset.error = message || 'Campo inválido';
 }
 
-// Algoritmo oficial de validação de CPF
-// Recebe string só com dígitos
-function isValidCpfAlgorithm(cpfDigits) {
-  // tem que ter 11 dígitos
-  if (cpfDigits.length !== 11) return false;
+function clearInvalid(input) {
+  if (!input) return;
+  input.removeAttribute('aria-invalid');
+  input.classList.remove(
+    'border-2', 'border-[#D11B1B]',
+    'ring-0', 'focus:ring-0',
+    'outline-none'
+  );
+  delete input.dataset.error;
+}
 
-  // rejeita cpfs tipo "00000000000", "11111111111", etc
-  if (/^(\d)\1+$/.test(cpfDigits)) return false;
+// Limpa erros de uma etapa inteira
+function clearStepErrors(stepId) {
+  document.querySelectorAll(`#${stepId} [aria-invalid="true"]`).forEach(clearInvalid);
+}
 
-  // cálculo do dígito verificador 1
-  let sum1 = 0;
-  for (let i = 0; i < 9; i++) {
-    sum1 += parseInt(cpfDigits[i], 10) * (10 - i);
-  }
-  const dv1 = (sum1 * 10) % 11 === 10 ? 0 : (sum1 * 10) % 11;
+// ===== Regex / regras =====
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+const TEL_RE   = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/; // (00) 0000-0000 ou (00) 00000-0000
+const CURRENCY_RE = /^R?\$?\s?\d{1,3}(\.\d{3})*(,\d{2})?$|^\d+([.,]\d{2})?$/; // aceita "R$ 1.234,56" ou "1234,56"
 
-  if (dv1 !== parseInt(cpfDigits[9], 10)) return false;
+// CPF algorítmico
+function onlyDigits(v) { return (v || '').replace(/\D+/g, ''); }
+function isValidCPF(strCPF) {
+  const cpf = onlyDigits(strCPF);
+  if (!cpf || cpf.length !== 11) return false;
+  if (/^(\d)\1+$/.test(cpf)) return false;
 
-  // cálculo do dígito verificador 2
-  let sum2 = 0;
-  for (let i = 0; i < 10; i++) {
-    sum2 += parseInt(cpfDigits[i], 10) * (11 - i);
-  }
-  const dv2 = (sum2 * 10) % 11 === 10 ? 0 : (sum2 * 10) % 11;
+  let sum = 0; let rest;
 
-  if (dv2 !== parseInt(cpfDigits[10], 10)) return false;
+  for (let i = 1; i <= 9; i++) sum += parseInt(cpf.substring(i-1, i), 10) * (11 - i);
+  rest = (sum * 10) % 11;
+  if (rest === 10 || rest === 11) rest = 0;
+  if (rest !== parseInt(cpf.substring(9, 10), 10)) return false;
+
+  sum = 0;
+  for (let i = 1; i <= 10; i++) sum += parseInt(cpf.substring(i-1, i), 10) * (12 - i);
+  rest = (sum * 10) % 11;
+  if (rest === 10 || rest === 11) rest = 0;
+  if (rest !== parseInt(cpf.substring(10, 11), 10)) return false;
 
   return true;
 }
 
-// ----------------------
-// Validações de campos individuais
-// ----------------------
-
-export function validateTipoUsuario(tipoUsuarioValue) {
-  // esperado: "comprador" ou "vendedor"
-  const v = (tipoUsuarioValue || "").toLowerCase().trim();
-  if (v !== "comprador" && v !== "vendedor") {
-    return { ok: false, error: "Selecione se você é comprador ou vendedor." };
-  }
-  return { ok: true, value: v }; // "comprador" | "vendedor"
+// ===== Validadores unitários =====
+function requireNonEmpty(input, name = 'Campo') {
+  if (!input) return false;
+  clearInvalid(input);
+  const v = String(input.value || '').trim();
+  if (!v) { markInvalid(input, `${name} obrigatório`); return false; }
+  return true;
+}
+function validateEmail(input) {
+  if (!input) return false;
+  clearInvalid(input);
+  const v = String(input.value || '').trim();
+  const ok = EMAIL_RE.test(v);
+  if (!ok) markInvalid(input, 'E-mail inválido');
+  return ok;
+}
+function validateTelefone(input) {
+  if (!input) return false;
+  clearInvalid(input);
+  const v = String(input.value || '').trim();
+  const ok = TEL_RE.test(v);
+  if (!ok) markInvalid(input, 'Telefone inválido');
+  return ok;
+}
+function validateCPF(input) {
+  if (!input) return false;
+  clearInvalid(input);
+  const v = String(input.value || '').trim();
+  const ok = isValidCPF(v);
+  if (!ok) markInvalid(input, 'CPF inválido');
+  return ok;
+}
+function validateCurrency(input) {
+  if (!input) return false;
+  clearInvalid(input);
+  const v = String(input.value || '').trim();
+  const ok = CURRENCY_RE.test(v);
+  if (!ok) markInvalid(input, 'Valor inválido');
+  return ok;
+}
+function validateCNHHidden(input) {
+  if (!input) return false;
+  clearInvalid(input);
+  const v = String(input.value || '').trim();
+  const ok = v === 'sim' || v === 'nao';
+  if (!ok) markInvalid(input, 'Selecione se possui CNH');
+  return ok;
 }
 
-export function validateCNH(possuiCNHValue) {
-  // esperado: "sim" | "nao"
-  const v = (possuiCNHValue || "").toLowerCase().trim();
-  if (v !== "sim" && v !== "nao") {
-    return { ok: false, error: "Informe se possui CNH." };
+// ===== Regras por etapa =====
+// Etapa 1: precisa escolher "tipoUsuario"
+function validateStep1() {
+  const stepId = 'etapa-1';
+  console.log(`${logPrefix(stepId)} iniciando...`);
+  clearStepErrors(stepId);
+
+  // Em etapa 1 não há input, usamos estado (definido por botões data-tipo-usuario)
+  const tipo = getState()?.form?.tipoUsuario || null;
+  if (!tipo) {
+    console.warn(`${logPrefix(stepId)} tipoUsuario ausente`);
+    // Destacar o grupo visual dos botões (feedback sutil)
+    const group = document.querySelector('#etapa-1 .max-w-[400px]');
+    if (group) {
+      group.classList.add('ring-2', 'ring-red-500');
+      setTimeout(() => group.classList.remove('ring-2', 'ring-red-500'), 1500);
+    }
+    return { ok: false, firstInvalid: group || null };
   }
-  return { ok: true, value: v === "sim" }; // true / false
+
+  console.log(`${logPrefix(stepId)} OK`);
+  return { ok: true };
 }
 
-export function validateCPF(cpfInputValue) {
-  const digits = onlyDigits(cpfInputValue);
+// Etapa 2: somente quando NÃO estiver travada (ou seja, tipoUsuario !== 'comprador')
+function validateStep2() {
+  const stepId = 'etapa-2';
+  console.log(`${logPrefix(stepId)} iniciando...`);
+  clearStepErrors(stepId);
 
-  if (!digits) {
-    return { ok: false, error: "CPF obrigatório." };
-  }
+  const loja = $('#loja');
+  const nomeVend = $('#nome-vendedor');
+  const emailVend = $('#email-vendedor');
 
-  if (digits.length !== 11) {
-    return { ok: false, error: "CPF deve ter 11 dígitos." };
-  }
+  const checks = [
+    requireNonEmpty(loja, 'Loja/Concessionária'),
+    requireNonEmpty(nomeVend, 'Nome do Vendedor'),
+    validateEmail(emailVend),
+  ];
 
-  if (!isValidCpfAlgorithm(digits)) {
-    return { ok: false, error: "CPF inválido." };
-  }
+  const ok = checks.every(Boolean);
+  const firstInvalid = [loja, nomeVend, emailVend].find((el) => el?.getAttribute('aria-invalid') === 'true') || null;
 
-  return { ok: true, value: digits }; // devolve CPF limpo só com números
+  console.log(`${logPrefix(stepId)} ${ok ? 'OK' : 'FALHOU'}`);
+  return { ok, firstInvalid };
 }
 
-export function validateNomeObrigatorio(nomeValue, label = "Nome") {
-  const v = (nomeValue || "").trim();
-  if (!v) {
-    return { ok: false, error: `${label} obrigatório.` };
+// Etapa 3: válida para ambos os fluxos — campos do cliente
+function validateStep3() {
+  const stepId = 'etapa-3';
+  console.log(`[VALIDATE:${stepId}] iniciando...`);
+  clearStepErrors(stepId);
+
+  const nome   = $('#nome-cliente');
+  const cpf    = $('#cpf');
+  const email  = $('#email-cliente');
+  const tel    = $('#telefone');
+  const renda  = $('#renda_mensal');
+  const cnhHid = $('#possui-cnh'); // hidden preenchido pelos botões
+
+  // ---------- FASE 1: presença ----------
+  const presences = [
+    requireNonEmpty(nome,  'Nome do Cliente'),
+    requireNonEmpty(cpf,   'CPF'),
+    requireNonEmpty(email, 'E-mail'),
+    requireNonEmpty(tel,   'Telefone'),
+    requireNonEmpty(renda, 'Renda Mensal'),
+    requireNonEmpty(cnhHid,'Possui CNH'),
+  ];
+
+  if (!presences.every(Boolean)) {
+    const firstInvalidPresence = [nome, cpf, email, tel, renda, cnhHid]
+      .find((el) => el?.getAttribute('aria-invalid') === 'true') || null;
+
+    console.warn('[VALIDATE:etapa-3] FALHOU na presença.');
+    return { ok: false, firstInvalid: firstInvalidPresence };
   }
-  return { ok: true, value: v };
+
+  // ---------- FASE 2: formato/regex ----------
+  const formats = [
+    validateCPF(cpf),
+    validateEmail(email),
+    validateTelefone(tel),
+    validateCurrency(renda),
+    validateCNHHidden(cnhHid),
+  ];
+
+  const ok = formats.every(Boolean);
+  const firstInvalidFormat = [cpf, email, tel, renda, cnhHid]
+    .find((el) => el?.getAttribute('aria-invalid') === 'true') || null;
+
+  console.log(`[VALIDATE:${stepId}] ${ok ? 'OK' : 'FALHOU'}`);
+  return { ok, firstInvalid: ok ? null : firstInvalidFormat };
 }
 
-export function validateEmail(emailValue) {
-  const v = (emailValue || "").trim();
 
-  if (!v) {
-    return { ok: false, error: "E-mail obrigatório." };
-  }
+// ===== Orquestrador por etapa atual =====
+export function validateCurrentStep() {
+  const { currentView, form } = getState();
+  const stepId = currentView;
+  console.log(`[VALIDATE] currentView=${currentView}`);
 
-  // Regex simples pra formato nome@dominio.ext
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(v)) {
-    return { ok: false, error: "E-mail inválido." };
-  }
+  if (stepId === 'etapa-1') return validateStep1();
 
-  return { ok: true, value: v.toLowerCase() };
-}
-
-export function validateTelefone(telefoneValue) {
-  const digits = onlyDigits(telefoneValue);
-
-  if (!digits) {
-    return { ok: false, error: "Telefone obrigatório." };
-  }
-
-  // Brasil comum: 10 ou 11 dígitos (com/sem nono dígito)
-  if (digits.length < 10 || digits.length > 11) {
-    return { ok: false, error: "Telefone inválido." };
-  }
-
-  return { ok: true, value: digits };
-}
-
-// Campos numéricos (renda mensal, valor moto, etc.)
-// Esses valores devem chegar já como Number (ex: 1234.56)
-// Se você ainda estiver com string "R$ 1.234,56", primeiro passa em moneyMask.numFromInput()
-export function validateValorPositivo(valorNumber, label = "Valor") {
-  if (valorNumber == null || Number.isNaN(valorNumber)) {
-    return { ok: false, error: `${label} obrigatório.` };
-  }
-
-  if (valorNumber <= 0) {
-    return { ok: false, error: `${label} deve ser maior que zero.` };
-  }
-
-  return { ok: true, value: valorNumber };
-}
-
-// Ex: validar se entrada <= valor da moto
-export function validateEntradaVsTotal(valorMotoNumber, entradaNumber) {
-  if (entradaNumber > valorMotoNumber) {
-    return {
-      ok: false,
-      error: "A entrada não pode ser maior que o valor total da moto.",
-    };
-  }
-  return { ok: true, value: { valorMoto: valorMotoNumber, entrada: entradaNumber } };
-}
-
-// ----------------------
-// Validações de grupos / etapas inteiras
-// ----------------------
-
-// Etapa 1: identificação do tipo de usuário, etc.
-// Ajuste conforme seu HTML final
-export function validateEtapaIdentificacao({ tipoUsuarioRaw }) {
-  const errors = {};
-  const clean = {};
-
-  const rTipo = validateTipoUsuario(tipoUsuarioRaw);
-  if (!rTipo.ok) {
-    errors.tipoUsuario = rTipo.error;
-  } else {
-    clean.tipoUsuario = rTipo.value; // "comprador" | "vendedor"
-  }
-
-  if (Object.keys(errors).length > 0) {
-    return { ok: false, fieldErrors: errors };
-  }
-
-  return { ok: true, values: clean };
-}
-
-// Etapa 2: dados do vendedor
-// Só será exigida se tipoUsuario === "vendedor". Se for "comprador", você pode nem chamar isso.
-export function validateEtapaVendedor({ lojaRaw, nomeVendedorRaw, emailVendedorRaw }) {
-  const errors = {};
-  const clean = {};
-
-  // loja
-  {
-    const loja = (lojaRaw || "").trim();
-    if (!loja) {
-      errors.loja = "Informe a loja.";
-    } else {
-      clean.loja = loja;
+  if (stepId === 'etapa-2') {
+    // Se comprador, etapa 2 está travada no fluxo de navegação
+    // Mas se por algum motivo cair aqui, garantimos a regra:
+    if (form?.tipoUsuario === 'comprador') {
+      console.log('[VALIDATE:etapa-2] pulada (comprador)');
+      return { ok: true }; // não exige vendedor
     }
+    return validateStep2();
   }
 
-  // nome vendedor
-  {
-    const rNome = validateNomeObrigatorio(nomeVendedorRaw, "Nome do vendedor");
-    if (!rNome.ok) {
-      errors.nomeVendedor = rNome.error;
-    } else {
-      clean.nomeVendedor = rNome.value;
-    }
-  }
+  if (stepId === 'etapa-3') return validateStep3();
 
-  // email vendedor
-  {
-    const rEmail = validateEmail(emailVendedorRaw);
-    if (!rEmail.ok) {
-      errors.emailVendedor = rEmail.error;
-    } else {
-      clean.emailVendedor = rEmail.value;
-    }
-  }
-
-  if (Object.keys(errors).length > 0) {
-    return { ok: false, fieldErrors: errors };
-  }
-
-  return { ok: true, values: clean };
-}
-
-// Etapa 3: dados do cliente
-export function validateEtapaCliente({
-  nomeClienteRaw,
-  cpfRaw,
-  cnhRaw,          // esperado "sim"/"nao"
-  emailClienteRaw,
-  telefoneRaw,
-}) {
-  const errors = {};
-  const clean = {};
-
-  // nome cliente
-  {
-    const rNome = validateNomeObrigatorio(nomeClienteRaw, "Nome do cliente");
-    if (!rNome.ok) {
-      errors.nomeCliente = rNome.error;
-    } else {
-      clean.nomeCliente = rNome.value;
-    }
-  }
-
-  // cpf cliente
-  {
-    const rCpf = validateCPF(cpfRaw);
-    if (!rCpf.ok) {
-      errors.cpf = rCpf.error;
-    } else {
-      clean.cpf = rCpf.value; // só dígitos
-    }
-  }
-
-  // cnh sim/nao
-  {
-    const rCnh = validateCNH(cnhRaw);
-    if (!rCnh.ok) {
-      errors.cnh = rCnh.error;
-    } else {
-      clean.possuiCNH = rCnh.value; // boolean
-    }
-  }
-
-  // email cliente
-  {
-    const rEmail = validateEmail(emailClienteRaw);
-    if (!rEmail.ok) {
-      errors.emailCliente = rEmail.error;
-    } else {
-      clean.emailCliente = rEmail.value;
-    }
-  }
-
-  // telefone cliente
-  {
-    const rTel = validateTelefone(telefoneRaw);
-    if (!rTel.ok) {
-      errors.telefoneCliente = rTel.error;
-    } else {
-      clean.telefoneCliente = rTel.value; // só dígitos
-    }
-  }
-
-  if (Object.keys(errors).length > 0) {
-    return { ok: false, fieldErrors: errors };
-  }
-
-  return { ok: true, values: clean };
-}
-
-// Etapa 4: dados da venda (valores R$ e renda)
-// Aqui a gente assume que você já converteu os campos "R$ 12.345,67" em Number
-export function validateEtapaVenda({
-  rendaMensalNumber,
-  valorMotoNumber,
-  valorEntradaNumber,
-}) {
-  const errors = {};
-  const clean = {};
-
-  // renda mensal
-  {
-    const rRenda = validateValorPositivo(rendaMensalNumber, "Renda mensal");
-    if (!rRenda.ok) {
-      errors.rendaMensal = rRenda.error;
-    } else {
-      clean.rendaMensal = rRenda.value;
-    }
-  }
-
-  // valor moto
-  {
-    const rMoto = validateValorPositivo(valorMotoNumber, "Valor da moto");
-    if (!rMoto.ok) {
-      errors.valorMoto = rMoto.error;
-    } else {
-      clean.valorMoto = rMoto.value;
-    }
-  }
-
-  // valor entrada
-  {
-    const rEntrada = validateValorPositivo(valorEntradaNumber, "Valor de entrada");
-    if (!rEntrada.ok) {
-      errors.valorEntrada = rEntrada.error;
-    } else {
-      clean.valorEntrada = rEntrada.value;
-    }
-  }
-
-  // relação entrada vs total
-  {
-    const rRelacao = validateEntradaVsTotal(
-      valorMotoNumber,
-      valorEntradaNumber
-    );
-    if (!rRelacao.ok) {
-      errors.valorEntrada = rRelacao.error;
-    }
-  }
-
-  if (Object.keys(errors).length > 0) {
-    return { ok: false, fieldErrors: errors };
-  }
-
-  // nota: se chegou aqui, já temos clean.rendaMensal, clean.valorMoto, clean.valorEntrada
-  return { ok: true, values: clean };
+  // Outras etapas (ex.: 4) serão tratadas depois
+  console.log('[VALIDATE] etapa sem validação específica → OK');
+  return { ok: true };
 }
