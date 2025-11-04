@@ -81,11 +81,17 @@ export function prevStep() {
   const i = ORDER.indexOf(state.currentView);
   if (i <= 0) return;
 
-  const target = ORDER[i - 1];
+  let target = ORDER[i - 1];
+  if (target === 'etapa-2' && isEtapa2Locked()) {
+    target = 'etapa-1';
+    console.log('[NAV] Pulando etapa 2 (travada)');
+  }
+
   console.log(`[NAV] prevStep → ${target}`);
   setView(target);
   updateEtapasBarra();
 }
+
 
 // ===== Barra de etapas =====
 export function initStepBar() {

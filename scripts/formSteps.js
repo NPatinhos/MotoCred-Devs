@@ -40,11 +40,13 @@ export function initFormSteps() {
   if (!btnPrev) console.warn('[WARN] Botão VOLTAR não encontrado:', BTN_PREV);
   if (!btnNext) console.warn('[WARN] Botão AVANÇAR não encontrado:', BTN_NEXT);
 
-  btnPrev?.addEventListener('click', (e) => {
-    e.preventDefault();
-    console.log('[CLICK] Botão VOLTAR');
-    prevStep();
-  });
+btnPrev?.addEventListener('click', (e) => {
+  e.preventDefault();
+  console.log('[CLICK] Botão VOLTAR');
+  prevStep(); // agora SEM validação
+});
+
+
 
  btnNext?.addEventListener('click', (e) => {
   e.preventDefault();
