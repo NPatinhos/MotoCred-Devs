@@ -1,5 +1,7 @@
 // stepNavigation.js
 // Controla toda navegação entre etapas + estado global mínimo.
+import { getMaxStepReached, setMaxStepReached } from './appState.js';
+
 
 const ORDER = ['etapa-1', 'etapa-2', 'etapa-3', 'etapa-4'];
 
@@ -23,20 +25,30 @@ const byId = (id) => document.getElementById(id);
 const state = {
   currentView: ORDER[0],
   form: { tipoUsuario: null },
+  maxStepIndex: 0, // 0-based = etapa-1
 };
 
 export function getState() {
   return state;
 }
+
 export function setState(patch = {}) {
   Object.assign(state, patch);
 }
+
 export function setView(viewId) {
   if (!ORDER.includes(viewId)) return;
+
+  const viewIndex = ORDER.indexOf(viewId);
   console.log(`[NAV] setView → ${viewId}`);
+
   state.currentView = viewId;
+  state.maxStepIndex = Math.max(state.maxStepIndex, viewIndex);
+
+  setMaxStepReached(state.maxStepIndex + 1); // mantém o global (1-based)
   document.dispatchEvent(new CustomEvent('nav:changed', { detail: { viewId } }));
 }
+
 
 function isEtapa2Locked() {
   return state?.form?.tipoUsuario === 'comprador';
@@ -44,12 +56,13 @@ function isEtapa2Locked() {
 
 // ===== Navegação =====
 export function goTo(viewId) {
-  const current = state.currentView;
   if (!ORDER.includes(viewId)) return;
 
-  const tryingFuture = ORDER.indexOf(viewId) > ORDER.indexOf(current);
-  if (tryingFuture) {
-    console.warn(`[NAV] Ignorado: tentativa de pular etapas → ${viewId}`);
+  const targetIndex = ORDER.indexOf(viewId);
+  const maxAllowed = state.maxStepIndex;
+
+  if (targetIndex > maxAllowed) {
+    console.warn(`[NAV] Ignorado: ${viewId} ainda não foi liberada`);
     return;
   }
 
@@ -61,6 +74,7 @@ export function goTo(viewId) {
   setView(viewId);
   updateEtapasBarra();
 }
+
 
 export function nextStep() {
   const i = ORDER.indexOf(state.currentView);
@@ -116,17 +130,22 @@ export function initStepBar() {
 
 export function updateEtapasBarra() {
   const current = state.currentView;
+  const currentIndex = ORDER.indexOf(current);
+  const maxIndex = state.maxStepIndex;
   const locked2 = isEtapa2Locked();
 
-  ORDER.forEach((viewId) => {
+    ORDER.forEach((viewId) => {
     const tabId = VIEW_TO_TAB[viewId];
     const btn = byId(tabId);
     if (!btn) return;
 
     btn.classList.remove('is-active', 'is-complete', 'is-future', 'is-locked');
     btn.removeAttribute('disabled');
-    btn.setAttribute('aria-disabled', 'false');
     btn.setAttribute('aria-selected', 'false');
+    btn.setAttribute('aria-disabled', 'false');
+
+    const index = ORDER.indexOf(viewId);
+    const lockedStep2 = viewId === 'etapa-2' && locked2;
 
     if (viewId === current) {
       btn.classList.add('is-active');
@@ -134,10 +153,10 @@ export function updateEtapasBarra() {
       return;
     }
 
-    const passed = ORDER.indexOf(viewId) < ORDER.indexOf(current);
-    if (passed) {
+    if (index <= maxIndex) {
       btn.classList.add('is-complete');
-      if (viewId === 'etapa-2' && locked2) {
+
+      if (lockedStep2) {
         btn.classList.add('is-locked');
         btn.setAttribute('aria-disabled', 'true');
         btn.setAttribute('disabled', 'true');
@@ -148,10 +167,16 @@ export function updateEtapasBarra() {
     btn.classList.add('is-future');
     btn.setAttribute('aria-disabled', 'true');
     btn.setAttribute('disabled', 'true');
+
+    if (lockedStep2) {
+      btn.classList.add('is-locked');
+    }
   });
+
 
   console.log(`[UI] updateEtapasBarra() → etapa atual: ${current}`);
 }
+
 
 // ===== Campos que afetam navegação =====
 export function setTipoUsuario(value) {
@@ -163,8 +188,10 @@ export function setTipoUsuario(value) {
 export function initializeNavigation({ initialView } = {}) {
   console.log('[INIT] initializeNavigation()');
   if (initialView && ORDER.includes(initialView)) {
-    state.currentView = initialView;
-  }
+  state.currentView = initialView;
+  state.maxStepIndex = ORDER.indexOf(initialView);
+  setMaxStepReached(state.maxStepIndex + 1);
+}
   updateEtapasBarra();
 }
 

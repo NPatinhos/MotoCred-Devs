@@ -96,6 +96,10 @@ export function getSimulacaoEscolhida() {
   return state.simulacaoEscolhida;
 }
 
+export function getMaxStepReached() {
+  return state.maxStepReached;
+}
+
 // -----------------------------------------------------------------------------
 // SETTERS / UPDATERS (MUDAR ESTADO)
 // -----------------------------------------------------------------------------
@@ -130,6 +134,11 @@ export function setPossuiCNH(flagCNH) {
     L('setPossuiCNH ->', flag);  
     state.possuiCNH = flagCNH;
     state.formData.possuiCNH = flagCNH;
+}
+
+export function setMaxStepReached(stepNumber) {
+  const safeStep = Math.max(1, Number(stepNumber) || 1);
+  state.maxStepReached = Math.max(state.maxStepReached, safeStep);
 }
 
 // Atualiza um pedaço da etapa de vendedor
