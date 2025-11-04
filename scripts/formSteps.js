@@ -3,6 +3,7 @@
 
 import { nextStep, prevStep, setTipoUsuario } from './stepNavigation.js';
 import { verificaEtapaAtual  } from './validators.js';
+import { attachCurrencyMask, formatNumberToBRL } from './moneyMask.js';
 
 const $ = (s) => document.querySelector(s);
 
@@ -16,6 +17,11 @@ const TIPO_USUARIO_BTNS = 'button[data-tipo-usuario]';
 const CNH_BTNS = 'button[data-cnh]';
 const cnhBtns = document.querySelectorAll(CNH_BTNS);
 const cnhHidden = document.querySelector('#possui-cnh');
+
+const SEL = (s) => document.getElementById(s);
+const VALOR_MOTO_ID = 'valorMoto'; 
+const VALOR_ENTRADA_ID = 'valorEntrada'; 
+const PERCENTUAL_MINIMO_ENTRADA = 0.40; // 40%
 
 export function initFormSteps() {
   console.log('[INIT] initFormSteps()');
@@ -108,6 +114,33 @@ if (!cnhBtns.length || !cnhHidden) {
   });
 }
 
+function setupInputSugerido() {
+  const motoInput = SEL(VALOR_MOTO_ID);
+  const entradaInput = SEL(VALOR_ENTRADA_ID);
+  
+  if (!motoInput || !entradaInput) return;
+  
+  const updateEntradaSugerida = () => {
+      // Pega o valor da MOTO em número puro
+      const valorMotoNum = parseBRLToNumber(motoInput.value) || 0; 
+      
+      const sugeridoMinimo = valorMotoNum * PERCENTUAL_MINIMO_ENTRADA;
+      
+      // Formata e ATUALIZA o placeholder
+      const sugeridoFormatado = formatBRLFromNumber(sugeridoMinimo);
+      entradaInput.placeholder = `Min. sugerido: ${sugeridoFormatado}`;
+      
+      // Salva o valor puro NUMÉRICO no data-set para uso no submit
+      entradaInput.dataset.valorSugerido = sugeridoMinimo; 
+  };
+  
+  // Inicializa e adiciona o listener de input para recalcular
+  updateEntradaSugerida(); 
+  motoInput.addEventListener('input', updateEntradaSugerida); 
+}
+
+setupInputSugerido();
+
 
 // === Máscara de CPF ===
 const cpfInput = document.querySelector('#cpf');
@@ -151,6 +184,49 @@ rendaInput?.addEventListener('input', () => {
 
   rendaInput.value = `R$ ${reais},${cents}`;
 });
+
+const inputValorMoto = document.querySelector('#valor-moto');
+  const inputValorEntrada = document.querySelector('#valor-entrada');
+
+  // aplica máscaras BRL
+  const maskMoto = inputValorMoto ? attachCurrencyMask(inputValorMoto) : null;
+  const maskEntrada = inputValorEntrada ? attachCurrencyMask(inputValorEntrada) : null;
+
+  // flag pra não sobrescrever a entrada depois que o usuário editar
+  let usuarioEditouEntrada = false;
+
+  inputValorEntrada?.addEventListener('input', () => {
+    usuarioEditouEntrada = true;
+  });
+
+  function atualizarMinEntradaPlaceholder() {
+    if (!inputValorEntrada) return;
+
+    // lê valor numérico da moto (ex.: 12345.67)
+    const valorMoto = maskMoto ? maskMoto.getNumericValue() : 0;
+
+    // 40% do valor da moto, arredondado pra 2 casas
+    const minEntrada = Math.max(0, Math.round(valorMoto * 0.40 * 100) / 100);
+
+    // atualiza só a parte numérica do placeholder
+    const placeholder = `Min. sugerido: ${formatNumberToBRL(minEntrada)}`;
+    inputValorEntrada.setAttribute('placeholder', placeholder);
+
+    // Pré-preenche a entrada com o mínimo sugerido SE o usuário ainda não digitou
+    const valorEntradaAtual = maskEntrada ? maskEntrada.getNumericValue() : 0;
+    const campoVazio = !inputValorEntrada.value || valorEntradaAtual === 0;
+
+    if (!usuarioEditouEntrada && campoVazio && maskEntrada) {
+      maskEntrada.setValueFromNumber(minEntrada);
+    }
+  }
+
+  // recalcula quando mudar a moto (digitando ou saindo do campo)
+  inputValorMoto?.addEventListener('input', atualizarMinEntradaPlaceholder);
+  inputValorMoto?.addEventListener('blur', atualizarMinEntradaPlaceholder);
+
+  // chamada inicial (garante placeholder correto ao abrir a etapa)
+  atualizarMinEntradaPlaceholder();
 
 
 (function restauraEstadoCNH() {

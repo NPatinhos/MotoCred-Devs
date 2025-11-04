@@ -168,6 +168,13 @@ export function attachCurrencyMask(inputEl) {
   };
 }
 
+
+// Recebe um Number (1234.56) e devolve string "R$ 1.234,56"
+export function formatBRLFromNumber(numberValue) {
+    if (numberValue == null || isNaN(numberValue)) return "R$ 0,00";
+    // Usamos toLocaleString para formatação monetária correta (R$)
+    return (Number(numberValue) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
 // ----------------------
 // Leitura simples (uso rápido no submit)
 // ----------------------

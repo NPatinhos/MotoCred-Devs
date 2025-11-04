@@ -11,7 +11,6 @@ import {
 } from './stepNavigation.js';
 import { clearAllTooltips } from './validators.js';
 
-
 function safeBootstrap() {
   console.log('[MAIN] Inicializando aplicação...');
 
