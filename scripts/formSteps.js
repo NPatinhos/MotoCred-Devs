@@ -189,128 +189,60 @@ rendaInput?.addEventListener('input', () => {
   rendaInput.value = `R$ ${reais},${cents}`;
 });
 
-  (function initEtapa4EntradaMinDebugger() {
-    const etapa4 = document.querySelector('#etapa-4');
-    if (!etapa4) {
-      console.warn('[Etapa4][DEBUG] #etapa-4 NÃO encontrado no DOM.');
-      return;
-    }
+const etapa4 = document.querySelector('#etapa-4');
+  if (etapa4) {
+    const inputValorMoto = etapa4.querySelector('#valor-moto');
+    const inputValorEntrada = etapa4.querySelector('#valor-entrada');
 
-    const inputValorMoto = etapa4.querySelector('input#valor-moto');      // escopo dentro da etapa 4
-    const inputValorEntrada = etapa4.querySelector('input#valor-entrada');
+    if (!inputValorMoto || !inputValorEntrada) return;
 
-    console.groupCollapsed('[Etapa4][DEBUG] Setup inicial');
-    console.log('etapa4:', etapa4);
-    console.log('inputValorMoto:', inputValorMoto);
-    console.log('inputValorEntrada:', inputValorEntrada);
-    console.groupEnd();
-
-    if (!inputValorMoto || !inputValorEntrada) {
-      console.warn('[Etapa4][DEBUG] Inputs da etapa 4 não encontrados. Verifique IDs dentro da seção #etapa-4.');
-      return;
-    }
-
-    // Aplica máscaras BRL e loga o resultado
     const maskMoto = attachCurrencyMask?.(inputValorMoto);
     const maskEntrada = attachCurrencyMask?.(inputValorEntrada);
-
-    console.groupCollapsed('[Etapa4][DEBUG] Máscaras');
-    console.log('maskMoto:', maskMoto, 'tem getNumericValue?', !!maskMoto?.getNumericValue, 'tem setValueFromNumber?', !!maskMoto?.setValueFromNumber);
-    console.log('maskEntrada:', maskEntrada, 'tem getNumericValue?', !!maskEntrada?.getNumericValue, 'tem setValueFromNumber?', !!maskEntrada?.setValueFromNumber);
-    console.groupEnd();
-
-    let usuarioEditouEntrada = false;
-
-    inputValorEntrada.addEventListener('input', () => {
-      usuarioEditouEntrada = true;
-      const valNum = maskEntrada?.getNumericValue ? maskEntrada.getNumericValue() : NaN;
-      console.log('[Etapa4][DEBUG] Usuário editou ENTRADA. usuarioEditouEntrada =', usuarioEditouEntrada, '| entrada.num =', valNum, '| entrada.value =', inputValorEntrada.value);
-    });
 
     const formatBRL = (n) =>
       `R$ ${Number(n || 0).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
 
-    const atualizarMinEntradaPlaceholder = (reason = 'manual') => {
-      // lê valor da moto via máscara
-      const valorMoto = maskMoto?.getNumericValue ? maskMoto.getNumericValue() : 0;
+    const resetEntradaComPlaceholderMin = () => {
+      // 1) lê valor da moto (numérico)
+      const valorMoto = typeof maskMoto?.getNumericValue === 'function'
+        ? maskMoto.getNumericValue()
+        : Number((inputValorMoto.value || '0').replace(/[^\d,]/g, '').replace(',', '.')) || 0;
 
-      // 40%
+      // 2) calcula 40%
       const min = Math.max(0, Math.round(valorMoto * 0.40 * 100) / 100);
-      const placeholderStr = `Min. sugerido: ${formatBRL(min)}`;
 
-      // LOGS completos
-      console.group('[Etapa4][DEBUG] atualizarMinEntradaPlaceholder:', reason);
-      console.log('valorMoto.num =', valorMoto);
-      console.log('min(40%) =', min, '| placeholderStr =', placeholderStr);
-      console.log('inputValorEntrada.value (antes) =', inputValorEntrada.value);
-      console.log('usuarioEditouEntrada =', usuarioEditouEntrada);
-
-      // Atualiza SOMENTE o placeholder
-      inputValorEntrada.setAttribute('placeholder', placeholderStr);
-      console.log('placeholder atualizado ->', inputValorEntrada.getAttribute('placeholder'));
-
-      // Se o usuário ainda não mexeu e o campo está vazio/zero, pré-preencher
-      const entradaNum = maskEntrada?.getNumericValue ? maskEntrada.getNumericValue() : 0;
-      const campoVazio = !inputValorEntrada.value || entradaNum === 0;
-
-      console.log('entradaNum =', entradaNum, '| campoVazio =', campoVazio);
-      if (!usuarioEditouEntrada && campoVazio && maskEntrada?.setValueFromNumber) {
-        maskEntrada.setValueFromNumber(min);
-        console.log('Pré-preencheu ENTRADA com min ->', min, '| value agora =', inputValorEntrada.value);
-      } else {
-        console.log('Não pré-preencheu ENTRADA (usuário já editou ou campo não está vazio).');
+      // 3) limpa a ENTRADA para reaparecer o placeholder
+      if (typeof maskEntrada?.clear === 'function') {
+        maskEntrada.clear();
       }
-      console.groupEnd();
+      // força vazio mesmo que a máscara tente colocar "R$ 0,00"
+      inputValorEntrada.value = '';
+
+      // 4) atualiza placeholder dinâmico
+      inputValorEntrada.setAttribute('placeholder', `Min. sugerido: ${formatBRL(min)}`);
+
+      // 5) dispara input pra sincronizar outros listeners (se houver)
+      inputValorEntrada.dispatchEvent(new Event('input', { bubbles: true }));
     };
 
-    // Atualizar ENQUANTO digita no valor da moto
-    const onMotoInput = (evt) => {
-      console.log('[Etapa4][DEBUG] Evento no VALOR MOTO:', evt.type, '| value =', inputValorMoto.value);
-      atualizarMinEntradaPlaceholder(evt.type);
-    };
-
-    inputValorMoto.addEventListener('input', onMotoInput);
-    inputValorMoto.addEventListener('keyup', onMotoInput);
-    inputValorMoto.addEventListener('blur', onMotoInput);
-
-    // Chamada inicial
-    console.log('[Etapa4][DEBUG] Chamada inicial do atualizarMinEntradaPlaceholder()');
-    atualizarMinEntradaPlaceholder('init');
-
-    // Observa quando a etapa 4 ficar visível (remove classe "hidden") para atualizar na entrada da etapa
-    const etapa4VisibilityObserver = new MutationObserver((mutations) => {
-      mutations.forEach((m) => {
-        if (m.type === 'attributes' && m.attributeName === 'class') {
-          const estaOculta = etapa4.classList.contains('hidden');
-          console.log('[Etapa4][DEBUG] MutationObserver -> class mudou. hidden =', estaOculta, '| className =', etapa4.className);
-          if (!estaOculta) {
-            atualizarMinEntradaPlaceholder('step-visible');
-          }
-        }
-      });
-    });
-    etapa4VisibilityObserver.observe(etapa4, { attributes: true, attributeFilter: ['class'] });
-
-    // Também revalida quando clicar em Próximo/Voltar (se existirem no DOM)
-    const btnNext = document.querySelector('#btnNext');
-    const btnPrev = document.querySelector('#btnPrev');
-    btnNext?.addEventListener('click', () => {
-      setTimeout(() => {
-        const visivel = !etapa4.classList.contains('hidden');
-        console.log('[Etapa4][DEBUG] Click Next -> etapa4 visível?', visivel);
-        if (visivel) atualizarMinEntradaPlaceholder('btnNext');
-      }, 0);
-    });
-    btnPrev?.addEventListener('click', () => {
-      setTimeout(() => {
-        const visivel = !etapa4.classList.contains('hidden');
-        console.log('[Etapa4][DEBUG] Click Prev -> etapa4 visível?', visivel);
-        if (visivel) atualizarMinEntradaPlaceholder('btnPrev');
-      }, 0);
+    // Sempre que o usuário interagir com "Valor da Moto", reseta a entrada e atualiza o placeholder
+    ['input', 'keyup', 'change', 'blur', 'focus'].forEach((ev) => {
+      inputValorMoto.addEventListener(ev, resetEntradaComPlaceholderMin);
     });
 
-    console.log('[Etapa4][DEBUG] Inicialização concluída.');
-  })();
+    // Quando a etapa 4 ficar visível, garante estado correto
+    const obs = new MutationObserver(() => {
+      if (!etapa4.classList.contains('hidden')) {
+        resetEntradaComPlaceholderMin();
+      }
+    });
+    obs.observe(etapa4, { attributes: true, attributeFilter: ['class'] });
+
+    // Chamada inicial (caso a etapa já esteja visível ao carregar)
+    if (!etapa4.classList.contains('hidden')) {
+      resetEntradaComPlaceholderMin();
+    }
+  }
 
 (function restauraEstadoCNH() {
   const valor = cnhHidden?.value;
