@@ -124,27 +124,47 @@ function verificaEtapa1() {
 function verificaEtapa2() {
   const { form } = getState();
   clearTooltips('etapa-2');
-  if (form?.tipoUsuario === 'comprador') return true;
 
-  const loja = $('#loja');
-  const nomeVend = $('#nome-vendedor');
-  const emailVend = $('#email-vendedor');
+  // se for comprador, etapa 2 é pulada
+  if (form?.tipoUsuario === 'comprador') {
+    console.log('[VALIDATE:etapa-2] pulada (comprador)');
+    return true;
+  }
+
+  // capturar campos
+  const loja = document.querySelector('#loja');
+  const nomeVend = document.querySelector('#nome-vendedor');
+  const emailVend = document.querySelector('#email-vendedor');
   let ok = true;
 
-  if (!hasValue(loja))  { createTooltip(loja, 'Informe a loja'); ok = false; }
-  if (!hasValue(nomeVend)) { createTooltip(nomeVend, 'Informe o nome do vendedor'); ok = false; }
-  if (!hasValue(emailVend)) { createTooltip(emailVend, 'Informe o e-mail'); ok = false; }
-  if (hasValue(emailVend) && !validEmail(emailVend)) {
-    createTooltip(emailVend, 'E-mail inválido');
+  // força placeholder correto (garantia extra)
+  if (emailVend && !emailVend.placeholder)
+    emailVend.placeholder = 'exemplo@gmail.com';
+
+  // verificação de presença
+  if (!hasValue(loja)) {
+    createTooltip(loja, 'Selecione a Loja/Concessionária');
     ok = false;
   }
-    // verificação de formato (regex)
-  if (hasValue(emailVend) && !validEmail(emailVend)) {
-    createTooltip(emailVend, 'E-mail do vendedor inválido');
+  if (!hasValue(nomeVend)) {
+    createTooltip(nomeVend, 'Informe o nome do vendedor');
     ok = false;
   }
+  if (!hasValue(emailVend)) {
+    createTooltip(emailVend, 'Informe o e-mail do vendedor');
+    ok = false;
+  }
+
+  // verificação de formato (regex)
+  if (hasValue(emailVend) && !validEmail(emailVend)) {
+    createTooltip(emailVend, 'Informe um E-mail válido');
+    ok = false;
+  }
+
+  console.log('[VALIDATE:etapa-2]', ok ? 'OK' : 'Inválido');
   return ok;
 }
+
 
 // ===== Etapa 3 =====
 function verificaEtapa3() {
@@ -154,25 +174,42 @@ function verificaEtapa3() {
   const tel    = $('#telefone');
   const renda  = $('#renda_mensal');
   const cnhHid = $('#possui-cnh');
+  const cnhContainer = document.querySelector('#cnh-botoes-conteiner'); // nome correto
   clearTooltips('etapa-3');
   let ok = true;
 
-  // presença
+  // 1️⃣ Verificação de presença
   if (!hasValue(nome))   { createTooltip(nome, 'Informe o nome'); ok = false; }
   if (!hasValue(cpf))    { createTooltip(cpf, 'Informe o CPF'); ok = false; }
   if (!hasValue(email))  { createTooltip(email, 'Informe o e-mail'); ok = false; }
   if (!hasValue(tel))    { createTooltip(tel, 'Informe o telefone'); ok = false; }
-  if (!hasValue(renda))  { createTooltip(renda, 'Informe a renda mensal'); ok = false; }
-  if (!validCNHHidden(cnhHid)) { createTooltip(tel || nome, 'Selecione se possui CNH'); ok = false; }
 
-  // regex
-  if (hasValue(cpf) && !validCPF(cpf)) { createTooltip(cpf, 'CPF inválido'); ok = false; }
-  if (hasValue(email) && !validEmail(email)) { createTooltip(email, 'E-mail inválido'); ok = false; }
-  if (hasValue(tel) && !validTelefone(tel)) { createTooltip(tel, 'Telefone inválido'); ok = false; }
-  if (hasValue(renda) && !validCurrency(renda)) { createTooltip(renda, 'Renda em formato inválido'); ok = false; }
+  // Renda deve ter valor numérico > 0, e não apenas "R$ 0,00"
+  const rendaVal = (renda?.value || '').replace(/\D/g, ''); // só números
+  if (!rendaVal || rendaVal === '0' || rendaVal === '00' || rendaVal === '000') {
+    createTooltip(renda, 'Informe a renda mensal');
+    ok = false;
+  }
+
+  // CNH precisa ser marcada
+  if (!validCNHHidden(cnhHid)) {
+    console.log('[VALIDATE:etapa-3] CNH não selecionada');
+    createTooltip(cnhContainer || cnhHid, 'Selecione se possui CNH');
+    ok = false;
+  }
+
+  // 2️⃣ Verificação de formato (regex somente se já tem valor)
+  if (hasValue(cpf) && !validCPF(cpf))      { createTooltip(cpf, 'CPF inválido'); ok = false; }
+  if (hasValue(email) && !validEmail(email)){ createTooltip(email, 'E-mail inválido'); ok = false; }
+  if (hasValue(tel) && !validTelefone(tel)){ createTooltip(tel, 'Telefone inválido'); ok = false; }
+  if (rendaVal && rendaVal !== '0' && !validCurrency(renda)) { 
+    createTooltip(renda, 'Renda em formato inválido'); 
+    ok = false; 
+  }
 
   return ok;
 }
+
 
 // ===== Etapa 4 (adiada) =====
 function verificaEtapa4() { return true; }
@@ -191,8 +228,17 @@ export function verificaEtapaCompleta(stepIndexOrId) {
 
 export function verificaEtapaAtual() {
   const { currentView } = getState();
-  return verificaEtapaCompleta(currentView);
+  const stepId = currentView;
+
+  let ok = verificaEtapaCompleta(stepId);
+
+  return {
+    ok,
+    stepId,
+    firstInvalid: document.querySelector('[aria-invalid="true"]') || null
+  };
 }
+
 
 export function clearAllTooltips() {
   console.log('[TIP] clearAllTooltips()');
