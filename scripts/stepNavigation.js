@@ -161,3 +161,12 @@ export function initializeNavigation({ initialView } = {}) {
   }
   updateEtapasBarra();
 }
+
+// Função para resetar apenas os campos críticos de navegação/fluxo
+export function resetCriticalState() {
+  state.currentView = ORDER[0]; // Volta para 'etapa-1'
+  state.form.tipoUsuario = null; // Zera o tipo de usuário
+  // Se houver campos que persistem no HTML (como input hidden),
+  // a limpeza deles deve ser feita no formSteps.js
+}
+

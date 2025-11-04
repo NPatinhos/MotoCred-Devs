@@ -7,6 +7,7 @@ import {
   initStepBar,
   initializeNavigation,
   updateEtapasBarra,
+  resetCriticalState,
 } from './stepNavigation.js';
 import { clearAllTooltips } from './validators.js';
 
@@ -36,7 +37,8 @@ function safeBootstrap() {
   // Suporte a devStep via query (?devStep=etapa-3)
   const params = new URLSearchParams(window.location.search);
   const devStep = params.get('devStep');
-  initializeNavigation({ initialView: devStep });
+  resetCriticalState();
+  initializeNavigation();
 
   renderView();
   updateEtapasBarra();
@@ -46,7 +48,7 @@ function safeBootstrap() {
 
 document.addEventListener('nav:changed', (e) => {
   console.log(`[EVENT] nav:changed → ${e.detail.viewId}`);
-  initializeNavigation({ initialView: devStep });
+  initializeNavigation();
   clearAllTooltips();     // ← remove qualquer balão remanescente
   renderView();
   updateEtapasBarra();

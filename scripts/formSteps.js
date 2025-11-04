@@ -106,17 +106,7 @@ if (!cnhBtns.length || !cnhHidden) {
   });
 }
 
-btnNext?.addEventListener('click', (e) => {
-  e.preventDefault();
-  console.log('[CLICK] Botão AVANÇAR');
 
-  const ok = verificaEtapaAtual(); // cria/remover blocos inline por campo
-  if (!ok) {
-    console.warn('[VALIDATE] avanço BLOQUEADO pela validação da etapa atual');
-    return;
-  }
-  nextStep();
-});
 // === Máscara de CPF ===
 const cpfInput = document.querySelector('#cpf');
 cpfInput?.addEventListener('input', () => {
@@ -169,39 +159,6 @@ rendaInput?.addEventListener('input', () => {
     b.setAttribute('aria-pressed', v === valor ? 'true' : 'false');
   });
 })();
-
-// 🧹 Reset de campos e botões ao carregar (modo dev)
-(function resetCamposAoCarregar() {
-  console.log('[DEV] Resetando campos e estado da etapa atual');
-
-  const form = document.querySelector(FORM_SEL);
-  if (!form) return;
-
-  // Limpa todos os inputs de texto
-  form.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"]').forEach(input => {
-    input.value = '';
-  });
-
-  // Limpa input de renda
-  const rendaInput = form.querySelector('#renda_mensal');
-  if (rendaInput) rendaInput.value = '';
-
-  // Limpa campo hidden da CNH
-  const cnhHidden = document.querySelector('#possui-cnh');
-  if (cnhHidden) cnhHidden.value = '';
-
-  // Remove aria-pressed de todos os botões CNH
-  document.querySelectorAll('button[data-cnh]').forEach(btn => {
-    btn.setAttribute('aria-pressed', 'false');
-  });
-
-  // Remove aria-pressed de todos os botões tipoUsuario
-  document.querySelectorAll('button[data-tipo-usuario]').forEach(btn => {
-    btn.setAttribute('aria-pressed', 'false');
-  });
-})();
-
-
 
   console.log('[BIND] initFormSteps() concluído');
 }
