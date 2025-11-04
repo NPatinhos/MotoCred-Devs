@@ -23,6 +23,10 @@ const VALOR_MOTO_ID = 'valorMoto';
 const VALOR_ENTRADA_ID = 'valorEntrada'; 
 const PERCENTUAL_MINIMO_ENTRADA = 0.40; // 40%
 
+const formatBRL = (n) =>
+  `R$ ${Number(n || 0).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+
+
 export function initFormSteps() {
   console.log('[INIT] initFormSteps()');
   const form = $(FORM_SEL);
@@ -185,49 +189,128 @@ rendaInput?.addEventListener('input', () => {
   rendaInput.value = `R$ ${reais},${cents}`;
 });
 
-const inputValorMoto = document.querySelector('#valor-moto');
-  const inputValorEntrada = document.querySelector('#valor-entrada');
-
-  // aplica máscaras BRL
-  const maskMoto = inputValorMoto ? attachCurrencyMask(inputValorMoto) : null;
-  const maskEntrada = inputValorEntrada ? attachCurrencyMask(inputValorEntrada) : null;
-
-  // flag pra não sobrescrever a entrada depois que o usuário editar
-  let usuarioEditouEntrada = false;
-
-  inputValorEntrada?.addEventListener('input', () => {
-    usuarioEditouEntrada = true;
-  });
-
-  function atualizarMinEntradaPlaceholder() {
-    if (!inputValorEntrada) return;
-
-    // lê valor numérico da moto (ex.: 12345.67)
-    const valorMoto = maskMoto ? maskMoto.getNumericValue() : 0;
-
-    // 40% do valor da moto, arredondado pra 2 casas
-    const minEntrada = Math.max(0, Math.round(valorMoto * 0.40 * 100) / 100);
-
-    // atualiza só a parte numérica do placeholder
-    const placeholder = `Min. sugerido: ${formatNumberToBRL(minEntrada)}`;
-    inputValorEntrada.setAttribute('placeholder', placeholder);
-
-    // Pré-preenche a entrada com o mínimo sugerido SE o usuário ainda não digitou
-    const valorEntradaAtual = maskEntrada ? maskEntrada.getNumericValue() : 0;
-    const campoVazio = !inputValorEntrada.value || valorEntradaAtual === 0;
-
-    if (!usuarioEditouEntrada && campoVazio && maskEntrada) {
-      maskEntrada.setValueFromNumber(minEntrada);
+  (function initEtapa4EntradaMinDebugger() {
+    const etapa4 = document.querySelector('#etapa-4');
+    if (!etapa4) {
+      console.warn('[Etapa4][DEBUG] #etapa-4 NÃO encontrado no DOM.');
+      return;
     }
-  }
 
-  // recalcula quando mudar a moto (digitando ou saindo do campo)
-  inputValorMoto?.addEventListener('input', atualizarMinEntradaPlaceholder);
-  inputValorMoto?.addEventListener('blur', atualizarMinEntradaPlaceholder);
+    const inputValorMoto = etapa4.querySelector('input#valor-moto');      // escopo dentro da etapa 4
+    const inputValorEntrada = etapa4.querySelector('input#valor-entrada');
 
-  // chamada inicial (garante placeholder correto ao abrir a etapa)
-  atualizarMinEntradaPlaceholder();
+    console.groupCollapsed('[Etapa4][DEBUG] Setup inicial');
+    console.log('etapa4:', etapa4);
+    console.log('inputValorMoto:', inputValorMoto);
+    console.log('inputValorEntrada:', inputValorEntrada);
+    console.groupEnd();
 
+    if (!inputValorMoto || !inputValorEntrada) {
+      console.warn('[Etapa4][DEBUG] Inputs da etapa 4 não encontrados. Verifique IDs dentro da seção #etapa-4.');
+      return;
+    }
+
+    // Aplica máscaras BRL e loga o resultado
+    const maskMoto = attachCurrencyMask?.(inputValorMoto);
+    const maskEntrada = attachCurrencyMask?.(inputValorEntrada);
+
+    console.groupCollapsed('[Etapa4][DEBUG] Máscaras');
+    console.log('maskMoto:', maskMoto, 'tem getNumericValue?', !!maskMoto?.getNumericValue, 'tem setValueFromNumber?', !!maskMoto?.setValueFromNumber);
+    console.log('maskEntrada:', maskEntrada, 'tem getNumericValue?', !!maskEntrada?.getNumericValue, 'tem setValueFromNumber?', !!maskEntrada?.setValueFromNumber);
+    console.groupEnd();
+
+    let usuarioEditouEntrada = false;
+
+    inputValorEntrada.addEventListener('input', () => {
+      usuarioEditouEntrada = true;
+      const valNum = maskEntrada?.getNumericValue ? maskEntrada.getNumericValue() : NaN;
+      console.log('[Etapa4][DEBUG] Usuário editou ENTRADA. usuarioEditouEntrada =', usuarioEditouEntrada, '| entrada.num =', valNum, '| entrada.value =', inputValorEntrada.value);
+    });
+
+    const formatBRL = (n) =>
+      `R$ ${Number(n || 0).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+
+    const atualizarMinEntradaPlaceholder = (reason = 'manual') => {
+      // lê valor da moto via máscara
+      const valorMoto = maskMoto?.getNumericValue ? maskMoto.getNumericValue() : 0;
+
+      // 40%
+      const min = Math.max(0, Math.round(valorMoto * 0.40 * 100) / 100);
+      const placeholderStr = `Min. sugerido: ${formatBRL(min)}`;
+
+      // LOGS completos
+      console.group('[Etapa4][DEBUG] atualizarMinEntradaPlaceholder:', reason);
+      console.log('valorMoto.num =', valorMoto);
+      console.log('min(40%) =', min, '| placeholderStr =', placeholderStr);
+      console.log('inputValorEntrada.value (antes) =', inputValorEntrada.value);
+      console.log('usuarioEditouEntrada =', usuarioEditouEntrada);
+
+      // Atualiza SOMENTE o placeholder
+      inputValorEntrada.setAttribute('placeholder', placeholderStr);
+      console.log('placeholder atualizado ->', inputValorEntrada.getAttribute('placeholder'));
+
+      // Se o usuário ainda não mexeu e o campo está vazio/zero, pré-preencher
+      const entradaNum = maskEntrada?.getNumericValue ? maskEntrada.getNumericValue() : 0;
+      const campoVazio = !inputValorEntrada.value || entradaNum === 0;
+
+      console.log('entradaNum =', entradaNum, '| campoVazio =', campoVazio);
+      if (!usuarioEditouEntrada && campoVazio && maskEntrada?.setValueFromNumber) {
+        maskEntrada.setValueFromNumber(min);
+        console.log('Pré-preencheu ENTRADA com min ->', min, '| value agora =', inputValorEntrada.value);
+      } else {
+        console.log('Não pré-preencheu ENTRADA (usuário já editou ou campo não está vazio).');
+      }
+      console.groupEnd();
+    };
+
+    // Atualizar ENQUANTO digita no valor da moto
+    const onMotoInput = (evt) => {
+      console.log('[Etapa4][DEBUG] Evento no VALOR MOTO:', evt.type, '| value =', inputValorMoto.value);
+      atualizarMinEntradaPlaceholder(evt.type);
+    };
+
+    inputValorMoto.addEventListener('input', onMotoInput);
+    inputValorMoto.addEventListener('keyup', onMotoInput);
+    inputValorMoto.addEventListener('blur', onMotoInput);
+
+    // Chamada inicial
+    console.log('[Etapa4][DEBUG] Chamada inicial do atualizarMinEntradaPlaceholder()');
+    atualizarMinEntradaPlaceholder('init');
+
+    // Observa quando a etapa 4 ficar visível (remove classe "hidden") para atualizar na entrada da etapa
+    const etapa4VisibilityObserver = new MutationObserver((mutations) => {
+      mutations.forEach((m) => {
+        if (m.type === 'attributes' && m.attributeName === 'class') {
+          const estaOculta = etapa4.classList.contains('hidden');
+          console.log('[Etapa4][DEBUG] MutationObserver -> class mudou. hidden =', estaOculta, '| className =', etapa4.className);
+          if (!estaOculta) {
+            atualizarMinEntradaPlaceholder('step-visible');
+          }
+        }
+      });
+    });
+    etapa4VisibilityObserver.observe(etapa4, { attributes: true, attributeFilter: ['class'] });
+
+    // Também revalida quando clicar em Próximo/Voltar (se existirem no DOM)
+    const btnNext = document.querySelector('#btnNext');
+    const btnPrev = document.querySelector('#btnPrev');
+    btnNext?.addEventListener('click', () => {
+      setTimeout(() => {
+        const visivel = !etapa4.classList.contains('hidden');
+        console.log('[Etapa4][DEBUG] Click Next -> etapa4 visível?', visivel);
+        if (visivel) atualizarMinEntradaPlaceholder('btnNext');
+      }, 0);
+    });
+    btnPrev?.addEventListener('click', () => {
+      setTimeout(() => {
+        const visivel = !etapa4.classList.contains('hidden');
+        console.log('[Etapa4][DEBUG] Click Prev -> etapa4 visível?', visivel);
+        if (visivel) atualizarMinEntradaPlaceholder('btnPrev');
+      }, 0);
+    });
+
+    console.log('[Etapa4][DEBUG] Inicialização concluída.');
+  })();
 
 (function restauraEstadoCNH() {
   const valor = cnhHidden?.value;
