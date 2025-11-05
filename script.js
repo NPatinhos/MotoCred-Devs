@@ -461,6 +461,7 @@ function setSubmittingState(on, buttonText = null) {
         }
         telefoneInput.setCustomValidity('');
         return true;
+        
     };
 
     const updateCNHValidity = (showMessage = false) => {
@@ -923,51 +924,85 @@ function setSubmittingState(on, buttonText = null) {
     };
 
     const validateStep = (stepIndex) => {
-        if (!isStepEnabled(stepIndex)) {
-            return true;
-        }
-        const step = steps[stepIndex];
-        if (!step) {
-            return true;
-        }
-        const fields = Array.from(step.querySelectorAll('input, select, textarea')).filter((field) => !field.disabled);
-
-        for (const field of fields) {
-            if (field === cpfInput) {
-                updateCpfValidity(true);
-            }
-            if (emailInputs.includes(field)) {
-                updateEmailValidity(field, true);
-            }
-            if (telefoneInput && field === telefoneInput) {
-                updateTelefoneValidity(true);
-            }
-            if (field === valorEntradaInput) {
-                updateValorEntradaValidity(true);
-            }
-
-            // Validação extra da CNH (etapa 3)
-            if (step.id === 'etapa-3') {
-                if (!updateCNHValidity(true)) {
-                    return false;
-                }
-            }
-
-
-            if (field === valorEntradaInput) {
-            if (!updateValorEntradaValidity(true)) return false; // mostra erro “normal”
-            continue; // NÃO chama checkValidity/reportValidity para evitar balão
-            }
-
-            // Se a validação do campo falhar, reporte o erro e interrompa.
-            if (!field.checkValidity()) {
-                field.reportValidity();
-                return false;
-            }
-        } 
-
+    // Retorna true para etapas desabilitadas ou inexistentes
+    if (!isStepEnabled(stepIndex) || !steps[stepIndex]) {
         return true;
-    };
+    }
+
+    const step = steps[stepIndex];
+    
+    // VARIÁVEIS PARA CHECAR O RESULTADO DAS VALIDAÇÕES CUSTOMIZADAS
+    let isCustomValidationValid = true;
+
+    // 1. EXECUTA E CHECA VALIDAÇÕES CUSTOMIZADAS (CPF, TEL, ENTRADA, CNH)
+    // Se qualquer uma falhar, a variável será setada para 'false'.
+    const fields = Array.from(step.querySelectorAll('input, select, textarea')).filter((field) => !field.disabled);
+
+    for (const field of fields) {
+        // Validação de CPF (Etapa 1: Dados Pessoais)
+        if (field === cpfInput) {
+            if (!updateCpfValidity(true)) {
+                isCustomValidationValid = false;
+            }
+        }
+        
+        // Validação de Email (Pode ser em várias etapas)
+        if (emailInputs.includes(field)) {
+            // Nota: Se 'updateEmailValidity' falhar, ele deve mostrar a mensagem de erro.
+            // A checagem de required/pattern do HTML abaixo geralmente já cobre isso,
+            // mas manter o customizado é bom se houver lógica extra.
+            updateEmailValidity(field, true); 
+        }
+
+        // Validação de Telefone (Etapa 1: Dados Pessoais)
+        if (telefoneInput && field === telefoneInput) {
+            if (!updateTelefoneValidity(true)) {
+                 isCustomValidationValid = false;
+            }
+        }
+        
+        // Validação de Valor de Entrada (Etapa 3: Financiamento)
+        if (field === valorEntradaInput) {
+            if (!updateValorEntradaValidity(true)) {
+                isCustomValidationValid = false;
+            }
+        }
+    }
+    
+    // Validação extra da CNH (Não está ligada a um campo de input direto, mas a botões)
+    // Geralmente Etapa 2 ou 3
+    if (step.id === 'etapa-3' || step.id === 'etapa-2') { // Ajuste a ID da sua etapa de CNH se necessário
+        if (document.getElementById('cnh-sim') || document.getElementById('cnh-nao')) {
+            if (!updateCNHValidity(true)) {
+                isCustomValidationValid = false;
+            }
+        }
+    }
+    
+    // SE ALGUMA VALIDAÇÃO CUSTOMIZADA FALHOU, INTERROMPE AQUI.
+    if (!isCustomValidationValid) {
+        return false;
+    }
+
+
+    // 2. EXECUTA E CHECA VALIDAÇÕES NATIVAS DO HTML (required, type="email", etc.)
+    for (const field of fields) {
+        // Ignora campos cuja validação já foi tratada acima e usa balão customizado (ex: ValorEntrada)
+        if (field === valorEntradaInput) {
+            continue; 
+        }
+
+        // Se a validação nativa do campo falhar (e ele tiver o atributo required),
+        // reporte o erro com o balão padrão do navegador e interrompa.
+        if (!field.checkValidity()) {
+            field.reportValidity();
+            return false;
+        }
+    } 
+
+    // Se passou por todas as customizadas e nativas, está tudo certo.
+    return true;
+};
 
     storeInitialRequiredState(vendorFieldset);
     storeInitialRequiredState(clientFieldset);
