@@ -8,6 +8,8 @@
 // FUNÇÕES AUXILIARES DE CÁLCULO (NÃO ALTERADAS)
 // ----------------------------------------------------------------------
 
+const round2 = (n) => Math.round((Number(n) || 0) * 100) / 100;
+
 /**
  * Calcula o Valor Total do Financiamento (Valor Financiado + Taxas Fixas).
  */
@@ -51,7 +53,7 @@ function calcularValorMaximo(renda) {
  * Realiza a PPA e retorna um array com os códigos de todas as regras que falharam.
  * @returns {string[]} Um array de códigos de erro. Retorna um array vazio se for aprovado.
  */
-function realizarCalculoPPA(valorMoto, entrada, renda) {
+export function calcularPPA(valorMoto, entrada, renda) {
     const falhas = [];
     const valorFinanciado = valorMoto - entrada;
     

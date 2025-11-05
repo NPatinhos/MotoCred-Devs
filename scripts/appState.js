@@ -12,7 +12,7 @@ const L = (...a) => console.log('[STATE]', ...a);
   // Exemplos esperados:
   // "etapa-1", "etapa-2", "etapa-3", "etapa-4",
   // "aprovado", "reprovado", "simulacao"
-  let state = {
+  export const state = {
   currentView: 'etapa-1',
   tipoUsuario: null,
   possuiCNH: null,
@@ -70,6 +70,8 @@ const L = (...a) => console.log('[STATE]', ...a);
   simulacaoEscolhida: null,
 };
 
+const round2 = (n) => Math.round((Number(n) || 0) * 100) / 100;
+
 // -----------------------------------------------------------------------------
 // GETTERS (LEITURA DO ESTADO)
 // -----------------------------------------------------------------------------
@@ -98,6 +100,22 @@ export function getSimulacaoEscolhida() {
 
 export function getMaxStepReached() {
   return state.maxStepReached;
+}
+
+export function getMinEntrada40() {
+  return round2((state.valorMoto || 0) * 0.40);
+}
+
+export function getPpaInputs() {
+  const entrada = (state.entradaTouched && state.valorEntrada != null)
+    ? state.valorEntrada
+    : getMinEntrada40();
+
+  return {
+    renda: state.renda || 0,
+    valorMoto: state.valorMoto || 0,
+    entrada,
+  };
 }
 
 // -----------------------------------------------------------------------------
@@ -139,6 +157,29 @@ export function setPossuiCNH(flagCNH) {
 export function setMaxStepReached(stepNumber) {
   const safeStep = Math.max(1, Number(stepNumber) || 1);
   state.maxStepReached = Math.max(state.maxStepReached, safeStep);
+}
+
+export function setRenda(v) {
+  state.renda = round2(v);
+}
+
+export function setValorMoto(v) {
+  state.valorMoto = round2(v);
+  // sempre que a moto muda, a entrada volta a depender do mínimo sugerido (40%)
+  state.valorEntrada = null;
+  state.entradaTouched = false;
+}
+
+export function setValorEntrada(v) {
+  const num = round2(v);
+  if (!num) {
+    // campo limpo -> volta a usar 40%
+    state.valorEntrada = null;
+    state.entradaTouched = false;
+  } else {
+    state.valorEntrada = num;
+    state.entradaTouched = true;
+  }
 }
 
 // Atualiza um pedaço da etapa de vendedor
