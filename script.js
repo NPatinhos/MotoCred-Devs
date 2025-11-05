@@ -345,6 +345,19 @@ function setSubmittingState(on, buttonText = null) {
         return true;
     };
 
+    const telInput = document.querySelector('#telefone');
+        telInput?.addEventListener('beforeinput', (ev) => {
+        if (ev.data && /\D/.test(ev.data)) ev.preventDefault();
+        });
+        telInput?.addEventListener('keypress', (ev) => {
+        if (!/[0-9]/.test(ev.key)) ev.preventDefault();
+        });
+        telInput?.addEventListener('input', () => {
+        let v = telInput.value.replace(/\D/g, '').slice(0, 11);
+        v = v.replace(/^(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2');
+        telInput.value = v;
+    });
+
     const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
     const sanitizePhoneNumber = (value) => value.replace(/[^\d]/g, '');
