@@ -1,10 +1,11 @@
-// formSteps.js
+﻿// formSteps.js
 // Controla botões Avançar/Voltar e os botões de "Você é" (tipoUsuario), sem navegar sozinho.
 
 import { nextStep, prevStep, setTipoUsuario } from './stepNavigation.js';
 import { verificaEtapaAtual  } from './validators.js';
 import { attachCurrencyMask, formatNumberToBRL } from './moneyMask.js';
-import { calcularPPA } from './calculo-ppa.js';
+// <<<< CORREÇÃO: As 3 funções essenciais da PPA DEVEM ser importadas aqui >>>>
+import { calcularPPA, obterMotivosDeReprovacao, calcularSugestoes } from './calculo-ppa.js';
 import {
   state,
   setRenda,
@@ -32,301 +33,124 @@ const VALOR_MOTO_ID = 'valorMoto';
 const VALOR_ENTRADA_ID = 'valorEntrada'; 
 const PERCENTUAL_MINIMO_ENTRADA = 0.40; // 40%
 
-const formatBRL = (n) =>
-  `R$ ${Number(n || 0).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+// Reutiliza a função de formatação do moneyMask.js ou define localmente
+const toBRL = formatNumberToBRL || ((n) => `R$ ${Number(n || 0).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`);
 
-// Normaliza retorno da PPA para { aprovado:boolean, mensagem?:string }
-function normalizePPAResult(raw) {
-  console.group('[PPA][normalize] raw result');
-  console.log('tipo:', typeof raw, '| Array?', Array.isArray(raw), '| valor:', raw);
-  console.groupEnd();
 
-  if (raw == null) return null;
-
-  // Caso comum do seu projeto: lista de falhas
-  if (Array.isArray(raw)) {
-    if (raw.length === 0) return { aprovado: true };
-    const msgs = raw.map((item) => {
-      if (typeof item === 'string') return item;
-      if (item && typeof item === 'object') {
-        return item.mensagem || item.message || item.motivo || JSON.stringify(item);
-      }
-      return String(item);
-    }).filter(Boolean);
-    return { aprovado: false, mensagem: msgs.join(' • ') };
-  }
-
-  // Já no formato { aprovado, mensagem }
-  if (typeof raw.aprovado === 'boolean') {
-    return { aprovado: raw.aprovado, mensagem: raw.mensagem || raw.message };
-  }
-
-  // Outras variações comuns
-  if (typeof raw.approved === 'boolean') {
-    return { aprovado: raw.approved, mensagem: raw.message };
-  }
-  if (typeof raw.ok === 'boolean') {
-    return { aprovado: raw.ok, mensagem: raw.message };
-  }
-  if (typeof raw.status === 'string') {
-    const s = raw.status.toLowerCase();
-    if (['aprovado','approved','ok','success'].includes(s)) return { aprovado: true, mensagem: raw.message };
-    if (['reprovado','denied','fail','error'].includes(s)) return { aprovado: false, mensagem: raw.message || raw.mensagem };
-  }
-
-  if (typeof raw === 'boolean') return { aprovado: raw };
-  if (raw.motivo || raw.erro)   return { aprovado: false, mensagem: raw.motivo || raw.erro };
-  if (typeof raw === 'string')  return { aprovado: false, mensagem: raw };
-
-  return null;
-}
-
-// Junta guardas locais com o retorno do motor PPA
+// <<<< FUNÇÃO AUXILIAR DE PPA (PRECISA ESTAR AQUI FORA DE initFormSteps) >>>>
 function avaliarPPAComGuardas({ renda, valorMoto, entrada }, calcularPPA) {
-  const guardErrors = [];
+  const sanitized = {
+    renda: Number.isFinite(renda) ? renda : 0,
+    valorMoto: Number.isFinite(valorMoto) ? valorMoto : 0,
+    entrada: Number.isFinite(entrada) ? entrada : 0,
+  };
 
-  if (!Number.isFinite(renda) || renda <= 0)      guardErrors.push('Informe uma renda mensal válida.');
-  if (!Number.isFinite(valorMoto) || valorMoto <= 0) guardErrors.push('Informe o valor da moto.');
-  if (!Number.isFinite(entrada) || entrada <= 0)  guardErrors.push('Informe a entrada (ou use o mínimo sugerido).');
+  //console.group('[PPA][guards]');
+  //console.log('inputs =>', { renda, valorMoto, entrada });
+  //console.groupEnd();
 
-  console.group('[PPA][guards]');
-  console.log('inputs =>', { renda, valorMoto, entrada });
-  console.log('guardErrors =>', guardErrors);
-  console.groupEnd();
-
-  let raw;
+  let raw = [];
   try {
-    raw = calcularPPA({ renda, valorMoto, entrada }); // <<< usa o NOME que você já tem
-    console.log('[PPA] raw (engine) =>', raw);
+    // A função calcularPPA retorna um array de códigos de falha ou [] se aprovado
+    raw = calcularPPA(sanitized.valorMoto, sanitized.entrada, sanitized.renda);
+    //console.log('[PPA] raw (engine) =>', raw);
   } catch (e) {
-    console.error('[PPA] Erro ao executar calcularPPA:', e);
-    return { aprovado: false, mensagem: 'Falha ao validar PPA. Tente novamente.' };
+    //console.error('[PPA] Erro ao executar calcularPPA:', e);
+    // Retorna um erro interno para ser tratado
+    return ['ERRO_INTERNO_PPA']; 
   }
-
-  if (Array.isArray(raw)) {
-    raw = [...guardErrors, ...raw];
-  } else if (guardErrors.length) {
-    raw = guardErrors;
-  }
-
-  const norm = normalizePPAResult(raw);
-  console.log('[PPA] normalizado =>', norm);
-  return norm || { aprovado: false, mensagem: 'Retorno da PPA inválido.' };
+  
+  // Retorna o array de códigos de falha (pode ser [] se aprovado)
+  return raw; 
 }
 
 
 export function initFormSteps() {
-  console.log('[INIT] initFormSteps()');
+  //console.log('[INIT] initFormSteps()');
   const form = $(FORM_SEL);
   if (!form) {
-    console.warn('[WARN] Formulário não encontrado:', FORM_SEL);
+    //console.warn('[WARN] Formulário não encontrado:', FORM_SEL);
     return;
   }
+  
+  // -------------------------------------------------------------------------
+  // VARIÁVEIS, BOTÕES E OBJETOS CRÍTICOS
+  // -------------------------------------------------------------------------
 
   // Bloquear Enter no formulário
   form.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      console.log('[BLOCK] Enter bloqueado no formulário');
+      //console.log('[BLOCK] Enter bloqueado no formulário');
     }
   });
 
   // Botões de navegação
   const btnPrev = $(BTN_PREV);
   const btnNext = $(BTN_NEXT);
+  const btnNextLabel = btnNext?.querySelector('span');
 
   if (!btnPrev) console.warn('[WARN] Botão VOLTAR não encontrado:', BTN_PREV);
   if (!btnNext) console.warn('[WARN] Botão AVANÇAR não encontrado:', BTN_NEXT);
 
-btnPrev?.addEventListener('click', (e) => {
-  e.preventDefault();
-  console.log('[CLICK] Botão VOLTAR');
-  prevStep(); // agora SEM validação
-});
-
-
-
- btnNext?.addEventListener('click', (e) => {
-  e.preventDefault();
-  console.log('[CLICK] Botão AVANÇAR');
-
-console.log('[DEBUG] Valor atual de CNH:', cnhHidden?.value);
-
-const ok = verificaEtapaAtual(); // cria/remover blocos inline por campo
-if (!ok) {
-  console.warn('[VALIDATE] avanço BLOQUEADO pela validação da etapa atual');
-  return;
-}
-
-  const res = verificaEtapaAtual(); // Fase 1 -> Fase 2 (por etapa)
-  if (!res.ok) {
-    console.warn('[VALIDATE] bloqueado avanço: etapa inválida');
-    if (res.firstInvalid && typeof res.firstInvalid.focus === 'function') {
-      res.firstInvalid.focus();
-    }
-    res.firstInvalid?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    return; // NÃO avança
-  }
-
-  nextStep(); // tudo ok → avança
-});
-
-  // “Você é” → define tipoUsuario, não navega
-  const tipoBtns = document.querySelectorAll(TIPO_USUARIO_BTNS);
-  if (!tipoBtns.length) {
-    console.warn('[WARN] Botões de tipoUsuario não encontrados:', TIPO_USUARIO_BTNS);
-  } else {
-    tipoBtns.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const valor = btn.getAttribute('data-tipo-usuario'); // comprador | vendedor
-        console.log(`[INPUT] tipoUsuario alterado → ${valor}`);
-        setTipoUsuario(valor);
-
-        // Atualiza aria-pressed visual do grupo
-        tipoBtns.forEach((b) => b.setAttribute('aria-pressed', 'false'));
-        btn.setAttribute('aria-pressed', 'true');
-      });
-    });
-  }
-
-
-if (!cnhBtns.length || !cnhHidden) {
-  console.warn('[WARN] Botões de CNH ou hidden não encontrados');
-} else {
-  cnhBtns.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const valor = btn.getAttribute('data-cnh'); // sim | nao
-      cnhHidden.value = valor;
-      console.log(`[INPUT] CNH alterado → ${valor}`);
-
-      // Visual do grupo com aria-pressed
-      cnhBtns.forEach((b) => b.setAttribute('aria-pressed', 'false'));
-      btn.setAttribute('aria-pressed', 'true');
-    });
-  });
-}
-
-function setupInputSugerido() {
-  const motoInput = SEL(VALOR_MOTO_ID);
-  const entradaInput = SEL(VALOR_ENTRADA_ID);
-  
-  if (!motoInput || !entradaInput) return;
-  
-  const updateEntradaSugerida = () => {
-      // Pega o valor da MOTO em número puro
-      const valorMotoNum = parseBRLToNumber(motoInput.value) || 0; 
-      
-      const sugeridoMinimo = valorMotoNum * PERCENTUAL_MINIMO_ENTRADA;
-      
-      // Formata e ATUALIZA o placeholder
-      const sugeridoFormatado = formatBRLFromNumber(sugeridoMinimo);
-      entradaInput.placeholder = `Min. sugerido: ${sugeridoFormatado}`;
-      
-      // Salva o valor puro NUMÉRICO no data-set para uso no submit
-      entradaInput.dataset.valorSugerido = sugeridoMinimo; 
-  };
-  
-  // Inicializa e adiciona o listener de input para recalcular
-  updateEntradaSugerida(); 
-  motoInput.addEventListener('input', updateEntradaSugerida); 
-}
-
-setupInputSugerido();
-
-
-// === Máscara de CPF ===
-const cpfInput = document.querySelector('#cpf');
-cpfInput?.addEventListener('input', () => {
-  let v = cpfInput.value.replace(/\D/g, '');
-  if (v.length > 11) v = v.slice(0, 11);
-  v = v.replace(/(\d{3})(\d)/, '$1.$2');
-  v = v.replace(/(\d{3})(\d)/, '$1.$2');
-  v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-  cpfInput.value = v;
-});
-
-// === Máscara de telefone ===
-const telInput = document.querySelector('#telefone');
-telInput?.addEventListener('input', () => {
-  let v = telInput.value.replace(/\D/g, '');
-  if (v.length > 11) v = v.slice(0, 11);
-  v = v.replace(/^(\d{2})(\d)/, '($1) $2');
-  v = v.replace(/(\d{5})(\d)/, '$1-$2');
-  telInput.value = v;
-});
-
-// === Máscara de renda ===
-const rendaInput = document.querySelector('#renda_mensal');
-rendaInput?.addEventListener('input', () => {
-  let raw = rendaInput.value.replace(/\D/g, '');
-
-  // Remove todos os zeros à esquerda EXCETO se o número for "0"
-  raw = raw.replace(/^0+(?!$)/, '');
-
-  if (raw.length === 0) {
-    rendaInput.value = '';
-    return;
-  }
-
-  // Garante no mínimo 3 dígitos (para pelo menos 0,01)
-  raw = raw.padStart(3, '0');
-
-  const cents = raw.slice(-2);
-  const reais = raw.slice(0, -2).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-
-  rendaInput.value = `R$ ${reais},${cents}`;
-});
-
- const btnNextLabel = btnNext?.querySelector('span');
-
   const etapa4 = document.querySelector('#etapa-4');
-  if (!etapa4 || !btnNext || !btnNextLabel) return;
+  if (!etapa4 || !btnNext || !btnNextLabel) {
+      //console.warn('[WARN] Elementos de Etapa 4 não encontrados.');
+      return;
+  }
 
   // Campos da etapa 4 + renda (etapa 3)
   const inputValorMoto    = etapa4.querySelector('#valor-moto');
   const inputValorEntrada = etapa4.querySelector('#valor-entrada');
   const ppaErroEl         = etapa4.querySelector('#ppa-erro');
   const inputRenda        = document.querySelector('#renda_mensal');
+  if (inputValorEntrada) {
+    inputValorEntrada.dataset.allowEmpty = 'true';
+  }
 
-  // Máscaras
+  // -------------------------------------------------------------------------
+  // MÁSCARAS E BINDINGS DE ESTADO (CORRETO)
+  // -------------------------------------------------------------------------
+
+  // **USANDO attachCurrencyMask para garantir valores numéricos limpos**
   const maskMoto    = inputValorMoto    ? attachCurrencyMask(inputValorMoto)    : null;
   const maskEntrada = inputValorEntrada ? attachCurrencyMask(inputValorEntrada) : null;
   const maskRenda   = inputRenda        ? attachCurrencyMask(inputRenda)        : null;
 
-  const toBRL = (n) => `R$ ${Number(n || 0).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
-
   // Placeholder dinâmico (40%)
   const renderPlaceholderMin = () => {
     const min = getMinEntrada40();
-    inputValorEntrada.setAttribute('placeholder', `Min. sugerido: ${toBRL(min)}`);
+    const placeholderText = `Min. sugerido: ${formatNumberToBRL(min)}`;
+    inputValorEntrada.setAttribute('placeholder', placeholderText);
+    console.log(`[FORM] renderPlaceholderMin() chamado. Placeholder: "${placeholderText}"`); // << LOG AQUI
   };
 
   const resetEntradaComPlaceholderMin = () => {
-    if (typeof maskEntrada?.clear === 'function') maskEntrada.clear();
+    // Isto define state.entradaDeveExibirPlaceholder = true, que fará a máscara limpar o campo.
+    console.log('[FORM] resetEntradaComPlaceholderMin() chamado. DISPARANDO setValorEntrada(0)...'); 
+    // Limpa o valor manualmente, não via estado
     inputValorEntrada.value = '';
-    setValorEntrada(0); // zera no estado => volta a depender de 40%
-    renderPlaceholderMin();
-    inputValorEntrada.dispatchEvent(new Event('input', { bubbles: true }));
+
+    // Apenas define placeholder com 40% calculado
+    renderPlaceholderMin();    
+    console.log('[FORM] reset concluído. Verifique o console para a mensagem de SUPRESSÃO da máscara.');
   };
 
   // Bindings para o estado global
   const onRendaChange = () => {
     const v = maskRenda?.getNumericValue ? maskRenda.getNumericValue() : 0;
     setRenda(v);
-    console.log('[STATE][RENDA] =>', toBRL(state.renda));
   };
 
   const onMotoChange = () => {
     const v = maskMoto?.getNumericValue ? maskMoto.getNumericValue() : 0;
-    setValorMoto(v);           // zera entrada no estado
-    resetEntradaComPlaceholderMin();
-    console.log('[STATE][MOTO] =>', toBRL(state.valorMoto), '| min40 =>', toBRL(getMinEntrada40()));
+    setValorMoto(v);
+    resetEntradaComPlaceholderMin(); // Zera entrada e recalcula o mínimo
   };
 
   const onEntradaChange = () => {
     const v = maskEntrada?.getNumericValue ? maskEntrada.getNumericValue() : 0;
-    setValorEntrada(v);        // se 0 => volta a 40%, se >0 => fixa
-    console.log('[STATE][ENTRADA] touched=', state.entradaTouched, '| entrada =>', state.valorEntrada != null ? toBRL(state.valorEntrada) : '(dinâmico 40%)');
+    setValorEntrada(v);
   };
 
   ['input','keyup','change','blur'].forEach(ev => {
@@ -334,6 +158,133 @@ rendaInput?.addEventListener('input', () => {
     inputValorMoto?.addEventListener(ev, onMotoChange);
     inputValorEntrada?.addEventListener(ev, onEntradaChange);
   });
+  
+  // -------------------------------------------------------------------------
+  // LISTENERS DE NAVEGAÇÃO E GRUPOS DE BOTÕES
+  // -------------------------------------------------------------------------
+
+  btnPrev?.addEventListener('click', (e) => {
+    e.preventDefault();
+    //console.log('[CLICK] Botão VOLTAR');
+    prevStep(); 
+  });
+
+  // “Você é” → define tipoUsuario, não navega
+  const tipoBtns = document.querySelectorAll(TIPO_USUARIO_BTNS);
+  tipoBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const valor = btn.getAttribute('data-tipo-usuario'); // comprador | vendedor
+      setTipoUsuario(valor);
+
+      // Atualiza aria-pressed visual do grupo
+      tipoBtns.forEach((b) => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+    });
+  });
+
+  // CNH
+  const cnhBtns = document.querySelectorAll(CNH_BTNS);
+  const cnhHidden = document.querySelector('#possui-cnh');
+  if (cnhBtns.length > 0 && cnhHidden) {
+    cnhBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const valor = btn.getAttribute('data-cnh'); // sim | nao
+        cnhHidden.value = valor;
+
+        // Visual do grupo com aria-pressed
+        cnhBtns.forEach((b) => b.setAttribute('aria-pressed', 'false'));
+        btn.setAttribute('aria-pressed', 'true');
+      });
+    });
+  }
+
+  // Lógica do botão AVANÇAR/ENVIAR (validação e PPA)
+  btnNext?.addEventListener('click', (e) => {
+    e.preventDefault(); // Controlamos o fluxo manualmente
+
+    const etapa4Visivel = !etapa4.classList.contains('hidden');
+
+    // Validação de inputs na etapa atual (Fase 1)
+    const res = verificaEtapaAtual(); 
+    if (!res.ok) {
+      //console.warn('[VALIDATE] avanço BLOQUEADO pela validação da etapa atual');
+      if (res.firstInvalid && typeof res.firstInvalid.focus === 'function') {
+        res.firstInvalid.focus();
+      }
+      res.firstInvalid?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return; // NÃO avança
+    }
+    
+    // Se não for a última etapa, avança a etapa
+    if (!etapa4Visivel) {
+      //console.log('[CLICK] Botão AVANÇAR');
+      nextStep(); // tudo ok → avança
+      return;
+    }
+    
+    // -------------------------------------------------------------------------
+    // LÓGICA PPA (ETAPA 4 - Botão ENVIAR)
+    // -------------------------------------------------------------------------
+
+    // Garante que os inputs estão atualizados no estado antes da PPA
+    onRendaChange(); 
+    //onMotoChange(); 
+    onEntradaChange(); 
+    
+    const { renda, valorMoto, entrada } = getPpaInputs();
+    
+    // Chama a PPA, que retorna um array de códigos de falha (vazio se aprovado)
+    const codigosDeFalha = avaliarPPAComGuardas({ renda, valorMoto, entrada }, calcularPPA);
+
+    if (codigosDeFalha.length === 0) {
+      // APROVADO
+      ppaErroEl?.classList.add('hidden');
+      if (ppaErroEl) ppaErroEl.innerHTML = '';
+      //console.log('[PPA] Aprovado ✅. Submetendo formulário...');
+      // Submete o formulário
+      document.querySelector('#financiamento-form')?.submit(); 
+    } else {
+      // REPROVADO
+      //console.warn('[PPA] Reprovado ❌', codigosDeFalha);
+
+      // 1. GERAÇÃO DOS MOTIVOS DE REPROVAÇÃO
+      // <<<< Esta chamada agora funciona porque obterMotivosDeReprovacao está importada >>>>
+      const motivos = obterMotivosDeReprovacao(codigosDeFalha);
+      // Usando classes Tailwind para estilizar a lista
+      const listaMotivos = motivos.map(m => `<li class="ml-5 text-[#B91C1C]">${m}</li>`).join('');
+
+      // 2. GERAÇÃO DAS SUGESTÕES
+      // <<<< Esta chamada agora funciona porque calcularSugestoes está importada >>>>
+      const sugestoes = calcularSugestoes(codigosDeFalha, valorMoto, entrada, renda);
+      // Usando classes Tailwind para estilizar a lista (valores já estão em <b></b>)
+      const listaSugestoes = sugestoes.map(s => `<li class="ml-5 text-[#B91C1C]">${s}</li>`).join('');
+
+      // 3. CONSTRUÇÃO DA MENSAGEM FINAL (HTML)
+      let mensagemHTML = '';
+      if (motivos.length > 0) {
+          // Classes Tailwind para o título de reprovação
+          mensagemHTML += `<p class="font-bold text-[#B91C1C] mb-2">Pré-Análise Não Concedida.</p>`;
+          mensagemHTML += `<ul class="list-disc space-y-1">${listaMotivos}</ul>`;
+      }
+      if (sugestoes.length > 0) {
+          // Classes Tailwind para o título de sugestão
+          mensagemHTML += `<p class="font-bold mt-4 mb-2 text-[#B91C1C]">Para ser aprovado, sugerimos que você:</p>`;
+          mensagemHTML += `<ul class="list-disc space-y-1">${listaSugestoes}</ul>`;
+      }
+
+      if (ppaErroEl) {
+        ppaErroEl.innerHTML = mensagemHTML || 'Proposta reprovada.';
+        // Estiliza o container de erro (fundo, borda, sombra)
+        //ppaErroEl.classList.add('p-4', 'bg-[#B91C1C]/60', 'border', 'border-red-400', 'rounded-2xl', 'shadow-md');
+        ppaErroEl.classList.remove('hidden');
+      }
+    }
+    console.groupEnd();
+  });
+
+  // -------------------------------------------------------------------------
+  // SETUP VISUAL
+  // -------------------------------------------------------------------------
 
   // Botão Next vira "Enviar" só na Etapa 4
   const updateNextLabelForCurrentStep = () => {
@@ -341,6 +292,7 @@ rendaInput?.addEventListener('input', () => {
     btnNextLabel.textContent = etapa4Visivel ? 'Enviar' : 'Avançar';
   };
 
+  // Observer para garantir que o label do botão e o placeholder sejam atualizados
   const etapa4Observer = new MutationObserver(() => {
     updateNextLabelForCurrentStep();
     if (!etapa4.classList.contains('hidden')) {
@@ -350,50 +302,15 @@ rendaInput?.addEventListener('input', () => {
   etapa4Observer.observe(etapa4, { attributes: true, attributeFilter: ['class'] });
   updateNextLabelForCurrentStep();
 
-  // Clique em ENVIAR (Etapa 4) -> roda PPA + logs
-  btnNext.addEventListener('click', () => {
-    const etapa4Visivel = !etapa4.classList.contains('hidden');
-    if (!etapa4Visivel) return;
-
-    const { renda, valorMoto, entrada } = getPpaInputs();
-
-    console.group('[PPA] ENVIAR (click)');
-    console.log('renda   =', renda,     '->', toBRL(renda));
-    console.log('moto    =', valorMoto, '->', toBRL(valorMoto));
-    console.log('min40   =', getMinEntrada40(), '->', toBRL(getMinEntrada40()));
-    console.log('entrada =', entrada,   '->', toBRL(entrada));
-
-    const resultado = avaliarPPAComGuardas({ renda, valorMoto, entrada }, calcularPPA);
-
-    if (resultado.aprovado) {
-      ppaErroEl?.classList.add('hidden');
-      if (ppaErroEl) ppaErroEl.textContent = '';
-      console.log('[PPA] Aprovado ✅');
-      // se quiser submeter o form aqui, faça agora
-      // document.querySelector('#financiamento-form')?.submit();
-    } else {
-      if (ppaErroEl) {
-        ppaErroEl.textContent = resultado.mensagem || 'Proposta reprovada.';
-        ppaErroEl.classList.remove('hidden');
-      }
-      console.warn('[PPA] Reprovado ❌', resultado.mensagem);
-    }
-    console.groupEnd();
-  });
-
-  // -- inicialização rápida (se etapa 4 já estiver visível) --
-  if (!etapa4.classList.contains('hidden')) {
-    renderPlaceholderMin();
-  }
-
-(function restauraEstadoCNH() {
-  const valor = cnhHidden?.value;
-  if (!valor) return;
-  cnhBtns.forEach((b) => {
-    const v = b.getAttribute('data-cnh');
-    b.setAttribute('aria-pressed', v === valor ? 'true' : 'false');
-  });
-})();
+  // Restaura estado CNH na inicialização
+  (function restauraEstadoCNH() {
+    const valor = cnhHidden?.value;
+    if (!valor) return;
+    cnhBtns.forEach((b) => {
+      const v = b.getAttribute('data-cnh');
+      b.setAttribute('aria-pressed', v === valor ? 'true' : 'false');
+    });
+  })();
 
   console.log('[BIND] initFormSteps() concluído');
 }

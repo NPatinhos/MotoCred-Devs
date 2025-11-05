@@ -1,22 +1,22 @@
-// moneyMask.js
-// Responsável por formatação e parsing de valores monetários estilo BRL.
+﻿// moneyMask.js
+// Respons├ível por formata├º├úo e parsing de valores monet├írios estilo BRL.
 // Ele:
-//  - mantém o input sempre em "R$ 12.345,67"
-//  - te dá uma forma fácil de extrair número puro pra validar/enviar
+//  - mant├®m o input sempre em "R$ 12.345,67"
+//  - te d├í uma forma f├ícil de extrair n├║mero puro pra validar/enviar
 
 // ----------------------
-// Internos de formatação/parsing
+// Internos de formata├º├úo/parsing
 // ----------------------
 
 // Recebe uma string tipo "R$ 1.234,56" ou "123456" e devolve Number 1234.56
 export function parseBRLToNumber(str) {
   if (!str) return NaN;
 
-  // remove tudo que não é dígito
+  // remove tudo que n├úo ├® d├¡gito
   const digitsOnly = str.replace(/\D/g, "");
   if (!digitsOnly) return NaN;
 
-  // últimos 2 dígitos = centavos
+  // ├║ltimos 2 d├¡gitos = centavos
   // exemplo: "123456" -> 1234.56
   const intPart = digitsOnly.slice(0, -2) || "0";
   const centsPart = digitsOnly.slice(-2);
@@ -25,54 +25,54 @@ export function parseBRLToNumber(str) {
   return Number(normalized);
 }
 
-// Recebe só dígitos ("123456") e devolve string "R$ 1.234,56"
+// Recebe s├│ d├¡gitos ("123456") e devolve string "R$ 1.234,56"
 function formatDigitsAsBRL(digitsStr) {
   if (!digitsStr) {
     return "R$ 0,00";
   }
 
-  // se tiver só 1 dígito ("5") -> "0,05"
-  // se tiver só 2 dígitos ("50") -> "0,50"
+  // se tiver s├│ 1 d├¡gito ("5") -> "0,05"
+  // se tiver s├│ 2 d├¡gitos ("50") -> "0,50"
   const intPart = digitsStr.slice(0, -2) || "0";
   const centsPart = digitsStr.slice(-2).padStart(2, "0");
 
-  // monta número inteiro para poder usar Intl.NumberFormat
+  // monta n├║mero inteiro para poder usar Intl.NumberFormat
   const intNumber = Number(intPart);
 
   // formata parte inteira com separador de milhar
   const intFormatted = intNumber.toLocaleString("pt-BR");
 
-  // junta parte inteira formatada + vírgula + centavos
+  // junta parte inteira formatada + v├¡rgula + centavos
   return `R$ ${intFormatted},${centsPart}`;
 }
 
-// pega um valor numérico (ex: 1234.56) e devolve "R$ 1.234,56"
+// pega um valor num├®rico (ex: 1234.56) e devolve "R$ 1.234,56"
 export function formatNumberToBRL(valueNumber) {
   if (valueNumber == null || Number.isNaN(valueNumber)) {
     return "R$ 0,00";
   }
 
-  // força duas casas decimais
+  // for├ºa duas casas decimais
   const fixed = Math.round(valueNumber * 100).toString(); // "123456"
   return formatDigitsAsBRL(fixed);
 }
 
 // ----------------------
-// Máscara viva no input
+// M├íscara viva no input
 // ----------------------
 
-// Essa função "conecta" um <input> de dinheiro para:
-//  - bloquear caracteres não numéricos
+// Essa fun├º├úo "conecta" um <input> de dinheiro para:
+//  - bloquear caracteres n├úo num├®ricos
 //  - sempre reescrever o valor no formato BRL
 //  - manter o cursor no final
 //
-// IMPORTANTE: a abordagem é baseada em 'beforeinput' pra impedir que caracteres inválidos cheguem no campo.
-// Você já usa algo assim no seu script atual.
+// IMPORTANTE: a abordagem ├® baseada em 'beforeinput' pra impedir que caracteres inv├ílidos cheguem no campo.
+// Voc├¬ j├í usa algo assim no seu script atual.
 export function attachCurrencyMask(inputEl) {
-  // estado interno: apenas dígitos, sem vírgula e sem ponto, ex: "123456" = 1234,56
+  // estado interno: apenas d├¡gitos, sem v├¡rgula e sem ponto, ex: "123456" = 1234,56
   let digitsState = "";
 
-  // Inicialização: se já veio com algum valor no HTML, normaliza
+  // Inicializa├º├úo: se j├í veio com algum valor no HTML, normaliza
   initFromExistingValue();
 
   function initFromExistingValue() {
@@ -86,19 +86,25 @@ export function attachCurrencyMask(inputEl) {
   }
 
   function syncInput() {
-    inputEl.value = formatDigitsAsBRL(digitsState);
+    const allowEmpty = inputEl.dataset.allowEmpty === 'true';
+    const valueToSet =
+      digitsState.length === 0 && allowEmpty
+        ? ''
+        : formatDigitsAsBRL(digitsState);
+
+    inputEl.value = valueToSet;
     // garante cursor sempre no final
     requestAnimationFrame(() => {
       inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length);
     });
   }
 
-  // Intercepta qualquer digitação ANTES de chegar no campo
+  // Intercepta qualquer digita├º├úo ANTES de chegar no campo
   inputEl.addEventListener("beforeinput", (ev) => {
     const { inputType, data } = ev;
 
     if (inputType === "deleteContentBackward") {
-      // backspace: remove último dígito
+      // backspace: remove ├║ltimo d├¡gito
       digitsState = digitsState.slice(0, -1);
       syncInput();
       ev.preventDefault();
@@ -106,24 +112,24 @@ export function attachCurrencyMask(inputEl) {
     }
 
     if (inputType === "insertText") {
-      // só aceita número
+      // s├│ aceita n├║mero
       if (!/[0-9]/.test(data)) {
         ev.preventDefault();
         return;
       }
 
-      // adiciona o dígito no final
+      // adiciona o d├¡gito no final
       digitsState += data;
-      // mata zeros à esquerda exagerados: "000123" vira "123"? NÃO obrigatoriamente.
+      // mata zeros ├á esquerda exagerados: "000123" vira "123"? N├âO obrigatoriamente.
       // mas se quiser limitar crescimento absurdo depois a gente trata
       syncInput();
       ev.preventDefault();
       return;
     }
 
-    // Bloqueia qualquer outra modificação direta (colar texto, etc.)
+    // Bloqueia qualquer outra modifica├º├úo direta (colar texto, etc.)
     if (inputType === "insertFromPaste") {
-      // cola: pega só dígitos do que colou
+      // cola: pega s├│ d├¡gitos do que colou
       const pasted = (ev.clipboardData || window.clipboardData)?.getData("text") || "";
       const only = pasted.replace(/\D/g, "");
       if (only) {
@@ -134,11 +140,11 @@ export function attachCurrencyMask(inputEl) {
       return;
     }
 
-    // Por segurança, bloqueia qualquer coisa que não lidamos explicitamente
+    // Por seguran├ºa, bloqueia qualquer coisa que n├úo lidamos explicitamente
     ev.preventDefault();
   });
 
-  // Exponho um helper interno pro chamador conseguir ler o valor numérico atual
+  // Exponho um helper interno pro chamador conseguir ler o valor num├®rico atual
   function getNumericValue() {
     // digitsState "123456" -> 1234.56
     if (!digitsState) return 0;
@@ -155,7 +161,7 @@ export function attachCurrencyMask(inputEl) {
       if (numberValue == null || Number.isNaN(numberValue)) {
         digitsState = "";
       } else {
-        // transforma número ex: 1234.56 -> "123456"
+        // transforma n├║mero ex: 1234.56 -> "123456"
         const cents = Math.round(numberValue * 100);
         digitsState = String(cents);
       }
@@ -172,16 +178,16 @@ export function attachCurrencyMask(inputEl) {
 // Recebe um Number (1234.56) e devolve string "R$ 1.234,56"
 export function formatBRLFromNumber(numberValue) {
     if (numberValue == null || isNaN(numberValue)) return "R$ 0,00";
-    // Usamos toLocaleString para formatação monetária correta (R$)
+    // Usamos toLocaleString para formata├º├úo monet├íria correta (R$)
     return (Number(numberValue) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 // ----------------------
-// Leitura simples (uso rápido no submit)
+// Leitura simples (uso r├ípido no submit)
 // ----------------------
 
-// Se você não quer guardar o controller retornado por attachCurrencyMask()
-// e só quer ler pontualmente um input que já está mascarado em BRL,
-// você pode usar isso no momento de validar/enviar:
+// Se voc├¬ n├úo quer guardar o controller retornado por attachCurrencyMask()
+// e s├│ quer ler pontualmente um input que j├í est├í mascarado em BRL,
+// voc├¬ pode usar isso no momento de validar/enviar:
 export function getNumericValueFromCurrencyInput(inputEl) {
   return parseBRLToNumber(inputEl.value);
 }

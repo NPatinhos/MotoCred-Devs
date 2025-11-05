@@ -54,8 +54,9 @@ const L = (...a) => console.log('[STATE]', ...a);
     valorEntrada: null,
   },
 
-  // Resultado de análise de crédito / resposta das APIs depois do envio
-  // (limites, status aprovado/reprovado, parcelas permitidas, etc.)
+  valorEntrada: null, // O valor numérico da entrada
+  entradaTouched: false, // Indica se o usuário digitou algo
+  entradaDeveExibirPlaceholder: false,
   analiseCredito: null,
 
   // Escolha final da simulação (pra depois mandar pro backend)
@@ -126,11 +127,11 @@ export function getPpaInputs() {
 export function setView(viewName) {
     // se devOverride estiver ativo, ignoramos qualquer tentativa de mudar view
     if (state.devOverride) {
-        L('setView ignorado por devOverride=', state.devOverride);
+        //L('setView ignorado por devOverride=', state.devOverride);
         state.currentView = state.devOverride;
         return;
     }
-    L('setView ->', viewName);
+    //L('setView ->', viewName);
     state.currentView = viewName;
 }
 
@@ -142,14 +143,14 @@ export function setDevOverride(viewName) {
 
 // Atualiza tipo de usuário ("comprador" | "vendedor")
 export function setTipoUsuario(tipo) {
-    L('setTipoUsuario ->', tipo);
+    //L('setTipoUsuario ->', tipo);
      state.tipoUsuario = tipo;
      state.formData.tipoUsuario = tipo;
 }
 
 // Atualiza info de CNH (true/false)
 export function setPossuiCNH(flagCNH) {
-    L('setPossuiCNH ->', flag);  
+    //L('setPossuiCNH ->', flag);  
     state.possuiCNH = flagCNH;
     state.formData.possuiCNH = flagCNH;
 }
@@ -171,20 +172,26 @@ export function setValorMoto(v) {
 }
 
 export function setValorEntrada(v) {
-  const num = round2(v);
-  if (!num) {
-    // campo limpo -> volta a usar 40%
+  const num = round2(v); // Assumindo round2 está acessível
+
+  if (num === 0 || num === null || Number.isNaN(num)) {
     state.valorEntrada = null;
     state.entradaTouched = false;
+    state.entradaDeveExibirPlaceholder = true; // <<-- ATIVA FLAG: Deve mostrar placeholder
   } else {
     state.valorEntrada = num;
     state.entradaTouched = true;
+    state.entradaDeveExibirPlaceholder = false; // <<-- DESATIVA FLAG: Valor digitado
   }
+}
+
+export function getEntradaDeveExibirPlaceholder() {
+    return state.entradaDeveExibirPlaceholder;
 }
 
 // Atualiza um pedaço da etapa de vendedor
 export function mergeVendedorData({ loja, nomeVendedor, emailVendedor }) {
-    L('mergeVendedorData', state.formData);
+    //L('mergeVendedorData', state.formData);
     if (loja !== undefined) state.formData.loja = loja;
     if (nomeVendedor !== undefined) state.formData.nomeVendedor = nomeVendedor;
     if (emailVendedor !== undefined) state.formData.emailVendedor = emailVendedor;
@@ -207,7 +214,7 @@ export function mergeClienteData({
     if (emailCliente !== undefined) state.formData.emailCliente = emailCliente;
     if (telefoneCliente !== undefined)
         state.formData.telefoneCliente = telefoneCliente;
-    L('mergeClienteData', state.formData);
+    //L('mergeClienteData', state.formData);
 }
 
 // Atualiza um pedaço da etapa de venda
@@ -216,7 +223,7 @@ export function mergeVendaData({
   valorMoto,
   valorEntrada,
 }) {
-    L('mergeVendaData', state.formData);
+    //L('mergeVendaData', state.formData);
     if (rendaMensal !== undefined) state.formData.rendaMensal = rendaMensal;
     if (valorMoto !== undefined) state.formData.valorMoto = valorMoto;
     if (valorEntrada !== undefined) state.formData.valorEntrada = valorEntrada;

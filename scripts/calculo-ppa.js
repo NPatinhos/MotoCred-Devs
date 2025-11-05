@@ -91,7 +91,7 @@ export function calcularPPA(valorMoto, entrada, renda) {
  * @param {string[]} codigosDeFalha - Array de códigos de erro da função realizarCalculoPPA.
  * @returns {string[]} Um array com os textos dos motivos.
  */
-function obterMotivosDeReprovacao(codigosDeFalha) {
+export function obterMotivosDeReprovacao(codigosDeFalha) {
     const mapaDeMotivos = {
         'ENTRADA_MIN_4000': "Entrada mínima de R$ 4.000,00 não atingida.",
         'ENTRADA_MIN_40_PCT': "Entrada menor que 40% do valor da moto.",
@@ -114,7 +114,7 @@ function obterMotivosDeReprovacao(codigosDeFalha) {
  * @param {number} renda - Renda mensal do cliente.
  * @returns {string[]} Um array com os textos das sugestões.
  */
-function calcularSugestoes(codigosDeFalha, valorMoto, entrada, renda) {
+export function calcularSugestoes(codigosDeFalha, valorMoto, entrada, renda) {
     const sugestoes = [];
     const formatBRL = (num) => num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     

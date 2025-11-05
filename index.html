@@ -219,34 +219,36 @@
             
             <!---etapa 4-->
             <section id="etapa-4" class="form-step hidden">
-                <fieldset class="border-0 bg-[#E0E0E0] rounded-2xl p-6 pt-4 relative">
-                    <legend
-                    class="absolute -top-3 left-6 text-[#D56833] 
-                            text-sm font-semibold leading-none px-2 py-0.5">
-                    Dados da Venda
-                    </legend>
-                   
-                    <label for="valor-moto" class="block mt-2">Valor da Moto:</label>
-                    <input 
-                    type="text" 
-                    id="valor-moto" 
-                    name="valor-moto" 
-                    class="rounded-2xl w-full"
-                    placeholder="R$ 0,00"
-                    required
-                    >
+                <fieldset class="border-0 bg-[#E0E0E0] rounded-2xl p-6 pt-4 relative space-y-4">
+                    <div>
+                        <legend
+                        class="absolute -top-3 left-6 text-[#D56833] 
+                            text-base font-semibold leading-none px-2 py-0.5">
+                        Dados da Venda
+                        </legend>
+                    
+                        <label for="valor-moto" class="block mt-2">Valor da Moto:</label>
+                        <input 
+                        type="text" 
+                        id="valor-moto" 
+                        name="valor-moto" 
+                        class="rounded-2xl w-full"
+                        placeholder="R$ 0,00"
+                        required
+                        >
 
-                    <label for="valor-entrada" class="block mt-4">Valor da Entrada:</label>
-                    <input 
-                    type="text" 
-                    id="valor-entrada" 
-                    name="valor-entrada" 
-                    class="rounded-2xl w-full" 
-                    placeholder="Min. sugerido: R$ 0,00"
-                    required
-                    >
+                        <label for="valor-entrada" class="block mt-4">Valor da Entrada:</label>
+                        <input 
+                        type="text" 
+                        id="valor-entrada" 
+                        name="valor-entrada" 
+                        class="rounded-2xl w-full" 
+                        placeholder="Min. sugerido: R$ 0,00"
+                        required
+                        >
+                    </div>
 
-                    <p id="ppa-erro" class="text-red-600 text-sm mt-2 hidden">  </p>
+                    <p id="ppa-erro" class="hidden bg-[#B91C1C]/10 rounded-2xl p-2">  </p>
                 </fieldset>
 
             </section>
