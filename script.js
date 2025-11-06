@@ -201,8 +201,8 @@ function setSubmittingState(on, buttonText = null) {
 
             // ✅ manter só estas 3 linhas
             renda_mensal: numFromInput(document.getElementById('renda_mensal')),
-            valor_moto:   numFromInput(document.getElementById('valor_moto')),
-            valor_entrada:numFromInput(document.getElementById('valor_entrada')),
+            valor_moto:   numFromInput(getValorMotoInput()),
+            valor_entrada:numFromInput(getValorEntradaInput()),
 
         };
     }
@@ -233,15 +233,30 @@ function setSubmittingState(on, buttonText = null) {
     const navButtonGroup = form.querySelector('.nav-button-group');
     const navButtonGroupParent = navButtonGroup ? navButtonGroup.parentElement : null;
 
+    function getValorMotoInput() {
+        return document.querySelector('#etapa-4 input#valor-moto[type="text"]') ||
+               document.querySelector('#etapa-4 input[name="valor-moto"]') ||
+               document.querySelector('input#valor-moto:not([type="range"])') ||
+               document.getElementById('valor_moto') ||
+               null;
+    }
+    function getValorEntradaInput() {
+        return document.querySelector('#etapa-4 input#valor-entrada[type="text"]') ||
+               document.querySelector('#etapa-4 input[name="valor-entrada"]') ||
+               document.querySelector('input#valor-entrada:not([type="range"])') ||
+               document.getElementById('valor_entrada') ||
+               null;
+    }
+
     const vendorFieldset = document.getElementById('dados_vendedor');
     const clientFieldset = document.getElementById('dados_cliente');
-    const motoFieldset = document.querySelector('#step-4 fieldset');
+    const motoFieldset = document.querySelector('#etapa-4 fieldset') || document.querySelector('#step-4 fieldset');
     const tipoUsuarioRadios = Array.from(form.querySelectorAll('input[name="tipo_usuario"]'));
     const cpfInput = document.getElementById('cpf');
     const emailInputs = Array.from(form.querySelectorAll('input[type="email"]'));
     const telefoneInput = document.getElementById('telefone');
-    const valorMotoInput = document.getElementById('valor_moto');
-    const valorEntradaInput = document.getElementById('valor_entrada');
+    const valorMotoInput = getValorMotoInput();
+    const valorEntradaInput = getValorEntradaInput();
 
     let currentStepIndex = 0;
     let maxStepIndex = 0;
@@ -391,32 +406,120 @@ function setSubmittingState(on, buttonText = null) {
         return { valid: true };
     };
 
+        // Utilitário para converter "R$ 12.000,00" → 12000
+    function parseBRLToNumber(valor) {
+    if (!valor) return 0;
+    return Number(valor.replace(/[^\d,-]/g, '').replace(',', '.')) || 0;
+    }
+
+    // Utilitário para formatar número → "R$ 12.000,00"
+    function formatToBRL(numero) {
+    return numero.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    // Atualiza o placeholder do campo de entrada conforme valor da moto
+    function updateValorEntradaHint() {
+    const motoInput = getValorMotoInput();
+    const entradaInput = getValorEntradaInput();
+    if (!motoInput || !entradaInput) return;
+
+    const valorMoto = parseBRLToNumber(motoInput.value);
+    const valorMotoNumero = Number.isFinite(valorMoto) ? valorMoto : 0;
+    const minEntrada = valorMotoNumero * 0.4;
+    const minEntradaBRL = formatToBRL(minEntrada);
+    const placeholder = `Min. Sugerido: ${minEntradaBRL}`;
+
+    console.log('[Etapa4] recalculando placeholder 40%', {
+        valorMotoNumero,
+        valorMotoBRL: formatToBRL(valorMotoNumero),
+        minimoEntradaNumero: minEntrada,
+        minimoEntradaBRL: minEntradaBRL,
+        placeholder
+    });
+
+    if (entradaInput.placeholder !== placeholder) {
+        entradaInput.removeAttribute('placeholder');
+        requestAnimationFrame(() => entradaInput.setAttribute('placeholder', placeholder));
+    }
+    console.log('[Etapa4] placeholder atual', entradaInput.placeholder || placeholder);
+    }
+
+    function ensureValorEntradaMinimo() {
+        const valorMotoInput = getValorMotoInput();
+        const valorEntradaInput = getValorEntradaInput();
+        if (!valorEntradaInput) return { valorEntrada: parseBRLToNumber(null), autoFilled: false };
+
+        const valorMoto = parseBRLToNumber(valorMotoInput?.value);
+        const valorEntradaAtual = parseBRLToNumber(valorEntradaInput.value);
+        const entradaDigits = onlyDigitsFromMasked(valorEntradaInput.value);
+        const valorMotoNumero = Number.isFinite(valorMoto) ? valorMoto : 0;
+        const minimoSugerido = Math.floor(valorMotoNumero * 0.4 * 100) / 100;
+
+        if (!entradaDigits && minimoSugerido > 0) {
+            if (typeof valorEntradaInput.setMaskedValueFromNumber === 'function') {
+                valorEntradaInput.setMaskedValueFromNumber(minimoSugerido);
+            } else {
+                valorEntradaInput.value = formatToBRL(minimoSugerido).replace(/^R\$\s?/, '');
+                valorEntradaInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            console.log('[Etapa4] entrada auto-preenchida com mínimo sugerido', {
+                minimoNumero: minimoSugerido,
+                minimoBRL: formatToBRL(minimoSugerido)
+            });
+            return { valorEntrada: minimoSugerido, autoFilled: true };
+        }
+
+        return { valorEntrada: valorEntradaAtual, autoFilled: false };
+    }
+
+    // Chama o cálculo PPA antes de avançar da etapa 4
+    async function validarEtapa4() {
+    const renda = parseBRLToNumber(document.getElementById('renda_mensal')?.value);
+    const valorMotoInput = getValorMotoInput();
+    const valorEntradaInput = getValorEntradaInput();
+    const valorMoto = parseBRLToNumber(valorMotoInput?.value);
+    const { valorEntrada, autoFilled } = ensureValorEntradaMinimo();
+
+    console.log('[Etapa4] validarEtapa4 valores', {
+        rendaNumero: renda,
+        rendaBRL: formatToBRL(renda || 0),
+        valorMotoNumero: valorMoto,
+        valorMotoBRL: formatToBRL(valorMoto || 0),
+        valorEntradaNumero: valorEntrada,
+        valorEntradaBRL: formatToBRL(valorEntrada || 0),
+        placeholderAtual: valorEntradaInput?.placeholder ?? null,
+        entradaAutoPreenchida: autoFilled
+    });
+
+    const resultado = calcularPPA(renda, valorMoto, valorEntrada);
+
+    // Caso retorne erros
+    if (!resultado.sucesso) {
+        let erroContainer = document.getElementById('erro_dados_venda');
+        if (!erroContainer) {
+        erroContainer = document.createElement('p');
+        erroContainer.id = 'erro_dados_venda';
+        erroContainer.className = 'mt-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700';
+        document.querySelector('#etapa-4 fieldset').appendChild(erroContainer);
+        }
+        erroContainer.textContent = resultado.erros.join('\n');
+        erroContainer.classList.remove('hidden');
+        return false;
+    }
+
+    // Tudo certo: oculta mensagens de erro
+    const erro = document.getElementById('erro_dados_venda');
+    if (erro) erro.classList.add('hidden');
+    return true;
+    }
+
+
     const calculateValorEntradaMinimo = () => {
         const vm = numFromInput(valorMotoInput);
         const positive = Number.isFinite(vm) && vm > 0 ? vm : 0;
         const minimo = positive * 0.4;
         return Math.floor(minimo * 100) / 100;
     };
-
-
-
-    // Em script.js
-
-    const updateValorEntradaHint = () => {
-        if (!valorMotoInput || !valorEntradaInput) return;
-
-        const minimo = calculateValorEntradaMinimo();
-        const formatted = minimo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-        // força repaint do placeholder em todos os navegadores
-        valorEntradaInput.removeAttribute('placeholder');
-        requestAnimationFrame(() => {
-            valorEntradaInput.setAttribute('placeholder', `Min. sugerido: ${formatted}`);
-        });
-    };
-
-
-
 
 
     const updateCpfValidity = (showMessage = false) => {
@@ -628,7 +731,6 @@ function setSubmittingState(on, buttonText = null) {
             }
         });
         if (fieldset.contains(valorMotoInput)) {
-            updateValorEntradaHint();
             updateValorEntradaValidity(false);
         }
     };
@@ -834,7 +936,38 @@ function setSubmittingState(on, buttonText = null) {
 
     };
 
+    function prepareEtapa4() {
+        if (!valorMotoInput || !valorEntradaInput) {
+            updateValorEntradaHint();
+            return;
+        }
+
+        if (typeof valorMotoInput.clearMasked === 'function') {
+            valorMotoInput.clearMasked();
+        } else {
+            valorMotoInput.value = '';
+            if ('_digits' in valorMotoInput) {
+                valorMotoInput._digits = '';
+            }
+        }
+
+        if (typeof valorEntradaInput.clearMasked === 'function') {
+            valorEntradaInput.clearMasked();
+        } else {
+            valorEntradaInput.value = '';
+            if ('_digits' in valorEntradaInput) {
+                valorEntradaInput._digits = '';
+            }
+        }
+
+        updateValorEntradaHint();
+        updateValorEntradaValidity(false);
+
+        valorEntradaInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
     const showStep = (index) => {
+        const previousIndex = currentStepIndex;
         if (!isStepEnabled(index)) {
             const fallback = findEnabledStep(index, -1, true) ?? findEnabledStep(index, 1, true);
             if (fallback === null) {
@@ -847,10 +980,8 @@ function setSubmittingState(on, buttonText = null) {
         renderSteps();
         renderTabsTailwind();
         renderNavigation();
-        // REMOVIDO: requestAnimationFrame(atualizarNomeEtapaAtual);
-        // depois de renderSteps(); renderTabs(); renderNavigation();
-        if (currentStepIndex === 3) { // etapa 4 (índice 3)
-            updateValorEntradaHint();
+        if (currentStepIndex === 3 && previousIndex !== 3) {
+            prepareEtapa4();
         }
 
     };
@@ -903,7 +1034,6 @@ function setSubmittingState(on, buttonText = null) {
     };
 
     const updateCpfHintValidity = () => {
-        updateValorEntradaHint();
         updateValorEntradaValidity(false);
     };
 
@@ -1053,24 +1183,24 @@ function setSubmittingState(on, buttonText = null) {
     cnhButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             cnhHiddenInput.value = btn.dataset.cnh;
-            cnhError.classList.add('hidden');gh
+            cnhError.classList.add('hidden');
         });
     });
 
-    // no clique de avançar
-    nextBtn.addEventListener('click', () => {
-    const etapaAtiva = document.querySelector('.form-step.is-active');
-    
-    if (etapaAtiva.id === 'etapa-3') {
-        if (!cnhHiddenInput.value) {
-        cnhError.classList.remove('hidden');
-        return; // bloqueia avanço
-        }
+    if (nextBtn) {
+        nextBtn.addEventListener('click', (event) => {
+            const etapaAtiva = document.querySelector('.form-step.is-active');
+            if (etapaAtiva && etapaAtiva.id === 'etapa-3' && cnhHiddenInput) {
+                if (!cnhHiddenInput.value) {
+                    cnhError.classList.remove('hidden');
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    return;
+                }
+                cnhError.classList.add('hidden');
+            }
+        });
     }
-
-    // continua o fluxo normal de avanço
-    avancarEtapa();
-    });
 
 
     // Em script.js
@@ -1100,34 +1230,47 @@ function setSubmittingState(on, buttonText = null) {
         });
     });
 
+    // 🔸 Controle do botão "Avançar"
     if (btnNext) {
         btnNext.dataset.action = 'next';
-        btnNext.addEventListener('click', () => {
-            // 🔒 se já estiver enviando, ignora qualquer clique
+        btnNext.addEventListener('click', async () => {
+            // 🔒 Se já estiver enviando, ignora o clique
             if (isSubmitting) return;
 
+            // Se o botão estiver no modo "submit"
             if (btnNext.dataset.action === 'submit') {
-            // valida a etapa atual
-            if (!validateStep(currentStepIndex)) return;
+                if (currentStepIndex === 3) {
+                    ensureValorEntradaMinimo();
+                }
+                // valida a etapa atual
+                if (!validateStep(currentStepIndex)) return;
 
-            // trava tudo imediatamente ao clicar
-            setSubmittingState(true);
+                // trava tudo imediatamente ao clicar
+                setSubmittingState(true);
 
-            // envia o formulário normalmente
-            if (typeof form.requestSubmit === 'function') {
-                form.requestSubmit();
-            } else {
-                form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                // envia o formulário normalmente
+                if (typeof form.requestSubmit === 'function') {
+                    form.requestSubmit();
+                } else {
+                    form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                }
+
+                // sai da função (impede outro clique)
+                return;
             }
 
-            // sai da função (impede outro clique)
-            return;
+            // 🚨 [ADICIONADO] Se estiver na etapa 4, roda o cálculo PPA antes de avançar
+            const etapaAtual = document.querySelector('.form-step.is-active');
+            if (etapaAtual && etapaAtual.id === 'etapa-4') {
+                const ok = await validarEtapa4(); // função que roda o cálculo PPA
+                if (!ok) return; // se reprovado, não avança
             }
 
             // caso contrário, apenas avança para próxima etapa
             handleNext();
         });
     }
+
 
 
     if (btnPrev) {
@@ -1175,8 +1318,7 @@ function setSubmittingState(on, buttonText = null) {
 
     if (valorMotoInput) {
         valorMotoInput.addEventListener('input', () => {
-            // 1) atualiza o placeholder (dinâmico 40%)
-            updateValorEntradaHint();
+
 
             // 2) limpa o campo de entrada p/ o placeholder reaparecer
             if (valorEntradaInput && typeof valorEntradaInput.clearMasked === 'function') {
@@ -1192,8 +1334,13 @@ function setSubmittingState(on, buttonText = null) {
         });
     }
 
-
-
+    if (valorMotoInput && valorEntradaInput) {
+        valorMotoInput.addEventListener('input', () => {
+            console.log('[Etapa4] valor da moto alterado - disparando cálculo dinâmico de 40%');
+            updateValorEntradaHint();
+            valorEntradaInput.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+    }
 
     if (valorEntradaInput) {
         valorEntradaInput.addEventListener('input', () => {
@@ -1231,6 +1378,13 @@ function setSubmittingState(on, buttonText = null) {
         input.clearMasked = () => {
             digits = '';
             input.value = '';
+        };
+
+        input.setMaskedValueFromNumber = (num) => {
+            const safe = Number.isFinite(num) ? num : 0;
+            digits = String(Math.max(0, Math.round(safe * 100)));
+            input.value = digits ? formatBRLCentsFromDigits(digits) : '';
+            input.dispatchEvent(new Event('input', { bubbles: true }));
         };
 
         // === quando o usuário digita ou apaga ===
@@ -1301,13 +1455,13 @@ function setSubmittingState(on, buttonText = null) {
     }
 
     // aplica a máscara nos três campos
-    attachBRLMoneyMask(document.getElementById('valor_moto'));
-    attachBRLMoneyMask(document.getElementById('valor_entrada'));
+    attachBRLMoneyMask(getValorMotoInput());
+    attachBRLMoneyMask(getValorEntradaInput());
     attachBRLMoneyMask(document.getElementById('renda_mensal'));
 
     // === Sobe os valores da 1ª parte para o PPA global ===
-const vmEl = document.getElementById('valor_moto');
-const veEl = document.getElementById('valor_entrada');
+const vmEl = getValorMotoInput();
+const veEl = getValorEntradaInput();
 
 const commitPPA = () => {
   const vm = numFromInput(vmEl);
@@ -1343,14 +1497,23 @@ veEl?.addEventListener('input', commitPPA);
 
         // Inicia o estado de envio: desabilita botões E MUDA O TEXTO
         setSubmittingState(true, 'Enviando...');
+
+        const { valorEntrada: valorEntradaGarantida } = ensureValorEntradaMinimo();
         
-        const feedbackArea = document.getElementById('erro_dados_venda');
+        let feedbackArea = document.getElementById('erro_dados_venda');
+        if (!feedbackArea) {
+            feedbackArea = document.createElement('p');
+            feedbackArea.id = 'erro_dados_venda';
+            feedbackArea.className = 'mt-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 hidden';
+            const fieldsetEtapa4 = document.querySelector('#etapa-4 fieldset');
+            fieldsetEtapa4?.appendChild(feedbackArea);
+        }
         feedbackArea.classList.add('hidden');
         feedbackArea.innerHTML = '';
 
         // Coleta os valores numéricos uma única vez no início
-        const valorMoto = numFromInput(document.getElementById('valor_moto'));
-        const entrada   = numFromInput(document.getElementById('valor_entrada'));
+        const valorMoto = numFromInput(getValorMotoInput());
+        const entrada   = Number.isFinite(valorEntradaGarantida) ? valorEntradaGarantida : numFromInput(getValorEntradaInput());
         const renda     = numFromInput(document.getElementById('renda_mensal'));
 
 
@@ -1590,10 +1753,10 @@ window.addEventListener('ppa:changed', (e) => {
 });
 
   // 1. Encontra os elementos na tela
-  const rTotal = document.getElementById('valor-moto');
-  const sTotal = document.getElementById('valor-moto-num'); 
-  const rEntrada = document.getElementById('valor-entrada');
-  const sEntrada = document.getElementById('valor-entrada-num'); 
+  const rTotal = document.querySelector('#pagina-aprovado input#valor-moto[type="range"]');
+  const sTotal = document.querySelector('#pagina-aprovado #valor-moto-num'); 
+  const rEntrada = document.querySelector('#pagina-aprovado input#valor-entrada[type="range"]');
+  const sEntrada = document.querySelector('#pagina-aprovado #valor-entrada-num'); 
   const sFin = document.getElementById('valor-financiado-num'); 
 
   const btn12x = document.getElementById('btn-parcela-12x');
