@@ -40,7 +40,35 @@ function openV2AsPage(sectionId) {
     // target.classList.add('block');  // ❌ não usar
   }
 }
-  */
+*/
+
+window.openV2AsPage = function openV2AsPage(sectionId) {
+  document.body.classList.add('mode');
+
+  const mainWrapper = document.getElementById('quadro-branco');
+  if (mainWrapper) {
+    mainWrapper.classList.add('hidden');
+  }
+
+  const overlays = ['pagina-negado', 'pagina-aprovado'];
+  overlays.forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    if (id === sectionId) {
+      el.classList.remove('hidden');
+      el.classList.add('flex', 'items-center', 'justify-center');
+    } else {
+      el.classList.add('hidden');
+      el.classList.remove('flex', 'items-center', 'justify-center');
+    }
+  });
+
+  const target = document.getElementById(sectionId);
+  if (target) {
+    target.scrollTop = 0;
+  }
+};
 
 // ===== MODO DEV FLEXÍVEL =====
 window.addEventListener('DOMContentLoaded', () => {
@@ -77,6 +105,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
 (function () {
     console.log('[PPA] Script carregado. Versão:', new Date().toISOString());
+
+    let tipoUsuarioHiddenInput = null;
 
     function loadPPA() {
         try {
@@ -137,6 +167,9 @@ function loadPPA() {
 
                 // negócio
                 currentUserType = btn.textContent.trim().toLowerCase(); // "comprador" ou "vendedor"
+                if (tipoUsuarioHiddenInput) {
+                    tipoUsuarioHiddenInput.value = currentUserType;
+                }
                 updateStepAvailability(); // <- ESSENCIAL
             });
         });
@@ -154,6 +187,14 @@ function loadPPA() {
     submissionIdInput.value =
         (crypto?.randomUUID?.() ||
         (Date.now().toString(36) + Math.random().toString(36).slice(2)));
+
+    tipoUsuarioHiddenInput = form.querySelector('input[name="tipo_usuario"][type="hidden"]');
+    if (!tipoUsuarioHiddenInput) {
+        tipoUsuarioHiddenInput = document.createElement('input');
+        tipoUsuarioHiddenInput.type = 'hidden';
+        tipoUsuarioHiddenInput.name = 'tipo_usuario';
+        form.appendChild(tipoUsuarioHiddenInput);
+    }
 
     let isSubmitting = false;
 
@@ -185,7 +226,13 @@ function setSubmittingState(on, buttonText = null) {
   // 3️⃣  Função que monta o JSON com os dados
 
     function serializeFormToPayload(form) {
-        const get = (name) => form.elements[name]?.value?.trim() ?? "";
+        const get = (name) => {
+            const direct = form.elements[name];
+            const altHyphen = form.elements[name.includes('_') ? name.replace(/_/g, '-') : name.replace(/-/g, '_')];
+            const element = direct || altHyphen;
+            const value = element?.value;
+            return typeof value === 'string' ? value.trim() : "";
+        };
 
         return {
             submission_id: get("submission_id"),
@@ -260,7 +307,7 @@ function setSubmittingState(on, buttonText = null) {
 
     let currentStepIndex = 0;
     let maxStepIndex = 0;
-    let currentUserType = null;
+    let currentUserType = tipoUsuarioHiddenInput?.value ? tipoUsuarioHiddenInput.value : null;
 
  
 
@@ -1162,6 +1209,9 @@ function setSubmittingState(on, buttonText = null) {
     const preselected = tipoUsuarioRadios.find((radio) => radio.checked);
     if (preselected) {
         currentUserType = preselected.value;
+        if (tipoUsuarioHiddenInput) {
+            tipoUsuarioHiddenInput.value = preselected.value;
+        }
     }
 
     updateStepAvailability();
@@ -1226,8 +1276,24 @@ function setSubmittingState(on, buttonText = null) {
             }
 
             currentUserType = selectedType;
+            if (tipoUsuarioHiddenInput) {
+                tipoUsuarioHiddenInput.value = selectedType;
+            }
             updateStepAvailability();
         });
+
+        if (tipoUsuarioHiddenInput?.value) {
+            const inicial = tipoUsuarioHiddenInput.value;
+            const btnInicial = botoesTipo.find(b => b.textContent.trim().toLowerCase() === inicial);
+            if (btnInicial) {
+                botoesTipo.forEach(b => b.setAttribute('aria-pressed', 'false'));
+                btnInicial.setAttribute('aria-pressed', 'true');
+                currentUserType = inicial;
+                if (tipoUsuarioHiddenInput) {
+                    tipoUsuarioHiddenInput.value = inicial;
+                }
+            }
+        }
     });
 
     // 🔸 Controle do botão "Avançar"
@@ -1504,10 +1570,12 @@ veEl?.addEventListener('input', commitPPA);
         if (!feedbackArea) {
             feedbackArea = document.createElement('p');
             feedbackArea.id = 'erro_dados_venda';
-            feedbackArea.className = 'mt-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 hidden';
             const fieldsetEtapa4 = document.querySelector('#etapa-4 fieldset');
             fieldsetEtapa4?.appendChild(feedbackArea);
         }
+        feedbackArea.className = 'mt-2 rounded-2xl px-3 py-2 text-sm hidden p-3';
+        feedbackArea.style.backgroundColor = 'rgba(185,28,28,0.1)';
+        feedbackArea.style.color = '#B91C1C';
         feedbackArea.classList.add('hidden');
         feedbackArea.innerHTML = '';
 
@@ -1525,7 +1593,7 @@ veEl?.addEventListener('input', commitPPA);
 
         // --- FLUXO DE FALHA DA PPA ---
         if (falhas.length > 0) {
-            let mensagemHTML = '<p style="font-weight: bold;">Pré-Análise Não Concedida.</p>';
+            let mensagemHTML = '<p style="font-weight:700;color:#B91C1C;">Pré-Análise Não Concedida.</p>';
             const motivos = obterMotivosDeReprovacao(falhas);
             
             // --- CORREÇÃO APLICADA AQUI ---
@@ -1533,14 +1601,14 @@ veEl?.addEventListener('input', commitPPA);
             const sugestoes = calcularSugestoes(falhas, valorMoto, entrada, renda);
             
             const listaMotivos = motivos.map(motivo => `<li>- ${motivo}</li>`).join('');
-            mensagemHTML += `<ul class="list-none pl-5">${listaMotivos}<br></ul>`;
+            mensagemHTML += `<ul style="list-style:none;padding-left:1.25rem;color:#B91C1C;">${listaMotivos}<br></ul>`;
 
             if (sugestoes.length > 0) {
-                mensagemHTML += '<p class="mt-3">Para ser aprovado, sugerimos que você:</p>';
+                mensagemHTML += '<p style="margin-top:0.75rem;font-weight:700;color:#B91C1C;">Para ser aprovado, sugerimos que você:</p>';
                 
                 if (sugestoes.length == 1){
                     mensagemHTML += `
-                    <ul class="list-none pl-5">
+                    <ul style="list-style:none;padding-left:1.25rem;color:#B91C1C;">
                         <li>- ${sugestoes[0]}</li>
                     </ul>
                 `;
@@ -1548,7 +1616,7 @@ veEl?.addEventListener('input', commitPPA);
                 else{
                 // sempre mostra duas sugestões unidas por "OU"
                 mensagemHTML += `
-                    <ul class="list-none pl-5">
+                    <ul style="list-style:none;padding-left:1.25rem;color:#B91C1C;">
                         <li>- ${sugestoes[0]} OU</li>
                         <li>- ${sugestoes[1]}</li>
                     </ul>
@@ -1568,6 +1636,7 @@ veEl?.addEventListener('input', commitPPA);
         // --- FLUXO DE SUCESSO DA PPA ---
         console.log('PPA Aprovada! Enviando para o Apps Script...');
         const payload = serializeFormToPayload(form);
+        console.log('[Form] Payload enviado ao Apps Script:', JSON.stringify(payload, null, 2));
         
         try {
             const result = await postToAppsScript(payload);
