@@ -1,48 +1,4 @@
-﻿/*function showV2Overlay(sectionId) {
-  document.body.classList.add('mode');
-  const mainCard = document.querySelector('.card');
-  if (mainCard) mainCard.style.display = 'none';
-
-  ['pagina-negado','pagina-aprovado'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.classList.add('hidden');           // <- aqui
-    el.classList.remove('flex');
-  });
-
-  const target = document.getElementById(sectionId);
-  if (target) {
-    target.classList.remove('hidden');    // <- e aqui
-    target.classList.add('flex','items-center','justify-center','min-h-screen');
-  }
-}
-
-function openV2AsPage(sectionId) {
-  document.body.classList.add('mode');
-  const mainCard = document.querySelector('.card');
-  if (mainCard) mainCard.style.display = 'none';
-
-  ['pagina-negado', 'pagina-aprovado'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.classList.add('hidden');
-    el.classList.remove('flex');
-  });
-
-  const target = document.getElementById(sectionId);
-  if (target) {
-    target.classList.remove('fixed','inset-0','overflow-auto','z-50');
-    target.classList.remove('hidden');
-
-    // ✅ continua usando flex + centralização
-    target.classList.add('flex','items-center','justify-center','min-h-screen');
-    // (remova a linha que trocava para block)
-    // target.classList.add('block');  // ❌ não usar
-  }
-}
-*/
-
-window.openV2AsPage = function openV2AsPage(sectionId) {
+﻿window.openV2AsPage = function openV2AsPage(sectionId) {
   document.body.classList.add('mode');
 
   const mainWrapper = document.getElementById('quadro-branco');
@@ -81,7 +37,7 @@ window.openV2AsPage = function openV2AsPage(sectionId) {
 // ===== MODO DEV FLEXÍVEL =====
 window.addEventListener('DOMContentLoaded', () => {
   // altere para true para ativar o modo dev
-  const MODO_DEV = true;
+  const MODO_DEV = false;
 
   // etapa ou página que deseja abrir automaticamente:
   // exemplos possíveis:
@@ -1224,42 +1180,6 @@ function setSubmittingState(on, buttonText = null) {
 
     updateStepAvailability();
     showStep(currentStepIndex);  //DESCOMENTAR ESSA PARTE DPS QUE SAIR DO MODO DEv
-
-    // Em script.js
-
-    const cnhButtons = document.querySelectorAll('[data-cnh]');
-    const cnhHiddenInput = document.querySelector('#possui-cnh');
-    const nextBtn = document.querySelector('#btnNext');
-
-    // cria o elemento de erro só uma vez
-    let cnhError = document.createElement('p');
-    cnhError.textContent = 'Por favor, selecione se possui CNH.';
-    cnhError.className = 'text-red-600 text-sm mt-2 hidden';
-    document.querySelector('#etapa-3 fieldset').appendChild(cnhError);
-
-    // escuta os botões para limpar o erro
-    cnhButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            cnhHiddenInput.value = btn.dataset.cnh;
-            cnhError.classList.add('hidden');
-        });
-    });
-
-    if (nextBtn) {
-        nextBtn.addEventListener('click', (event) => {
-            const etapaAtiva = document.querySelector('.form-step.is-active');
-            if (etapaAtiva && etapaAtiva.id === 'etapa-3' && cnhHiddenInput) {
-                if (!cnhHiddenInput.value) {
-                    cnhError.classList.remove('hidden');
-                    event.preventDefault();
-                    event.stopImmediatePropagation();
-                    return;
-                }
-                cnhError.classList.add('hidden');
-            }
-        });
-    }
-
 
     // Em script.js
 

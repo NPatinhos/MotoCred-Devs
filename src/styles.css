@@ -151,3 +151,86 @@ input.range::-moz-range-thumb {
 #dados_venda .grid > :nth-child(2) {
   margin-top: 1.5rem !important; /* ~24px */
 }
+
+/* ===========================
+   MOBILE TWEAKS (Tailwind screens)
+   =========================== */
+@layer components {
+  @screen xs {
+    .form-header {
+      @apply gap-2;
+    }
+
+    .form-header img {
+      @apply w-40;
+    }
+
+    .form-header-title {
+      @apply text-xs;
+    }
+
+    #botoes-etapas {
+      @apply gap-2 justify-between;
+    }
+
+    .step-tab.is-future,
+    .step-tab.is-complete {
+      @apply w-12 h-2;
+    }
+
+    .step-tab.is-active {
+      @apply w-20 h-12 px-3;
+    }
+
+    .step-tab.is-active span {
+      @apply text-xs;
+    }
+  }
+
+  @screen xxs {
+    .form-header {
+      @apply gap-2;
+    }
+
+    .form-header img {
+      @apply w-40;
+    }
+
+    .form-header-title {
+      @apply text-base;
+    }
+
+    #botoes-etapas {
+      @apply gap-1;
+    }
+
+    .step-tab.is-future,
+    .step-tab.is-complete {
+      @apply w-12 h-2;
+    }
+
+    .step-tab.is-active {
+      @apply w-20 h-10 px-2;
+    }
+
+   .step-tab.is-active span {
+     @apply text-[0.7rem];
+   }
+
+   .nav-prev,
+   .nav-next {
+     @apply px-4 py-2 text-xs;
+   }
+
+   .nav-prev span,
+   .nav-next span {
+     @apply text-xs;
+   }
+
+    input,
+    select,
+    textarea {
+      @apply h-10 text-sm;
+    }
+  }
+}
