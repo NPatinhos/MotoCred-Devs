@@ -48,6 +48,7 @@ window.openV2AsPage = function openV2AsPage(sectionId) {
   const mainWrapper = document.getElementById('quadro-branco');
   if (mainWrapper) {
     mainWrapper.classList.add('hidden');
+    mainWrapper.style.display = 'none';
   }
 
   const overlays = ['pagina-negado', 'pagina-aprovado'];
@@ -57,29 +58,36 @@ window.openV2AsPage = function openV2AsPage(sectionId) {
 
     if (id === sectionId) {
       el.classList.remove('hidden');
-      el.classList.add('flex', 'items-center', 'justify-center');
+      el.classList.add('flex');
+      el.classList.remove('block');
+      el.style.display = 'flex';
+        el.style.alignItems = 'center';
+      el.style.justifyContent = 'center';
+      el.style.overflow = 'auto';
     } else {
       el.classList.add('hidden');
-      el.classList.remove('flex', 'items-center', 'justify-center');
+      el.classList.remove('flex');
+      el.style.display = 'none';
     }
   });
 
   const target = document.getElementById(sectionId);
   if (target) {
     target.scrollTop = 0;
+    window.dispatchEvent(new CustomEvent(`${sectionId}:ready`, { detail: { sectionId } }));
   }
 };
 
 // ===== MODO DEV FLEXÍVEL =====
 window.addEventListener('DOMContentLoaded', () => {
   // altere para true para ativar o modo dev
-  const MODO_DEV = false;
+  const MODO_DEV = true;
 
   // etapa ou página que deseja abrir automaticamente:
   // exemplos possíveis:
   // "etapa-1", "etapa-2", "etapa-3", "etapa-4"
   // ou "pagina-aprovado", "pagina-negado"
-  const ETAPA_INICIAL = 'etapa-4';
+  const ETAPA_INICIAL = 'pagina-negado';
 
   if (MODO_DEV) {
     // se for uma página especial, abre como página isolada
@@ -1804,23 +1812,6 @@ function attachEditableMoneySpan(span, callback, options = {}) {
 
 function initSimuladorV2() {
 
-// se o usuário ajustar valores na Etapa 4 depois, a V2 atualiza em tempo real
-window.addEventListener('ppa:changed', (e) => {
-  const p = e.detail || window.PPA || {};
-  // força os novos valores como ponto de partida
-  total = Number(p.total) || total;
-  entrada = Number(p.entrada) || entrada;
-
-  // respeita o “teto” (max financiado permitido no primeiro cálculo)
-  const finInit = Math.max(0, total - entrada);
-  if (typeof MAX_FINANCIADO_PERMITIDO !== 'undefined' && finInit > MAX_FINANCIADO_PERMITIDO) {
-    // puxa 'total' ou 'entrada' para respeitar o teto
-    total = entrada + MAX_FINANCIADO_PERMITIDO;
-  }
-
-  updateFinanceiro('init');
-});
-
   // 1. Encontra os elementos na tela
   const rTotal = document.querySelector('#pagina-aprovado input#valor-moto[type="range"]');
   const sTotal = document.querySelector('#pagina-aprovado #valor-moto-num'); 
@@ -1890,12 +1881,21 @@ botoesParcelas.forEach(btn => {
   const totalPPA = Number(window.PPA?.total ?? rTotal.value);
   const entradaPPA = Number(window.PPA?.entrada ?? rEntrada.value);
   const financiadoInicialPPA = Math.max(0, totalPPA - entradaPPA);
-  const MAX_FINANCIADO_PERMITIDO = financiadoInicialPPA;
+  let maxFinanciadoPermitido = financiadoInicialPPA;
 
   // --- Variáveis de Estado ---
   let total = totalPPA;
   let entrada = entradaPPA;
   let financiado = 0; // Será definido na inicialização
+
+  window.addEventListener('ppa:changed', (e) => {
+    const p = e.detail || window.PPA || {};
+    total = Number(p.total) || total;
+    entrada = Number(p.entrada) || entrada;
+    maxFinanciadoPermitido = Math.max(0, total - entrada);
+    clampInitialValues();
+    updateFinanceiro('init');
+  });
 
   // Helper de formatação (Sem R$, com 2 decimais)
   const formatBRL = (num) => (num || 0).toLocaleString('pt-BR', { style: 'decimal', minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1938,11 +1938,11 @@ botoesParcelas.forEach(btn => {
     // 3. REGRA 2: "Financiado nunca pode aumentar" (Trava da PPA)
     let financiadoAtual = total - entrada;
 
-    if (financiadoAtual > MAX_FINANCIADO_PERMITIDO) {
+    if (financiadoAtual > maxFinanciadoPermitido) {
       if (source === 'total' || source === 'span-total') {
-        entrada = total - MAX_FINANCIADO_PERMITIDO;
+        entrada = total - maxFinanciadoPermitido;
       } else {
-        total = entrada + MAX_FINANCIADO_PERMITIDO;
+        total = entrada + maxFinanciadoPermitido;
       }
     }
     
