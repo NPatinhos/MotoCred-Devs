@@ -1,4 +1,29 @@
-﻿window.openV2AsPage = function openV2AsPage(sectionId) {
+const CURRENT_VIEW_STORAGE_KEY = 'motocred:currentView';
+
+function saveCurrentView(viewId) {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    if (viewId) {
+      window.localStorage.setItem(CURRENT_VIEW_STORAGE_KEY, viewId);
+    } else {
+      window.localStorage.removeItem(CURRENT_VIEW_STORAGE_KEY);
+    }
+  } catch (err) {
+    console.warn('[Navigation] Erro ao salvar etapa atual', err);
+  }
+}
+
+function loadSavedView() {
+  if (typeof window === 'undefined' || !window.localStorage) return null;
+  try {
+    return window.localStorage.getItem(CURRENT_VIEW_STORAGE_KEY);
+  } catch (err) {
+    console.warn('[Navigation] Erro ao ler etapa atual', err);
+    return null;
+  }
+}
+
+window.openV2AsPage = function openV2AsPage(sectionId) {
   document.body.classList.add('mode');
 
   const mainWrapper = document.getElementById('quadro-branco');
@@ -32,6 +57,8 @@
     target.scrollTop = 0;
     window.dispatchEvent(new CustomEvent(`${sectionId}:ready`, { detail: { sectionId } }));
   }
+
+  saveCurrentView(sectionId);
 };
 
 // ===== MODO DEV FLEXÍVEL =====
@@ -243,6 +270,68 @@ function setSubmittingState(on, buttonText = null) {
     // ... outras variáveis e funções
     const navButtonGroup = form.querySelector('.nav-button-group');
     const navButtonGroupParent = navButtonGroup ? navButtonGroup.parentElement : null;
+    const overlayIds = ['pagina-negado', 'pagina-aprovado'];
+
+    const getVisibleOverlayId = () => {
+        return overlayIds.find((id) => {
+            const el = document.getElementById(id);
+            if (!el) return false;
+            return !el.classList.contains('hidden');
+        }) || null;
+    };
+
+    const ensureWizardVisible = () => {
+        const mainWrapper = document.getElementById('quadro-branco');
+        if (mainWrapper) {
+            mainWrapper.classList.remove('hidden');
+            mainWrapper.style.display = '';
+        }
+        document.body.classList.remove('mode');
+        overlayIds.forEach((id) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.classList.add('hidden');
+            el.classList.remove('flex');
+            el.style.display = 'none';
+        });
+    };
+
+    const restoreSavedView = () => {
+        const stored = loadSavedView();
+        if (!stored) {
+            return false;
+        }
+
+        if (stored.startsWith('pagina-')) {
+            openV2AsPage(stored);
+            return true;
+        }
+
+        const savedIndex = steps.findIndex((step) => step.id === stored);
+        if (savedIndex >= 0) {
+            showStep(savedIndex);
+            return true;
+        }
+
+        return false;
+    };
+
+    const overlayVisibleOnLoad = getVisibleOverlayId();
+    if (overlayVisibleOnLoad) {
+        saveCurrentView(overlayVisibleOnLoad);
+    }
+
+    window.addEventListener('beforeunload', () => {
+        const overlayId = getVisibleOverlayId();
+        if (overlayId) {
+            saveCurrentView(overlayId);
+        } else {
+            const currentStepId = steps[currentStepIndex]?.id;
+            if (currentStepId) {
+                saveCurrentView(currentStepId);
+            }
+        }
+    });
 
     function getValorMotoInput() {
         return document.querySelector('#etapa-4 input#valor-moto[type="text"]') ||
@@ -978,6 +1067,7 @@ function setSubmittingState(on, buttonText = null) {
     }
 
     const showStep = (index) => {
+        ensureWizardVisible();
         const previousIndex = currentStepIndex;
         if (!isStepEnabled(index)) {
             const fallback = findEnabledStep(index, -1, true) ?? findEnabledStep(index, 1, true);
@@ -995,6 +1085,10 @@ function setSubmittingState(on, buttonText = null) {
             prepareEtapa4();
         }
 
+        const currentStepId = steps[currentStepIndex]?.id;
+        if (currentStepId) {
+            saveCurrentView(currentStepId);
+        }
     };
 
     const goToStep = (index) => {
@@ -1179,7 +1273,9 @@ function setSubmittingState(on, buttonText = null) {
     }
 
     updateStepAvailability();
-    showStep(currentStepIndex);  //DESCOMENTAR ESSA PARTE DPS QUE SAIR DO MODO DEv
+    if (!restoreSavedView()) {
+        showStep(currentStepIndex);  //DESCOMENTAR ESSA PARTE DPS QUE SAIR DO MODO DEv
+    }
 
     // Em script.js
 
