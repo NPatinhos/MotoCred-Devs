@@ -1955,11 +1955,8 @@ botoesParcelas.forEach(btn => {
     let financiadoAtual = total - entrada;
 
     if (financiadoAtual > maxFinanciadoPermitido) {
-      if (source === 'total' || source === 'span-total') {
-        entrada = total - maxFinanciadoPermitido;
-      } else {
-        total = entrada + maxFinanciadoPermitido;
-      }
+      const entradaMinimaPermitida = total - maxFinanciadoPermitido;
+      entrada = Math.max(entradaMinimaPermitida, HARD_MIN_ENTRADA);
     }
     
     // 4. RE-VALIDAÇÃO
