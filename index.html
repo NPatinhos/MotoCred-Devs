@@ -47,10 +47,12 @@
                 <span class="step-current-label" aria-live="polite">Identificação</span>
             </div>
 
-            <div class="main">
+            <main>
                 <form id="formCadastro" method="post" action="#">
 
                     <div class="form-steps">
+
+                        <!--ETAPA 1-->
                         <section class="form-step is-active" data-step="1" id="step-1" role="tabpanel" aria-labelledby="tab-step-1">
                             <fieldset class="fieldset fieldset-radio">
                                 <legend class="legend">Você é:</legend>
@@ -66,6 +68,7 @@
                             </fieldset>
                         </section>
 
+                        <!--ETAPA 2-->
                         <section class="form-step" data-step="2" id="step-2" role="tabpanel" aria-labelledby="tab-step-2" aria-hidden="true">
                             <fieldset class="fieldset" id="dados_vendedor">
                                 <legend class="legend">Dados do Vendedor</legend>
@@ -92,6 +95,7 @@
                             </fieldset>
                         </section>
 
+                        <!--ETAPA 3-->
                         <section class="form-step" data-step="3" id="step-3" role="tabpanel" aria-labelledby="tab-step-3" aria-hidden="true">
                             <fieldset class="fieldset" id="dados_cliente">
                                 <legend class="legend">Dados do Cliente</legend>
@@ -150,6 +154,7 @@
                             </fieldset>
                         </section>
                     </div>
+
                     <div class="form-navigation">
                         <button type="button" class="btn-secondary nav-prev" aria-label="Voltar para a etapa anterior" disabled>Voltar</button>
                         <div class="nav-button-group">
@@ -157,26 +162,7 @@
                         </div>
                     </div>
                 </form>
-                <section id="tela_confirmacao" class="hidden" role="status" aria-live="polite" tabindex="-1">
-                    <div class="confirmacao-wrap">
-                        <div class="flex items-center justify-center p-8">
-                            <div class="text-center max-w-lg">
-                                <p id="texto-confirmacao" class="mb-6">
-                                Formulário enviado com sucesso!
-                                </p>
-                                <p>
-                                Você receberá um email com o resultado da sua simulação.    
-                                </p>
-                            <img 
-                                src="imagens/Check-mark.png" 
-                                alt="Símbolo de Confirmação" 
-                                class="check-icon" 
-                            >
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
+            </main>
         </div>
     </div> <!--v1 shell-->
 
@@ -417,41 +403,248 @@
                                     <span class="v2-inline md:v2-hidden">&nbsp;</span> <!-- &nbsp; ocorrendo somente em desktop -->
 
                                     <span class="v2-text-xs v2-text-black/50 v2-transition-all v2-duration-300
-                                                group-hover:v2-text-white
-                                                group-aria-pressed:v2-text-white">meses</span>
-
+                                    group-hover:v2-text-white
+                                    group-aria-pressed:v2-text-white">meses</span>
+                                    
                                     <span class="v2-hidden md:v2-block"></span>
                                 </div>
-
-                                    <span class="valor-parcela v2-font-medium v2-text-xl v2-text-[#F2600B]
-                                                v2-transition-all v2-duration-300
-                                                group-hover:v2-text-white
-                                                group-aria-pressed:v2-text-white md:v2-mt-2">R$00,00</span>
+                                
+                                <span class="valor-parcela v2-font-medium v2-text-xl v2-text-[#F2600B]
+                                v2-transition-all v2-duration-300
+                                group-hover:v2-text-white
+                                group-aria-pressed:v2-text-white md:v2-mt-2">R$00,00</span>
                                 
                             </button>
-                    
-                    </div>
-
-                    <input type="hidden" name="parcelas" id="parcelas-escolhida">
-
-                    <div class="v2-w-full">
-                        <button class="v2-bg-black v2-w-full v2-rounded-[10px] v2-p-2">
+                            
+                        </div>
+                        
+                        <input type="hidden" name="parcelas" id="parcelas-escolhida">
+                        
+                        <div class="v2-w-full">
+                            <button class="v2-bg-black v2-w-full v2-rounded-[10px] v2-p-2">
                             <span class="v2-font-semibold v2-text-white v2-text-base">ANÁLISE FINAL</span>
                         </button>
                     </div>
+                </main>
+        </div>
+    </section>
+        
+        <!--FIM PAGINA SIMULAÇÃO-->
+                
+        
+    <section id="form-final" class="v2-hidden v2-wrapper v2-flex v2-flex-col v2-items-center v2-justify-center v2-w-full v2-p-6 v2-bg-[#D9D9D9] v2-min-h-screen">
+       <form id="formFinal">
+        <!--DADOS-->
+        <section id="final_dados_cliente" class="form-step is-active v2-flex v2-flex-col v2-space-y-4 v2-items-center v2-justify-center">
+                <fieldset class="v2-border-0 v2-bg-[#E0E0E0] v2-rounded-2xl v2-p-6 v2-pt-4 v2-relative">
+                    <legend class="v2-absolute v2--top-3 v2-left-6 v2-text-[#F2600B] 
+                        v2-text-base v2-font-semibold v2-leading-none v2-px-2 v2-py-0.5">
+                    Dados do Cliente
+                    </legend>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label for="nome_cliente" class="">Nome Completo:</label>
+                            <input type="text" disabled id="nome_cliente" name="nome_cliente"
+                            class="v2-border v2-border-gray-300 v2-bg-gray-100 v2-text-gray-500 v2-opacity-100 v2-rounded-2xl v2-w-full v2-visible"
+                            placeholder="">
+                        </div>
+                        <div class="v2-flex v2-w-full v2-gap-4">
+                            <div class="v2-w-1/2">
+                                <label for="cpf" class="">CPF:</label>
+                                <input type="text" id="cpf" name="cpf" class="v2-rounded-2xl v2-w-full
+                                v2-border v2-border-gray-300 v2-bg-gray-100 v2-text-gray-500 v2-opacity-100 v2-visible"
+                                placeholder="000.000.000-00" disabled>
+                            </div>
+                            <div class="v2-w-1/2">
+                                <label for="telefone" class="">Telefone:</label>
+                                <input type="tel" id="telefone" name="telefone" class="v2-rounded-2xl v2-w-full
+                                v2-border v2-border-gray-300 v2-bg-gray-100 v2-text-gray-500 v2-opacity-100 v2-visiblel" disabled>
+                            </div>
+                        </div>
 
-            </main>
+                        <div>
+                            <label for="email-cliente" class="v2-font-medium">E-Mail:</label>
+                            <input 
+                                type="email" 
+                                id="email-cliente" 
+                                name="email-cliente" 
+                                class="v2-rounded-2xl v2-w-full v2-border v2-border-gray-300 v2-bg-gray-100 v2-text-gray-500 v2-opacity-100 v2-visible" 
+                                disabled
+                            >
+                        </div>
 
+                        <div class="v2-flex v2-w-full v2-gap-4">
+                            <div class="v2-w-1/2">
+                                <label for="estado_civil" class="v2-font-medium">Estado Civil:</label>
+                                <select 
+                                id="estado_civil" 
+                                name="estado_civil" 
+                                class="v2-rounded-2xl v2-w-full" 
+                                required
+                                >
+                                <option value="">Selecione</option>
+                                <option value="Solteiro">Solteiro(a)</option>
+                                <option value="Casado">Casado(a)</option>
+                                <option value="Viúvo">Viúvo(a)</option>
+                                <option value="Divorciado">Divorciado(a)</option>
+                                <option value="União Estável">União Estável</option>
+                                </select>
+                            </div>
+
+                            <div class="v2-w-1/2">
+                                <label for="dependentes" class="v2-font-medium">Número de Dependentes Financeiros:</label>
+                                <input 
+                                type="number" 
+                                id="dependentes" 
+                                name="dependentes"
+                                class="v2-rounded-2xl v2-w-full v2-visible"
+                                placeholder=""
+                                >
+                            </div>
+                        </div>
+
+                        <div class="v2-flex v2-w-full v2-gap-4">
+
+                            <div class="v2-w-1/2">
+                                <label for="residencia" class="v2-font-medium">Tipo de Residência:</label>
+                                <select 
+                                id="residencia" 
+                                name="residencia" 
+                                class="v2-rounded-2xl v2-w-full" 
+                                required
+                                >
+                                <option value="">Selecione</option>
+                                <option value="Própria">Própria</option>
+                                <option value="Alugada">Alugada</option>
+                                <option value="Casa de Parente">Casa de Parente</option>
+                                <option value="Outro">Outro</option>
+                                </select>
+                            </div>
+
+                            <div class="v2-w-1/2">
+                                <label for="tempo_residencia" class="v2-font-medium">Tempo Morando nessa Residência:</label>
+                                <input 
+                                type="text" 
+                                id="tempo_residencia" 
+                                name="tempo_residencia"
+                                class="v2-rounded-2xl v2-w-full v2-visible"
+                                placeholder=""
+                                >
+                            </div>
+                        </div>
+
+                    </div>
+                </fieldset>
+        
+                
+            </section>
+            
+            <!--DOCUMENTOS-->
+           <section id="final-documentacao" class="v2-form-step v2-is-active v2-flex v2-flex-col v2-space-y-4 v2-items-center v2-justify-center">
+                <fieldset class="v2-border-0 v2-bg-[#E0E0E0] v2-rounded-2xl v2-p-6 v2-pt-4 v2-relative">
+                    <legend class="v2-absolute v2--top-3 v2-left-6 v2-text-[#F2600B] 
+                    v2-text-base v2-font-semibold v2-leading-none v2-px-2 v2-py-0.5">
+                    Documentação
+                    </legend>
+
+                    <div class="v2-space-y-4">
+                    <div>
+                        <label class="v2-font-medium" for="v2-file-doc-id">Documento de Identificação (de até 10 anos):</label>
+                        <input 
+                        id="v2-file-doc-id"
+                        type="file"
+                        class="v2-w-full v2-text-sm
+                                v2-text-gray-800
+                                v2-border v2-border-gray-300 v2-rounded-2xl v2-cursor-pointer
+                                v2-bg-gray-50
+                                file:v2-mr-3
+                                file:v2-py-2 file:v2-px-4
+                                file:v2-rounded-l-lg file:v2-rounded-r-none
+                                file:v2-border-0
+                                file:v2-text-sm
+                                file:v2-font-medium
+                                file:v2-bg-[#A5A3A3] file:v2-text-white
+                                hover:file:v2-bg-[#999898]"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="v2-font-medium" for="v2-file-extrato">Extrato Bancário (de até 3 meses):</label>
+                        <input 
+                        id="v2-file-extrato"
+                        type="file"
+                        class="v2-w-full v2-text-sm
+                                v2-text-gray-800
+                                v2-border v2-border-gray-300 v2-rounded-2xl v2-cursor-pointer
+                                v2-bg-gray-50
+                                file:v2-mr-3
+                                file:v2-py-2 file:v2-px-4
+                                file:v2-rounded-l-lg file:v2-rounded-r-none
+                                file:v2-border-0
+                                file:v2-text-sm
+                                file:v2-font-medium
+                                file:v2-bg-[#A5A3A3] file:v2-text-white
+                                hover:file:v2-bg-[#999898]"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="v2-font-medium" for="v2-file-residencia">Comprovante de Residência (no nome do comprador):</label>
+                        <input 
+                        id="v2-file-residencia"
+                        type="file"
+                        class="v2-w-full v2-text-sm
+                                v2-text-gray-800
+                                v2-border v2-border-gray-300 v2-rounded-2xl v2-cursor-pointer
+                                v2-bg-gray-50
+                                file:v2-mr-3
+                                file:v2-py-2 file:v2-px-4
+                                file:v2-rounded-l-lg file:v2-rounded-r-none
+                                file:v2-border-0
+                                file:v2-text-sm
+                                file:v2-font-medium
+                                file:v2-bg-[#A5A3A3] file:v2-text-white
+                                hover:file:v2-bg-[#999898]"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="v2-font-medium" for="v2-file-crlv">CRLV da Moto:</label>
+                        <input 
+                        id="v2-file-crlv"
+                        type="file"
+                        class="v2-w-full v2-text-sm
+                                v2-text-gray-800
+                                v2-border v2-border-gray-300 v2-rounded-2xl v2-cursor-pointer
+                                v2-bg-gray-50
+                                file:v2-mr-3
+                                file:v2-py-2 file:v2-px-4
+                                file:v2-rounded-l-lg file:v2-rounded-r-none
+                                file:v2-border-0
+                                file:v2-text-sm
+                                file:v2-font-medium
+                                file:v2-bg-[#A5A3A3] file:v2-text-white
+                                hover:file:v2-bg-[#999898]"
+                        >
+                    </div>
+                    </div>
+                </fieldset>
+                </section>
+
+            
+            <!--REFERENCIAS-->
+            <section id="final-referencias">
+
+            </section>
+            </form>
             <footer class="v2-text-black/50 v2-text-xs">
                 <p>
                     © 2025 MotoCred. Todos os direitos reservados.
                 </p>
             </footer>
-
-        </div>
     </section>
-    
-    <!--FIM PAGINA SIMULAÇÃO-->
+
 
 
 

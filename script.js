@@ -1582,6 +1582,96 @@ if (document.getElementById('v2-pagina-aprovado')) {
   initSimuladorV2();
 }
 
+// ============================
+// FORM FINAL - NAVEGAÇÃO E EXIBIÇÃO
+// ============================
+window.addEventListener('DOMContentLoaded', () => {
+  const btnAnaliseFinal = document.getElementById('btn-analise-final');
+  const formFinalSection = document.getElementById('form-final');
+  const aprovadoPage = document.getElementById('v2-pagina-aprovado');
+
+  const steps = ['final-dados-cliente', 'final-documentacao', 'final-referencias'];
+  let current = 0;
+
+  function showStep(i) {
+    steps.forEach((id, idx) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.toggle('v2-hidden', idx !== i);
+      el.classList.toggle('v2-is-active', idx === i);
+    });
+
+    document.getElementById('final-voltar').style.visibility = i === 0 ? 'hidden' : 'visible';
+    document.getElementById('final-proximo').textContent = i === steps.length - 1 ? 'Enviar' : 'Próximo';
+    localStorage.setItem('formFinalStep', i);
+  }
+
+  function openFormFinal() {
+    if (aprovadoPage) aprovadoPage.classList.add('v2-hidden');
+    if (formFinalSection) {
+      formFinalSection.classList.remove('v2-hidden');
+      localStorage.setItem('formFinalAtivo', 'true');
+      showStep(0);
+    }
+  }
+
+  document.getElementById('final-proximo')?.addEventListener('click', () => {
+    if (current < steps.length - 1) {
+      current++;
+      showStep(current);
+    } else {
+      alert('✅ Enviar para planilha (implementação futura)');
+    }
+  });
+
+  document.getElementById('final-voltar')?.addEventListener('click', () => {
+    if (current > 0) {
+      current--;
+      showStep(current);
+    }
+  });
+
+  if (btnAnaliseFinal) {
+    btnAnaliseFinal.addEventListener('click', openFormFinal);
+  }
+
+  // Restaura se estava aberto
+  if (localStorage.getItem('formFinalAtivo') === 'true') {
+    aprovadoPage?.classList.add('v2-hidden');
+    formFinalSection?.classList.remove('v2-hidden');
+    const saved = parseInt(localStorage.getItem('formFinalStep') || '0');
+    current = isNaN(saved) ? 0 : saved;
+    showStep(current);
+  }
+});
+
+// ==========================================
+// 🔁 PERSISTÊNCIA DA TELA ATUAL (Simulação / Negado)
+// ==========================================
+window.addEventListener('beforeunload', () => {
+  // guarda qual tela V2 está ativa no momento
+  const ativo =
+    !document.getElementById('v2-pagina-aprovado')?.classList.contains('v2-hidden')
+      ? 'v2-pagina-aprovado'
+      : !document.getElementById('v2-pagina-negado')?.classList.contains('v2-hidden')
+        ? 'v2-pagina-negado'
+        : null;
+
+  if (ativo) {
+    localStorage.setItem('v2TelaAtiva', ativo);
+  } else {
+    localStorage.removeItem('v2TelaAtiva');
+  }
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  const ultima = localStorage.getItem('v2TelaAtiva');
+  if (ultima === 'v2-pagina-aprovado' || ultima === 'v2-pagina-negado') {
+    // reabre diretamente a tela que estava visível
+    openV2AsPage(ultima);
+  }
+});
+
 
 
 })(); // 🛑 FIM DA IIFE GERAL (FINAL DO ARQUIVO)
