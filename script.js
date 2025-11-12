@@ -1581,16 +1581,15 @@ botoesParcelas.forEach(btn => {
 if (document.getElementById('v2-pagina-aprovado')) {
   initSimuladorV2();
 }
-
 // ============================
-// FORM FINAL - NAVEGAÇÃO E EXIBIÇÃO
+// FORM FINAL - NAVEGAÇÃO E EXIBIÇÃO (com persistência)
 // ============================
 window.addEventListener('DOMContentLoaded', () => {
   const btnAnaliseFinal = document.getElementById('btn-analise-final');
   const formFinalSection = document.getElementById('form-final');
   const aprovadoPage = document.getElementById('v2-pagina-aprovado');
 
-  const steps = ['final-dados-cliente', 'final-documentacao', 'final-referencias'];
+  const steps = ['final_dados_cliente', 'final-documentacao', 'final-referencias'];
   let current = 0;
 
   function showStep(i) {
@@ -1601,20 +1600,40 @@ window.addEventListener('DOMContentLoaded', () => {
       el.classList.toggle('v2-is-active', idx === i);
     });
 
-    document.getElementById('final-voltar').style.visibility = i === 0 ? 'hidden' : 'visible';
-    document.getElementById('final-proximo').textContent = i === steps.length - 1 ? 'Enviar' : 'Próximo';
     localStorage.setItem('formFinalStep', i);
   }
 
-  function openFormFinal() {
+function openFormFinal() {
+    const v1Shell = document.querySelector('.v1-shell');
+    if (v1Shell) v1Shell.classList.add('v2-hidden'); // 🔒 esconde o formulário inicial
+
     if (aprovadoPage) aprovadoPage.classList.add('v2-hidden');
     if (formFinalSection) {
-      formFinalSection.classList.remove('v2-hidden');
-      localStorage.setItem('formFinalAtivo', 'true');
-      showStep(0);
+        formFinalSection.classList.remove('v2-hidden');
+        localStorage.setItem('formFinalAtivo', 'true');
+        localStorage.removeItem('v2TelaAtiva'); // impede voltar à simulação
+        showStep(0);
     }
+}
+
+
+  if (btnAnaliseFinal) {
+    btnAnaliseFinal.addEventListener('click', openFormFinal);
   }
 
+  // 🔁 Persistência ao atualizar a página
+  const ativo = localStorage.getItem('formFinalAtivo') === 'true';
+  if (ativo) {
+    // Se estava aberto, volta direto pra ele
+    aprovadoPage?.classList.add('v2-hidden');
+    formFinalSection?.classList.remove('v2-hidden');
+    document.querySelector('.v1-shell')?.classList.add('v2-hidden');
+    const savedStep = parseInt(localStorage.getItem('formFinalStep') || '0');
+    current = isNaN(savedStep) ? 0 : savedStep;
+    showStep(current);
+  }
+
+  // Atualiza o passo manualmente
   document.getElementById('final-proximo')?.addEventListener('click', () => {
     if (current < steps.length - 1) {
       current++;
@@ -1630,19 +1649,6 @@ window.addEventListener('DOMContentLoaded', () => {
       showStep(current);
     }
   });
-
-  if (btnAnaliseFinal) {
-    btnAnaliseFinal.addEventListener('click', openFormFinal);
-  }
-
-  // Restaura se estava aberto
-  if (localStorage.getItem('formFinalAtivo') === 'true') {
-    aprovadoPage?.classList.add('v2-hidden');
-    formFinalSection?.classList.remove('v2-hidden');
-    const saved = parseInt(localStorage.getItem('formFinalStep') || '0');
-    current = isNaN(saved) ? 0 : saved;
-    showStep(current);
-  }
 });
 
 // ==========================================
