@@ -1630,6 +1630,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const active = id === stepId;
       section.classList.toggle('v2-hidden', !active);
       section.classList.toggle('v2-is-active', active);
+      section.classList.toggle('is-active', active);
     });
   };
 
@@ -1712,6 +1713,7 @@ const btnNext = document.querySelector('#form-final .nav-next');
       const active = el.id === stepId;
       el.classList.toggle('v2-hidden', !active);
       el.classList.toggle('v2-is-active', active);
+      el.classList.toggle('is-active', active);
     });
     localStorage.setItem('formFinalStep', stepId);
     const idx = stepOrder.indexOf(stepId);
