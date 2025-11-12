@@ -536,7 +536,7 @@ body.v2-mode {
 #form-final select,
 #form-final textarea {
   border: 1px solid #d1d5db !important;  /* igual v2-border-gray-300 */
-  background-color: #f9fafb !important;  /* igual v2-bg-gray-50 */
+  background-color: #fff !important;  /* igual v2-bg-gray-50 */
   color: #111827 !important;             /* igual v2-text-gray-800 */
   border-radius: 1rem !important;
   font-size: 0.95rem !important;
