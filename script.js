@@ -41,6 +41,35 @@ function openV2AsPage(sectionId) {
   }
 }
 
+const FLOW_STAGE_KEY = 'motocredFlowStage';
+const FLOW_STAGES = {
+  FORMULARIO_INICIAL: 'formulario_inicial',
+  SIMULACAO: 'simulacao',
+  FORMULARIO_FINAL: 'formulario_final'
+};
+const FINAL_STEP_IDS = [
+  'final_dados_cliente',
+  'final_documentacao',
+  'final_referencias'
+];
+
+function setFlowStage(stage) {
+  try {
+    localStorage.setItem(FLOW_STAGE_KEY, stage);
+  } catch (err) {
+    console.warn('[Flow] Falha ao salvar est�gio', err);
+  }
+}
+
+function getFlowStage() {
+  try {
+    return localStorage.getItem(FLOW_STAGE_KEY) || FLOW_STAGES.FORMULARIO_INICIAL;
+  } catch (err) {
+    console.warn('[Flow] Falha ao ler est�gio', err);
+    return FLOW_STAGES.FORMULARIO_INICIAL;
+  }
+}
+
 //MODO DEV
 /*
 window.addEventListener('DOMContentLoaded', () => {
@@ -53,6 +82,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
 (function () {
     console.log('[PPA] Script carregado. Versão:', new Date().toISOString());
+
+    if (!localStorage.getItem(FLOW_STAGE_KEY)) {
+        setFlowStage(FLOW_STAGES.FORMULARIO_INICIAL);
+    }
 
     function loadPPA() {
         try {
@@ -1119,6 +1152,9 @@ veEl?.addEventListener('input', commitPPA);
             if (result && result.ok) {
                 // Sucesso no envio abre a etapa de sucesso
                 setInitialPPA(valorMoto, entrada);
+                localStorage.setItem('v2TelaAtiva', 'v2-pagina-aprovado');
+                localStorage.removeItem('formFinalAtivo');
+                setFlowStage(FLOW_STAGES.SIMULACAO);
                 openV2AsPage('v2-pagina-aprovado');
     
             } else {
@@ -1586,70 +1622,52 @@ if (document.getElementById('v2-pagina-aprovado')) {
 // ============================
 window.addEventListener('DOMContentLoaded', () => {
   const btnAnaliseFinal = document.getElementById('btn-analise-final');
-  const formFinalSection = document.getElementById('form-final');
-  const aprovadoPage = document.getElementById('v2-pagina-aprovado');
 
-  const steps = ['final_dados_cliente', 'final-documentacao', 'final-referencias'];
-  let current = 0;
-
-  function showStep(i) {
-    steps.forEach((id, idx) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.classList.toggle('v2-hidden', idx !== i);
-      el.classList.toggle('v2-is-active', idx === i);
+  const ensureFinalStepVisible = (stepId) => {
+    FINAL_STEP_IDS.forEach((id) => {
+      const section = document.getElementById(id);
+      if (!section) return;
+      const active = id === stepId;
+      section.classList.toggle('v2-hidden', !active);
+      section.classList.toggle('v2-is-active', active);
     });
+  };
 
-    localStorage.setItem('formFinalStep', i);
+  function openFormFinal(options = {}) {
+    const { restoreStep = false } = options;
+    const v1Shell = document.querySelector('.v1-shell');
+    const formFinalSection = document.getElementById('form-final');
+    const aprovadoPage = document.getElementById('v2-pagina-aprovado');
+    const negadoPage = document.getElementById('v2-pagina-negado');
+
+    v1Shell?.classList.add('v2-hidden');
+    aprovadoPage?.classList.add('v2-hidden');
+    negadoPage?.classList.add('v2-hidden');
+
+    if (formFinalSection) {
+      formFinalSection.classList.remove('v2-hidden');
+      localStorage.setItem('formFinalAtivo', 'true');
+      localStorage.removeItem('v2TelaAtiva');
+      setFlowStage(FLOW_STAGES.FORMULARIO_FINAL);
+
+      let targetStepId = localStorage.getItem('formFinalStep');
+      if (!restoreStep || !FINAL_STEP_IDS.includes(targetStepId)) {
+        targetStepId = FINAL_STEP_IDS[0];
+        localStorage.setItem('formFinalStep', targetStepId);
+      }
+
+      ensureFinalStepVisible(targetStepId);
+    }
   }
 
-function openFormFinal() {
-    const v1Shell = document.querySelector('.v1-shell');
-    if (v1Shell) v1Shell.classList.add('v2-hidden'); // 🔒 esconde o formulário inicial
-
-    if (aprovadoPage) aprovadoPage.classList.add('v2-hidden');
-    if (formFinalSection) {
-        formFinalSection.classList.remove('v2-hidden');
-        localStorage.setItem('formFinalAtivo', 'true');
-        localStorage.removeItem('v2TelaAtiva'); // impede voltar à simulação
-        showStep(0);
-    }
-}
-
+  window.MotoCredFlow = window.MotoCredFlow || {};
+  window.MotoCredFlow.openFormFinal = openFormFinal;
 
   if (btnAnaliseFinal) {
-    btnAnaliseFinal.addEventListener('click', openFormFinal);
+    btnAnaliseFinal.addEventListener('click', () => openFormFinal({ restoreStep: false }));
   }
-
-  // 🔁 Persistência ao atualizar a página
-  const ativo = localStorage.getItem('formFinalAtivo') === 'true';
-  if (ativo) {
-    // Se estava aberto, volta direto pra ele
-    aprovadoPage?.classList.add('v2-hidden');
-    formFinalSection?.classList.remove('v2-hidden');
-    document.querySelector('.v1-shell')?.classList.add('v2-hidden');
-    const savedStep = parseInt(localStorage.getItem('formFinalStep') || '0');
-    current = isNaN(savedStep) ? 0 : savedStep;
-    showStep(current);
-  }
-
-  // Atualiza o passo manualmente
-  document.getElementById('final-proximo')?.addEventListener('click', () => {
-    if (current < steps.length - 1) {
-      current++;
-      showStep(current);
-    } else {
-      alert('✅ Enviar para planilha (implementação futura)');
-    }
-  });
-
-  document.getElementById('final-voltar')?.addEventListener('click', () => {
-    if (current > 0) {
-      current--;
-      showStep(current);
-    }
-  });
 });
+
 
 // ==========================================
 // 🔁 PERSISTÊNCIA DA TELA ATUAL (Simulação / Negado)
@@ -1670,14 +1688,100 @@ window.addEventListener('beforeunload', () => {
   }
 });
 
+// ============================
+// FORM FINAL - NAVEGAÇÃO ENTRE ETAPAS INTERNAS (por ID)
+// ============================
 window.addEventListener('DOMContentLoaded', () => {
-  const ultima = localStorage.getItem('v2TelaAtiva');
-  if (ultima === 'v2-pagina-aprovado' || ultima === 'v2-pagina-negado') {
-    // reabre diretamente a tela que estava visível
-    openV2AsPage(ultima);
+  const formFinal = document.getElementById('formFinal');
+  if (!formFinal) return;
+
+  // ordem explícita das seções
+  const stepOrder = FINAL_STEP_IDS.slice();
+
+  // cache dos elementos
+  const steps = stepOrder.map(id => document.getElementById(id)).filter(Boolean);
+const btnPrev = document.querySelector('#form-final .nav-prev');
+const btnNext = document.querySelector('#form-final .nav-next');
+
+  let currentStep = 0;
+
+  function showStepById(stepId) {
+    steps.forEach(el => {
+      const active = el.id === stepId;
+      el.classList.toggle('v2-hidden', !active);
+      el.classList.toggle('v2-is-active', active);
+    });
+    localStorage.setItem('formFinalStep', stepId);
+    const idx = stepOrder.indexOf(stepId);
+    btnPrev.disabled = idx <= 0;
+    btnNext.textContent = idx === stepOrder.length - 1 ? 'Enviar' : 'Próximo';
   }
+
+  function goToStep(index) {
+    index = Math.max(0, Math.min(index, stepOrder.length - 1));
+    const targetId = stepOrder[index];
+    if (targetId) showStepById(targetId);
+    currentStep = index;
+  }
+
+  // 🔁 restaura etapa salva
+  const savedId = localStorage.getItem('formFinalStep');
+  const startIndex = savedId ? stepOrder.indexOf(savedId) : 0;
+  goToStep(startIndex >= 0 ? startIndex : 0);
+
+  // eventos dos botões
+  btnNext?.addEventListener('click', () => {
+    if (currentStep < stepOrder.length - 1) {
+      goToStep(currentStep + 1);
+    } else {
+      alert('✅ Enviar formulário final (implementação futura)');
+      // aqui depois envia para planilha ou backend
+    }
+  });
+
+  btnPrev?.addEventListener('click', () => {
+    if (currentStep > 0) {
+      goToStep(currentStep - 1);
+    }
+  });
 });
 
 
 
+
+window.addEventListener('DOMContentLoaded', () => {
+  const stage = getFlowStage();
+  const ultimaTela = localStorage.getItem('v2TelaAtiva');
+  const ensureFinalRestored = () => {
+    if (window.MotoCredFlow?.openFormFinal) {
+      window.MotoCredFlow.openFormFinal({ restoreStep: true });
+    } else {
+      setTimeout(ensureFinalRestored, 150);
+    }
+  };
+
+  if (stage === FLOW_STAGES.SIMULACAO) {
+    if (ultimaTela === 'v2-pagina-aprovado' || ultimaTela === 'v2-pagina-negado') {
+      openV2AsPage(ultimaTela);
+    } else {
+      setFlowStage(FLOW_STAGES.FORMULARIO_INICIAL);
+    }
+  } else if (stage === FLOW_STAGES.FORMULARIO_FINAL || localStorage.getItem('formFinalAtivo') === 'true') {
+    ensureFinalRestored();
+  } else {
+    const v1Shell = document.querySelector('.v1-shell');
+    v1Shell?.classList.remove('v2-hidden');
+    const mainCard = document.querySelector('.card');
+    if (mainCard) mainCard.style.display = '';
+    document.getElementById('v2-pagina-aprovado')?.classList.add('v2-hidden');
+    document.getElementById('v2-pagina-negado')?.classList.add('v2-hidden');
+    document.getElementById('form-final')?.classList.add('v2-hidden');
+    localStorage.removeItem('formFinalAtivo');
+    localStorage.removeItem('v2TelaAtiva');
+    setFlowStage(FLOW_STAGES.FORMULARIO_INICIAL);
+  }
+});
+
+
 })(); // 🛑 FIM DA IIFE GERAL (FINAL DO ARQUIVO)
+
