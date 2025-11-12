@@ -509,14 +509,21 @@ input.v2-range::-moz-range-thumb {
 /* 🔧 Correção: restabelece o escopo visual da V2 (Form Final)   */
 /* ============================================================= */
 
+body.v2-mode {
+  background-color: #D9D9D9 !important;
+}
+
 #form-final.v2-wrapper {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
+  position: relative;         /* ❌ não fixo */
+  min-height: 100vh;          /* altura mínima da viewport */
   background-color: #D9D9D9 !important;
   font-family: Inter, system-ui, sans-serif !important;
   color: #111 !important;
+  overflow-y: auto !important; /* ✅ permite rolagem */
+  overflow-x: hidden !important;
+  z-index: 1; /* só pra manter acima do fundo */
 }
+
 
 /* Força o Tailwind prefixado (v2-) a prevalecer dentro do form */
 #form-final.v2-wrapper * {

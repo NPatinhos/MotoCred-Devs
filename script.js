@@ -1634,6 +1634,8 @@ window.addEventListener('DOMContentLoaded', () => {
   };
 
   function openFormFinal(options = {}) {
+    document.body.classList.add('v2-mode');
+    document.body.classList.remove('bg-brand');
     const { restoreStep = false } = options;
     const v1Shell = document.querySelector('.v1-shell');
     const formFinalSection = document.getElementById('form-final');
