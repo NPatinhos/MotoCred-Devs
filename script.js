@@ -52,6 +52,7 @@ const FINAL_STEP_IDS = [
   'final_documentacao',
   'final_referencias'
 ];
+const FINAL_FORM_STORAGE_KEY = 'formFinalData';
 
 function setFlowStage(stage) {
   try {
@@ -1324,10 +1325,7 @@ window.addEventListener('ppa:changed', (e) => {
 
   // respeita o “teto” (max financiado permitido no primeiro cálculo)
   const finInit = Math.max(0, total - entrada);
-  if (typeof MAX_FINANCIADO_PERMITIDO !== 'undefined' && finInit > MAX_FINANCIADO_PERMITIDO) {
-    // puxa 'total' ou 'entrada' para respeitar o teto
-    total = entrada + MAX_FINANCIADO_PERMITIDO;
-  }
+  MAX_FINANCIADO_PERMITIDO = finInit;
 
   updateFinanceiro('init');
 });
@@ -1401,7 +1399,7 @@ botoesParcelas.forEach(btn => {
   const totalPPA = Number(window.PPA?.total ?? rTotal.value);
   const entradaPPA = Number(window.PPA?.entrada ?? rEntrada.value);
   const financiadoInicialPPA = Math.max(0, totalPPA - entradaPPA);
-  const MAX_FINANCIADO_PERMITIDO = financiadoInicialPPA;
+  let MAX_FINANCIADO_PERMITIDO = financiadoInicialPPA;
 
   // --- Variáveis de Estado ---
   let total = totalPPA;
@@ -1608,6 +1606,7 @@ botoesParcelas.forEach(btn => {
   // --- Inicialização ---
   clampInitialValues(); 
   updateFinanceiro('init'); // Roda 1x para definir os valores de 'total', 'entrada' e 'financiado'
+  console.log('[Simulador] Inicio', { total, entrada, financiado, teto: MAX_FINANCIADO_PERMITIDO });
   
   // !! MUDANÇA !!
   // Chama a API Serasa (1x) e mostra os botões corretos
@@ -1622,6 +1621,24 @@ if (document.getElementById('v2-pagina-aprovado')) {
 // ============================
 window.addEventListener('DOMContentLoaded', () => {
   const btnAnaliseFinal = document.getElementById('btn-analise-final');
+  const finalTabs = Array.from(document.querySelectorAll('.final-step-tab'));
+
+  const populateFinalPlaceholders = () => {
+    const pairs = [
+      { source: '#nome_cliente', target: '#final_nome_cliente' },
+      { source: '#cpf', target: '#final_cpf' },
+      { source: '#telefone', target: '#final_telefone' },
+      { source: '#email_cliente', target: '#final_email_cliente' }
+    ];
+
+    pairs.forEach(({ source, target }) => {
+      const sourceEl = document.querySelector(source);
+      const targetEl = document.querySelector(target);
+      if (!targetEl) return;
+      const value = sourceEl?.value?.trim() ?? '';
+      targetEl.placeholder = value || '';
+    });
+  };
 
   const ensureFinalStepVisible = (stepId) => {
     FINAL_STEP_IDS.forEach((id) => {
@@ -1660,11 +1677,22 @@ window.addEventListener('DOMContentLoaded', () => {
       }
 
       ensureFinalStepVisible(targetStepId);
+      populateFinalPlaceholders();
+      window.MotoCredFlow?.restoreFinalFormData?.();
+      document.dispatchEvent(new CustomEvent('finalStepJump', { detail: targetStepId }));
     }
   }
 
   window.MotoCredFlow = window.MotoCredFlow || {};
   window.MotoCredFlow.openFormFinal = openFormFinal;
+
+  finalTabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const targetStepId = tab.dataset.finalStep;
+      if (!targetStepId || tab.disabled) return;
+      document.dispatchEvent(new CustomEvent('finalStepTabRequest', { detail: targetStepId }));
+    });
+  });
 
   if (btnAnaliseFinal) {
     btnAnaliseFinal.addEventListener('click', () => openFormFinal({ restoreStep: false }));
@@ -1698,6 +1726,68 @@ window.addEventListener('DOMContentLoaded', () => {
   const formFinal = document.getElementById('formFinal');
   if (!formFinal) return;
 
+  const persistableFields = Array.from(formFinal.querySelectorAll('input, select, textarea'))
+    .filter((field) => field.name && !field.disabled && field.type !== 'file');
+
+  const saveFinalFormData = () => {
+    const data = {};
+    persistableFields.forEach((field) => {
+      if (field.type === 'checkbox') {
+        data[field.name] = field.checked;
+      } else if (field.type === 'radio') {
+        if (field.checked) {
+          data[field.name] = field.value;
+        } else if (!(field.name in data)) {
+          data[field.name] = null;
+        }
+      } else {
+        data[field.name] = field.value;
+      }
+    });
+    try {
+      localStorage.setItem(FINAL_FORM_STORAGE_KEY, JSON.stringify(data));
+    } catch (err) {
+      console.warn('[FormFinal] Falha ao salvar dados', err);
+    }
+  };
+
+  const restoreFinalFormData = () => {
+    try {
+      const stored = localStorage.getItem(FINAL_FORM_STORAGE_KEY);
+      if (!stored) return;
+      const data = JSON.parse(stored);
+      if (!data || typeof data !== 'object') return;
+
+      persistableFields.forEach((field) => {
+        const storedValue = data[field.name];
+        if (storedValue === undefined || storedValue === null) {
+          if (field.type === 'checkbox' || field.type === 'radio') {
+            field.checked = false;
+          } else {
+            field.value = '';
+          }
+          return;
+        }
+
+        if (field.type === 'checkbox') {
+          field.checked = Boolean(storedValue);
+        } else if (field.type === 'radio') {
+          field.checked = field.value === storedValue;
+        } else {
+          field.value = storedValue;
+        }
+      });
+    } catch (err) {
+      console.warn('[FormFinal] Falha ao restaurar dados', err);
+    }
+  };
+
+  const finalTabs = Array.from(document.querySelectorAll('.final-step-tab'));
+  const finalStepLabel = document.querySelector('.final-step-current-label');
+
+  window.MotoCredFlow = window.MotoCredFlow || {};
+  window.MotoCredFlow.restoreFinalFormData = restoreFinalFormData;
+
   // ordem explícita das seções
   const stepOrder = FINAL_STEP_IDS.slice();
 
@@ -1707,6 +1797,25 @@ const btnPrev = document.querySelector('#form-final .nav-prev');
 const btnNext = document.querySelector('#form-final .nav-next');
 
   let currentStep = 0;
+  let finalMaxStep = 0;
+
+  const updateFinalStepperUI = () => {
+    finalTabs.forEach((tab, idx) => {
+      const isActive = idx === currentStep;
+      const isComplete = idx < finalMaxStep;
+      const enabled = idx <= finalMaxStep;
+      tab.classList.toggle('is-active', isActive);
+      tab.classList.toggle('is-complete', isComplete && !isActive);
+      tab.disabled = !enabled;
+      tab.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+      tab.tabIndex = enabled ? 0 : -1;
+    });
+
+    if (finalStepLabel) {
+      const activeTab = finalTabs[currentStep];
+      finalStepLabel.textContent = activeTab?.dataset.label || activeTab?.getAttribute('aria-label') || '';
+    }
+  };
 
   function showStepById(stepId) {
     steps.forEach(el => {
@@ -1726,6 +1835,8 @@ const btnNext = document.querySelector('#form-final .nav-next');
     const targetId = stepOrder[index];
     if (targetId) showStepById(targetId);
     currentStep = index;
+    finalMaxStep = Math.max(finalMaxStep, currentStep);
+    updateFinalStepperUI();
   }
 
   // 🔁 restaura etapa salva
@@ -1733,8 +1844,35 @@ const btnNext = document.querySelector('#form-final .nav-next');
   const startIndex = savedId ? stepOrder.indexOf(savedId) : 0;
   goToStep(startIndex >= 0 ? startIndex : 0);
 
+  function validateFinalStep(stepId) {
+    const stepEl = document.getElementById(stepId);
+    if (!stepEl) return true;
+    const fields = Array.from(stepEl.querySelectorAll('input, select, textarea'))
+      .filter((field) => !field.disabled);
+
+    for (const field of fields) {
+      if (!field.checkValidity()) {
+        field.reportValidity();
+        field.focus({ preventScroll: false });
+        return false;
+      }
+    }
+    return true;
+  }
+
+  persistableFields.forEach((field) => {
+    const eventName =
+      field.type === 'checkbox' || field.type === 'radio' ? 'change' : 'input';
+    field.addEventListener(eventName, saveFinalFormData);
+  });
+
+  restoreFinalFormData();
+
   // eventos dos botões
   btnNext?.addEventListener('click', () => {
+    const currentStepId = stepOrder[currentStep];
+    if (!validateFinalStep(currentStepId)) return;
+
     if (currentStep < stepOrder.length - 1) {
       goToStep(currentStep + 1);
     } else {
@@ -1746,6 +1884,22 @@ const btnNext = document.querySelector('#form-final .nav-next');
   btnPrev?.addEventListener('click', () => {
     if (currentStep > 0) {
       goToStep(currentStep - 1);
+    }
+  });
+
+  document.addEventListener('finalStepTabRequest', (event) => {
+    const targetId = event.detail;
+    const targetIndex = stepOrder.indexOf(targetId);
+    if (targetIndex >= 0 && targetIndex <= finalMaxStep) {
+      goToStep(targetIndex);
+    }
+  });
+
+  document.addEventListener('finalStepJump', (event) => {
+    const targetId = event.detail;
+    const targetIndex = stepOrder.indexOf(targetId);
+    if (targetIndex >= 0) {
+      goToStep(targetIndex);
     }
   });
 });

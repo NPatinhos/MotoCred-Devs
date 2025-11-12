@@ -399,72 +399,72 @@ body.confirmado #tela_confirmacao {
       /* Isso garante que a cor do texto seja a cor principal do seu site. */
       @apply text-brand;
   }
-
+  
   /* Em styles.css - Adicione esta nova regra */
-
+  
   /* Altera a cor do texto padrão (não-selecionado) APENAS nos botões Comprador/Vendedor */
   /* O seletor mira o span.radio-pill dentro da primeira etapa do formulário. */
   .form-steps .form-step[data-step="1"] .radio-pill {
       /* Aplica a cor da marca (text-brand) ao texto do botão, por padrão. */
       @apply text-brand;
-  }
+    }
 
-  .form-steps .form-step[data-step="1"] .radio-pill.radio-pill-checked { 
-    @apply text-white; /* ESPECIFICIDADE MÁXIMA */
+    .form-steps .form-step[data-step="1"] .radio-pill.radio-pill-checked { 
+      @apply text-white; /* ESPECIFICIDADE MÁXIMA */
 }
 
-  #dados-venda {
-    background-color: #f5f2f0; /* ou o mesmo fundo escuro que você já usa */
-    border-radius: 1rem;
-    /*padding: 1.5rem;*/
-    position: relative;
-  }
+#dados-venda {
+  background-color: #f5f2f0; /* ou o mesmo fundo escuro que você já usa */
+  border-radius: 1rem;
+  /*padding: 1.5rem;*/
+  position: relative;
+}
 
-  #erro_dados_venda {
-    animation: aparecerErro 0.3s ease;
-  }
+#erro_dados_venda {
+  animation: aparecerErro 0.3s ease;
+}
 
 
 /* WRAPPER PARA TIRAR DESIGN DO BODY NA V2*/
 /* no final do styles.css */
-  /* no final do styles.css */
-  .v2-wrapper {
-    display: block;
+/* no final do styles.css */
+.v2-wrapper {
+  display: block;
     font-family: Inter, system-ui, sans-serif;
     color: #111 !important;
   }
   .v2-wrapper, .v2-wrapper * { box-sizing: border-box; }
   .v2-wrapper h1, .v2-wrapper h2, .v2-wrapper h3, .v2-wrapper h4 { color: inherit; }
-
-
+  
+  
   /* Quando o body estiver em modo V2, zera o estilo global dele */
-body.v2-mode {
-  background: transparent !important;
-  color: initial !important;
-  padding: 0 !important;
-  display: block !important;
-}
-
-/* ========= Range V2 (puro CSS) ========= */
-/* Base */
-input.v2-range {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  background: transparent;
-  cursor: pointer;
-}
-input.v2-range:focus { outline: none; }
-
-/* WebKit (Chrome/Edge/Safari) */
-input.v2-range::-webkit-slider-runnable-track {
-  height: 7px;
+  body.v2-mode {
+    background: transparent !important;
+    color: initial !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+  
+  /* ========= Range V2 (puro CSS) ========= */
+  /* Base */
+  input.v2-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    background: transparent;
+    cursor: pointer;
+  }
+  input.v2-range:focus { outline: none; }
+  
+  /* WebKit (Chrome/Edge/Safari) */
+  input.v2-range::-webkit-slider-runnable-track {
+    height: 7px;
   border-radius: 9999px;
   background: linear-gradient(to right,
     #000 var(--pct, 0%),
     #D1D5DB var(--pct, 0%)
-  );
-}
+    );
+  }
 input.v2-range::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 18px;
@@ -576,6 +576,68 @@ body.v2-mode {
   text-align: center;
 }
 
+  /* ================================ */
+  /* FORM FINAL - BARRA DE ETAPAS     */
+  /* ================================ */
+  #form-final .final-stepper {
+    @apply w-full flex justify-center items-center gap-3 mt-6 mb-3;
+  }
+
+  .final-step-tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 6px;
+    border-radius: 999px;
+    background-color: #c7c7c7 !important;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    appearance: none;
+    overflow: hidden;
+    position: relative;
+    opacity: 1;
+  }
+
+  .final-step-tab span {
+    display: none;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    color: #fff;
+  }
+
+  .final-step-tab.is-active {
+    min-width: 140px;
+    height: 36px;
+    padding: 0 20px;
+    border-radius: 999px;
+    background-color: #000 !important;
+  }
+
+  .final-step-tab.is-complete {
+    background-color: #000 !important;
+  }
+
+  .final-step-tab.is-complete span{
+    display: none !important;
+  }
+  .final-step-tab.is-active span,
+  .final-step-tab.is-complete span {
+    display: inline;
+  }
+
+  .final-step-tab[aria-disabled="true"] {
+    opacity: 0.3;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  #form-final .final-step-current-label {
+    @apply block text-center font-semibold text-[#1f1f1f] mb-4;
+  }
 
 
 
