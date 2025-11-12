@@ -561,15 +561,21 @@ body.v2-mode {
   border-radius: 0.25rem;
 }
 
-#form-final.nav-prev{
-  background-color: white !important;
-  text-color: black !important
+#form-final .nav-prev {
+  background-color: #fff !important;
+  color: #000 !important;
+  border-color: #000 !important;
+}
 
+#form-final .nav-next {
+  background-color: #000 !important;
+  color: #fff !important;
 }
-#form-final.nav-next{
-  background-color: black !important;
-  
+
+#form-final footer p {
+  text-align: center;
 }
+
 
 
 
