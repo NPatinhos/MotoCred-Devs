@@ -547,7 +547,6 @@ body.v2-mode {
 #form-final select[disabled],
 #form-final textarea[disabled] {
   background-color: #EBEBEB !important;
-  color: #6b7280 !important;
   opacity: 1 !important;
 }
 
@@ -630,7 +629,6 @@ body.v2-mode {
   }
 
   .final-step-tab[aria-disabled="true"] {
-    opacity: 0.3;
     cursor: default;
     pointer-events: none;
   }
