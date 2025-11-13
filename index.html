@@ -155,7 +155,7 @@
                         </section>
                     </div>
 
-                    <div class="form-navigation">
+                    <div class="form-navigation ">
                         <button type="button" class="btn-secondary nav-prev" aria-label="Voltar para a etapa anterior" disabled>Voltar</button>
                         <div class="nav-button-group">
                             <button type="button" class="btn-primary nav-next" aria-label="Avançar para a próxima etapa">Próximo</button>
@@ -462,6 +462,7 @@
                 
                 
         <form id="formFinal" class="v2-w-full v2-space-y-6">
+            <input type="hidden" name="submission_id" id="final_submission_id">
             <!--DADOS-->
             <section id="final_dados_cliente" class="v2-hidden form-step v2-flex v2-flex-col v2-space-y-4 v2-items-center v2-justify-center ">
                         
@@ -588,7 +589,9 @@
                             <label class="v2-font-medium" for="v2-file-doc-id">Documento de Identificação (de até 10 anos):</label>
                             <input 
                             id="v2-file-doc-id"
+                            name="file-doc-id"
                             type="file"
+                            accept="application/pdf"
                             class="v2-w-full v2-text-sm
                             v2-text-gray-800
                             v2-border v2-border-gray-300 v2-rounded-2xl v2-cursor-pointer
@@ -608,7 +611,9 @@
                             <label class="v2-font-medium" for="v2-file-extrato">Extrato Bancário (de até 3 meses):</label>
                             <input 
                             id="v2-file-extrato"
+                            name="file-extrato"
                             type="file"
+                            accept="application/pdf"
                             class="v2-w-full v2-text-sm
                             v2-text-gray-800
                             v2-border v2-border-gray-300 v2-rounded-2xl v2-cursor-pointer
@@ -628,7 +633,9 @@
                             <label class="v2-font-medium" for="v2-file-residencia">Comprovante de Residência (no nome do comprador):</label>
                             <input 
                             id="v2-file-residencia"
+                            name="file-residencia"
                             type="file"
+                            accept="application/pdf"
                             class="v2-w-full v2-text-sm
                             v2-text-gray-800
                             v2-border v2-border-gray-300 v2-rounded-2xl v2-cursor-pointer
@@ -648,7 +655,9 @@
                             <label class="v2-font-medium" for="v2-file-crlv">CRLV da Moto:</label>
                             <input 
                             id="v2-file-crlv"
+                            name="file-crlv"
                             type="file"
+                            accept="application/pdf"
                             class="v2-w-full v2-text-sm
                             v2-text-gray-800
                             v2-border v2-border-gray-300 v2-rounded-2xl v2-cursor-pointer
