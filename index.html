@@ -249,6 +249,13 @@
                 <h1 class="v2-text-2xl v2-font-medium v2-text-[#F2600B] v2-text-center">Simulação de Financiamento</h1>          
             </header> 
 
+            <!--ALERTA 50%-->
+            <div id="alert-entrada-50" class="entrada-alert v2-hidden" role="status" aria-live="assertive">
+                <div class="entrada-alert__title">Entrada de 50%</div>
+                <p class="entrada-alert__text">Este cliente foi aprovado apenas com entrada mínima de 50%. Ajuste a proposta antes de enviar.</p>
+            </div>ws
+            
+
             <main class="v2-flex v2-flex-col v2-items-left v2-space-y-16 v2-w-full v2-pb-6">
                     <!--v2-items-left VERSUS v2-items-center ||  v2-space-y-16 VERSUS v2-space-y-10 -->
 
@@ -824,10 +831,7 @@
 </section>
 
 
-<div id="alert-entrada-50" class="entrada-alert v2-hidden" role="status" aria-live="assertive">
-    <div class="entrada-alert__title">Entrada de 50%</div>
-    <p class="entrada-alert__text">Este cliente foi aprovado apenas com entrada mínima de 50%. Ajuste a proposta antes de enviar.</p>
-</div>
+
 
 <script src="script.js"></script>
 <script src="scripts/calculo-ppa.js"></script>
