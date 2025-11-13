@@ -34,10 +34,10 @@ function openV2AsPage(sectionId) {
     target.classList.remove('v2-fixed','v2-inset-0','v2-overflow-auto','v2-z-50');
     target.classList.remove('v2-hidden');
 
-    // ✅ continua usando flex + centralização
+    // ? continua usando flex + centralização
     target.classList.add('v2-flex','v2-items-center','v2-justify-center','v2-min-h-screen');
     // (remova a linha que trocava para v2-block)
-    // target.classList.add('v2-block');  // ❌ não usar
+    // target.classList.add('v2-block');  // ? não usar
   }
 }
 
@@ -174,7 +174,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const e = Number(entrada) || 0;
   const f = Math.max(0, t - e);
   window.PPA = { total: t, entrada: e, financiado: f };
-  console.log('[PPA] setInitialPPA →', window.PPA);
+  console.log('[PPA] setInitialPPA ?', window.PPA);
   try { localStorage.setItem('ppa', JSON.stringify(window.PPA)); } catch (err) {
     console.warn('[PPA] Erro ao salvar localStorage', err);
   }
@@ -184,7 +184,7 @@ window.addEventListener('DOMContentLoaded', () => {
 function loadPPA() {
   try {
     const p = JSON.parse(localStorage.getItem('ppa'));
-    console.log('[PPA] loadPPA →', p);
+    console.log('[PPA] loadPPA ?', p);
     if (p && Number.isFinite(p.total) && Number.isFinite(p.entrada)) {
       window.PPA = {
         total: Number(p.total),
@@ -198,11 +198,11 @@ function loadPPA() {
 }
 
 
-    // 1️⃣  Pega o formulário
+    // 1??  Pega o formulário
     const form = document.getElementById('formCadastro');
     if (!form) return;
 
-    // ✅ ID único por envio (usado no back para deduplicar)
+    // ? ID único por envio (usado no back para deduplicar)
     let submissionIdInput = form.querySelector('input[name="submission_id"]');
     if (!submissionIdInput) {
         submissionIdInput = document.createElement('input');
@@ -237,10 +237,10 @@ function setSubmittingState(on, buttonText = null) {
 
 
 
-  // 2️⃣  Config: coloque aqui sua URL do Apps Script
+  // 2??  Config: coloque aqui sua URL do Apps Script
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw6PqzZUg7oD9dH9CjxN8ZqhBT00r7kwf_cGW0H8Ag2yMSkVUqvBbw-1Ng8eZ4OY4SocA/exec";
 
-  // 3️⃣  Função que monta o JSON com os dados
+  // 3??  Função que monta o JSON com os dados
 
     function serializeFormToPayload(form) {
         const get = (name) => form.elements[name]?.value?.trim() ?? "";
@@ -257,7 +257,7 @@ function setSubmittingState(on, buttonText = null) {
             email_cliente: get("email_cliente"),
             telefone: get("telefone"),
 
-            // ✅ manter só estas 3 linhas
+            // ? manter só estas 3 linhas
             renda_mensal: numFromInput(document.getElementById('renda_mensal')),
             valor_moto:   numFromInput(document.getElementById('valor_moto')),
             valor_entrada:numFromInput(document.getElementById('valor_entrada')),
@@ -268,7 +268,7 @@ function setSubmittingState(on, buttonText = null) {
 
 
 
-  // 4️⃣  Função que faz o POST para o Apps Script
+  // 4??  Função que faz o POST para o Apps Script
     async function postToAppsScript(payload) {
         const body = new URLSearchParams({ data: JSON.stringify(payload) }).toString();
         const res = await fetch(WEB_APP_URL, {
@@ -581,8 +581,8 @@ function setSubmittingState(on, buttonText = null) {
         return true;
     };
 
-        // ❌ sem setCustomValidity / reportValidity
-    // ✅ escreve a mensagem no #erro_dados_venda, igual à PPA
+        // ? sem setCustomValidity / reportValidity
+    // ? escreve a mensagem no #erro_dados_venda, igual à PPA
     const updateValorEntradaValidity = (showMessage = false) => {
         const erroArea = document.getElementById('erro_dados_venda');
         if (!valorEntradaInput || !erroArea) return true;
@@ -600,7 +600,7 @@ function setSubmittingState(on, buttonText = null) {
         // vazio / inválido
         if (!valorEntradaInput.value.trim() || !Number.isFinite(ve) || ve <= 0) {
             if (showMessage) {
-            erroArea.innerHTML = '❌ Informe um valor de entrada válido.';
+            erroArea.innerHTML = '? Informe um valor de entrada válido.';
             erroArea.classList.remove('hidden');
             }
             return false;
@@ -609,13 +609,13 @@ function setSubmittingState(on, buttonText = null) {
         // maior que moto
         if (Number.isFinite(vm) && ve > vm) {
             if (showMessage) {
-            erroArea.innerHTML = '❌ O valor da entrada não pode ser maior que o valor da moto.';
+            erroArea.innerHTML = '? O valor da entrada não pode ser maior que o valor da moto.';
             erroArea.classList.remove('hidden');
             }
             return false;
         }
 
-        // menor que 40%  👉 AQUI ESTÁ A MENSAGEM QUE VOCÊ VAI EDITAR SE QUISER
+        // menor que 40%  ?? AQUI ESTÁ A MENSAGEM QUE VOCÊ VAI EDITAR SE QUISER
         /*if (Number.isFinite(vm) && ve + 1e-9 < minimo) {
             if (showMessage) {
             const minimoBRL = minimo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -999,7 +999,7 @@ function setSubmittingState(on, buttonText = null) {
     if (btnNext) {
         btnNext.dataset.action = 'next';
         btnNext.addEventListener('click', () => {
-            // 🔒 se já estiver enviando, ignora qualquer clique
+            // ?? se já estiver enviando, ignora qualquer clique
             if (isSubmitting) return;
 
             if (btnNext.dataset.action === 'submit') {
@@ -1032,7 +1032,7 @@ function setSubmittingState(on, buttonText = null) {
 
     tabs.forEach((tab, index) => {
         tab.addEventListener('click', () => {
-            // 🚫 bloqueia cliques nas etapas durante o envio
+            // ?? bloqueia cliques nas etapas durante o envio
             if (isSubmitting) return;
             if (tab.disabled) return;
             goToStep(index);
@@ -1123,7 +1123,7 @@ function setSubmittingState(on, buttonText = null) {
         // mantém vazio no carregamento — permite aparecer placeholder
         input.value = digits ? formatBRLCentsFromDigits(digits) : '';
 
-        // 🔹 função auxiliar pra limpar do lado de fora
+        // ?? função auxiliar pra limpar do lado de fora
         input.clearMasked = () => {
             digits = '';
             input.value = '';
@@ -1139,7 +1139,7 @@ function setSubmittingState(on, buttonText = null) {
             digits += e.data;
             input.value = formatBRLCentsFromDigits(digits);
 
-            // 🔸 dispara evento “input” para ativar o listener normal
+            // ?? dispara evento “input” para ativar o listener normal
             input.dispatchEvent(new Event('input', { bubbles: true }));
 
             e.preventDefault();
@@ -1149,7 +1149,7 @@ function setSubmittingState(on, buttonText = null) {
             digits = digits.slice(0, -1);
             input.value = formatBRLCentsFromDigits(digits);
 
-            // 🔸 dispara evento “input” também ao apagar
+            // ?? dispara evento “input” também ao apagar
             input.dispatchEvent(new Event('input', { bubbles: true }));
 
             e.preventDefault();
@@ -1167,7 +1167,7 @@ function setSubmittingState(on, buttonText = null) {
             digits += pasted;
             input.value = formatBRLCentsFromDigits(digits);
 
-            // 🔸 dispara evento “input” após colar
+            // ?? dispara evento “input” após colar
             input.dispatchEvent(new Event('input', { bubbles: true }));
 
             queueMicrotask(() => input.setSelectionRange(input.value.length, input.value.length));
@@ -1220,11 +1220,11 @@ loadPPA();
 commitPPA();
 
 vmEl?.addEventListener('input', () => {
-  console.log('[PPA] valorMoto alterado →', vmEl.value);
+  console.log('[PPA] valorMoto alterado ?', vmEl.value);
   commitPPA();
 });
 veEl?.addEventListener('input', () => {
-  console.log('[PPA] entrada alterada →', veEl.value);
+  console.log('[PPA] entrada alterada ?', veEl.value);
   commitPPA();
 });
 
@@ -1862,7 +1862,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 // ==========================================
-// 🔁 PERSISTÊNCIA DA TELA ATUAL (Simulação / Negado)
+// ?? PERSISTÊNCIA DA TELA ATUAL (Simulação / Negado)
 // ==========================================
 window.addEventListener('beforeunload', () => {
   // guarda qual tela V2 está ativa no momento
@@ -1890,6 +1890,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const persistableFields = Array.from(formFinal.querySelectorAll('input, select, textarea'))
     .filter((field) => field.name && !field.disabled && field.type !== 'file');
   const referenceCpfInputs = Array.from(formFinal.querySelectorAll('input[id^="cpf_referencia_"]'));
+  const documentFileInputs = Array.from(formFinal.querySelectorAll('#final_documentacao input[type="file"]'));
 
   const normalizeReferenceCpfValue = (input) => {
     if (!input) return '';
@@ -1928,6 +1929,25 @@ window.addEventListener('DOMContentLoaded', () => {
       updateReferenceCpfValidity(input, true);
     });
   });
+
+  const hasAllDocumentFiles = () =>
+    documentFileInputs.length === 0 ||
+    documentFileInputs.every((input) => input.files && input.files.length > 0);
+
+  const ensureDocumentFilesSelected = () => {
+    if (hasAllDocumentFiles()) return true;
+
+    const firstMissing = documentFileInputs.find(
+      (input) => !input.files || input.files.length === 0
+    );
+
+    const docIndex = FINAL_STEP_IDS.indexOf('final_documentacao');
+    if (docIndex >= 0) {
+      goToStep(docIndex);
+      setTimeout(() => firstMissing?.focus({ preventScroll: false }), 150);
+    }
+    return false;
+  };
 
   const saveFinalFormData = () => {
     const data = {};
@@ -2039,7 +2059,7 @@ const btnNext = document.querySelector('#form-final .nav-next');
     updateFinalStepperUI();
   }
 
-  // 🔁 restaura etapa salva
+  // ?? restaura etapa salva
   const savedId = localStorage.getItem('formFinalStep');
   const startIndex = savedId ? stepOrder.indexOf(savedId) : 0;
   goToStep(startIndex >= 0 ? startIndex : 0);
@@ -2072,16 +2092,19 @@ const btnNext = document.querySelector('#form-final .nav-next');
   restoreFinalFormData();
 
   // eventos dos botões
+
   btnNext?.addEventListener('click', () => {
     const currentStepId = stepOrder[currentStep];
     if (!validateFinalStep(currentStepId)) return;
 
-    if (currentStep < stepOrder.length - 1) {
-      goToStep(currentStep + 1);
-    } else {
-      alert('✅ Enviar formulário final (implementação futura)');
+    if (currentStep === stepOrder.length - 1) {
+      if (!ensureDocumentFilesSelected()) return;
+      alert('? Enviar formul�rio final (implementa��o futura)');
       // aqui depois envia para planilha ou backend
+      return;
     }
+
+    goToStep(currentStep + 1);
   });
 
   btnPrev?.addEventListener('click', () => {
@@ -2144,5 +2167,6 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 
-})(); // 🛑 FIM DA IIFE GERAL (FINAL DO ARQUIVO)
+})(); // ?? FIM DA IIFE GERAL (FINAL DO ARQUIVO)
+
 
