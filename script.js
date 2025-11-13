@@ -53,12 +53,77 @@ const FINAL_STEP_IDS = [
   'final_referencias'
 ];
 const FINAL_FORM_STORAGE_KEY = 'formFinalData';
+const INITIAL_FORM_STORAGE_KEY = 'formCadastroData';
+const FINAL_PLACEHOLDER_STORAGE_KEY = 'formFinalPlaceholderData';
+const FINAL_PLACEHOLDER_MAP = [
+  { key: 'nome', source: '#nome_cliente', target: '#final_nome_cliente' },
+  { key: 'cpf', source: '#cpf', target: '#final_cpf' },
+  { key: 'telefone', source: '#telefone', target: '#final_telefone' },
+  { key: 'email', source: '#email_cliente', target: '#final_email_cliente' }
+];
+
+let finalPlaceholderData = {};
+let initialFormData = {};
+
+function loadInitialFormStorage() {
+  try {
+    const stored = localStorage.getItem(INITIAL_FORM_STORAGE_KEY);
+    initialFormData = stored ? JSON.parse(stored) || {} : {};
+  } catch (err) {
+    initialFormData = {};
+    console.warn('[FormCadastro] Falha ao ler dados', err);
+  }
+  return initialFormData;
+}
+
+function persistInitialFormStorage() {
+  try {
+    localStorage.setItem(INITIAL_FORM_STORAGE_KEY, JSON.stringify(initialFormData));
+  } catch (err) {
+    console.warn('[FormCadastro] Falha ao salvar dados', err);
+  }
+}
+
+function saveInitialFormFieldValue(name, value) {
+  if (!name) return;
+  if (!initialFormData || typeof initialFormData !== 'object') {
+    initialFormData = {};
+  }
+  initialFormData[name] = value;
+  persistInitialFormStorage();
+}
+
+function loadFinalPlaceholderData() {
+  try {
+    const stored = localStorage.getItem(FINAL_PLACEHOLDER_STORAGE_KEY);
+    finalPlaceholderData = stored ? JSON.parse(stored) || {} : {};
+  } catch (err) {
+    finalPlaceholderData = {};
+    console.warn('[FormFinal] Falha ao ler placeholders', err);
+  }
+  return finalPlaceholderData;
+}
+
+function saveFinalPlaceholderData(partial = {}) {
+  if (!partial || typeof partial !== 'object') return;
+  finalPlaceholderData = { ...finalPlaceholderData, ...partial };
+  try {
+    localStorage.setItem(FINAL_PLACEHOLDER_STORAGE_KEY, JSON.stringify(finalPlaceholderData));
+  } catch (err) {
+    console.warn('[FormFinal] Falha ao salvar placeholders', err);
+  }
+}
+
+function getFinalPlaceholderValue(key) {
+  if (!finalPlaceholderData || typeof finalPlaceholderData !== 'object') return '';
+  return finalPlaceholderData[key] || '';
+}
 
 function setFlowStage(stage) {
   try {
     localStorage.setItem(FLOW_STAGE_KEY, stage);
   } catch (err) {
-    console.warn('[Flow] Falha ao salvar est�gio', err);
+    console.warn('[Flow] Falha ao salvar estágio', err);
   }
 }
 
@@ -66,10 +131,13 @@ function getFlowStage() {
   try {
     return localStorage.getItem(FLOW_STAGE_KEY) || FLOW_STAGES.FORMULARIO_INICIAL;
   } catch (err) {
-    console.warn('[Flow] Falha ao ler est�gio', err);
+    console.warn('[Flow] Falha ao ler estágio', err);
     return FLOW_STAGES.FORMULARIO_INICIAL;
   }
 }
+
+loadInitialFormStorage();
+loadFinalPlaceholderData();
 
 //MODO DEV
 /*
@@ -228,6 +296,8 @@ function setSubmittingState(on, buttonText = null) {
     const cpfInput = document.getElementById('cpf');
     const emailInputs = Array.from(form.querySelectorAll('input[type="email"]'));
     const telefoneInput = document.getElementById('telefone');
+    const nomeClienteInput = document.getElementById('nome_cliente');
+    const emailClienteInput = document.getElementById('email_cliente');
     const valorMotoInput = document.getElementById('valor_moto');
     const valorEntradaInput = document.getElementById('valor_entrada');
 
@@ -236,6 +306,91 @@ function setSubmittingState(on, buttonText = null) {
     let currentUserType = null;
 
     const stepAvailability = steps.map(() => true);
+
+    const shouldPersistInitialField = (field) => {
+        if (!field || !field.name) return false;
+        const type = (field.type || '').toLowerCase();
+        if (type === 'password' || type === 'file' || type === 'hidden') return false;
+        if (field.dataset.persist === 'false') return false;
+        return true;
+    };
+
+    const initialPersistableFields = Array.from(
+        form.querySelectorAll('input, select, textarea')
+    ).filter(shouldPersistInitialField);
+
+    const saveInitialFieldValue = (field) => {
+        if (!field || !field.name) return;
+        if (field.type === 'checkbox') {
+            saveInitialFormFieldValue(field.name, field.checked);
+        } else if (field.type === 'radio') {
+            if (field.checked) {
+                saveInitialFormFieldValue(field.name, field.value);
+            }
+        } else {
+            saveInitialFormFieldValue(field.name, field.value);
+        }
+    };
+
+    const restoreInitialFormFields = () => {
+        if (!initialFormData || typeof initialFormData !== 'object') return;
+        initialPersistableFields.forEach((field) => {
+            const storedValue = initialFormData[field.name];
+            if (storedValue === undefined) return;
+            if (field.type === 'checkbox') {
+                field.checked = Boolean(storedValue);
+            } else if (field.type === 'radio') {
+                field.checked = field.value === storedValue;
+            } else {
+                field.value = storedValue;
+            }
+        });
+    };
+
+    restoreInitialFormFields();
+
+    initialPersistableFields.forEach((field) => {
+        const eventName =
+            field.type === 'checkbox' ||
+            field.type === 'radio' ||
+            field.tagName === 'SELECT'
+                ? 'change'
+                : 'input';
+
+        const handler = () => {
+            if (field.type === 'radio' && !field.checked) return;
+            saveInitialFieldValue(field);
+        };
+
+        field.addEventListener(eventName, handler);
+
+        if (field.type === 'radio') {
+            if (field.checked) {
+                saveInitialFieldValue(field);
+            }
+        } else {
+            saveInitialFieldValue(field);
+        }
+    });
+
+    FINAL_PLACEHOLDER_MAP.forEach(({ key, source }) => {
+        const el =
+            source === '#cpf' ? cpfInput :
+            source === '#telefone' ? telefoneInput :
+            source === '#nome_cliente' ? nomeClienteInput :
+            source === '#email_cliente' ? emailClienteInput :
+            document.querySelector(source);
+
+        if (!el) return;
+        const persistValue = () => {
+            const value = el.value?.trim() ?? '';
+            if (!value) return;
+            saveFinalPlaceholderData({ [key]: value });
+        };
+        el.addEventListener('input', persistValue);
+        el.addEventListener('blur', persistValue);
+        persistValue();
+    });
 
     const storeInitialRequiredState = (container) => {
         if (!container) {
@@ -1152,6 +1307,7 @@ veEl?.addEventListener('input', commitPPA);
 
             if (result && result.ok) {
                 // Sucesso no envio abre a etapa de sucesso
+                setSubmittingState(false, 'Enviar');
                 setInitialPPA(valorMoto, entrada);
                 localStorage.setItem('v2TelaAtiva', 'v2-pagina-aprovado');
                 localStorage.removeItem('formFinalAtivo');
@@ -1624,20 +1780,25 @@ window.addEventListener('DOMContentLoaded', () => {
   const finalTabs = Array.from(document.querySelectorAll('.final-step-tab'));
 
   const populateFinalPlaceholders = () => {
-    const pairs = [
-      { source: '#nome_cliente', target: '#final_nome_cliente' },
-      { source: '#cpf', target: '#final_cpf' },
-      { source: '#telefone', target: '#final_telefone' },
-      { source: '#email_cliente', target: '#final_email_cliente' }
-    ];
-
-    pairs.forEach(({ source, target }) => {
+    const updates = {};
+    FINAL_PLACEHOLDER_MAP.forEach(({ key, source, target }) => {
       const sourceEl = document.querySelector(source);
       const targetEl = document.querySelector(target);
       if (!targetEl) return;
-      const value = sourceEl?.value?.trim() ?? '';
-      targetEl.placeholder = value || '';
+      let value = sourceEl?.value?.trim() ?? '';
+      if (!value) {
+        value = getFinalPlaceholderValue(key);
+      }
+      if (value) {
+        targetEl.placeholder = value;
+        updates[key] = value;
+      } else {
+        targetEl.placeholder = '';
+      }
     });
+    if (Object.keys(updates).length > 0) {
+      saveFinalPlaceholderData(updates);
+    }
   };
 
   const ensureFinalStepVisible = (stepId) => {
@@ -1728,6 +1889,45 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const persistableFields = Array.from(formFinal.querySelectorAll('input, select, textarea'))
     .filter((field) => field.name && !field.disabled && field.type !== 'file');
+  const referenceCpfInputs = Array.from(formFinal.querySelectorAll('input[id^="cpf_referencia_"]'));
+
+  const normalizeReferenceCpfValue = (input) => {
+    if (!input) return '';
+    const digits = sanitizeCpf(input.value || '');
+    input.value = formatCpf(digits);
+    return digits;
+  };
+
+  const updateReferenceCpfValidity = (input, showMessage = false) => {
+    if (!input || input.disabled) {
+      return true;
+    }
+    const digits = normalizeReferenceCpfValue(input);
+    if (!digits) {
+      input.setCustomValidity('');
+      return true;
+    }
+    const isValid = isValidCpfDigits(digits);
+    if (!isValid) {
+      input.setCustomValidity(showMessage ? 'Informe um CPF válido.' : '');
+      return false;
+    }
+    input.setCustomValidity('');
+    return true;
+  };
+
+  referenceCpfInputs.forEach((input) => {
+    normalizeReferenceCpfValue(input);
+    updateReferenceCpfValidity(input, false);
+    input.addEventListener('input', () => {
+      normalizeReferenceCpfValue(input);
+      updateReferenceCpfValidity(input, false);
+    });
+    input.addEventListener('blur', () => {
+      normalizeReferenceCpfValue(input);
+      updateReferenceCpfValidity(input, true);
+    });
+  });
 
   const saveFinalFormData = () => {
     const data = {};
@@ -1851,6 +2051,9 @@ const btnNext = document.querySelector('#form-final .nav-next');
       .filter((field) => !field.disabled);
 
     for (const field of fields) {
+      if (referenceCpfInputs.includes(field)) {
+        updateReferenceCpfValidity(field, true);
+      }
       if (!field.checkValidity()) {
         field.reportValidity();
         field.focus({ preventScroll: false });

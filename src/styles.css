@@ -669,6 +669,13 @@ body.v2-mode {
   margin-left: auto;
 }
 
+/* Dentro de @layer components ou no final do arquivo */
+
+.hint-text {
+  /* Exemplo de estilo que você pode adicionar */
+  @apply v2-text-xs v2-text-black/60 v2-mt-1 v2-ml-2;
+}
+
 
 
 
