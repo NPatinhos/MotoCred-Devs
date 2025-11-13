@@ -2140,6 +2140,16 @@ const btnNext = document.querySelector('#form-final .nav-next');
     }
   });
 });
+window.addEventListener('DOMContentLoaded', () => {
+  const alertEntrada = document.getElementById('alert-entrada-50');
+  if (!alertEntrada) return;
+  if (!getAprovado40Flag()) {
+    alertEntrada.classList.remove('v2-hidden');
+  } else {
+    alertEntrada.classList.add('v2-hidden');
+  }
+});
+
 
 
 
