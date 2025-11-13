@@ -1934,12 +1934,23 @@ window.addEventListener('DOMContentLoaded', () => {
     documentFileInputs.length === 0 ||
     documentFileInputs.every((input) => input.files && input.files.length > 0);
 
+  documentFileInputs.forEach((input) => {
+    input.addEventListener('change', () => {
+      input.setCustomValidity('');
+    });
+  });
+
   const ensureDocumentFilesSelected = () => {
     if (hasAllDocumentFiles()) return true;
 
     const firstMissing = documentFileInputs.find(
       (input) => !input.files || input.files.length === 0
     );
+
+    if (firstMissing) {
+      firstMissing.setCustomValidity('Selecione um arquivo.');
+      firstMissing.reportValidity();
+    }
 
     const docIndex = FINAL_STEP_IDS.indexOf('final_documentacao');
     if (docIndex >= 0) {
@@ -2099,7 +2110,7 @@ const btnNext = document.querySelector('#form-final .nav-next');
 
     if (currentStep === stepOrder.length - 1) {
       if (!ensureDocumentFilesSelected()) return;
-      alert('? Enviar formul�rio final (implementa��o futura)');
+      alert('? Enviar formulário final (implementação futura)');
       // aqui depois envia para planilha ou backend
       return;
     }
