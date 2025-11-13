@@ -189,7 +189,7 @@ body.confirmado #tela_confirmacao {
 /* ======================================================================== */
 
 #etapas_processo {
-  @apply mb-10 w-full flex flex-col items-center gap-3 text-center;
+  @apply mb-4 w-full flex flex-col items-center gap-3 text-center;
 }
 
 /* O contêiner que segura as 4 abas */
@@ -371,6 +371,7 @@ body.confirmado #tela_confirmacao {
 
   .form-navigation {
     @apply flex items-center justify-between gap-4 w-full;
+    margin-top: 1.5rem
   }
 
   .form-navigation .nav-button-group {
@@ -644,10 +645,29 @@ body.v2-mode {
 }
 
 
-  #form-final .final-step-current-label {
-    @apply block text-center font-semibold text-[#1f1f1f] mb-4;
-    font-size: 1rem;
-  }
+#form-final .final-step-current-label {
+  @apply block text-center font-semibold text-[#1f1f1f] mb-4;
+  font-size: 1rem;
+}
+
+#form-final .form-navigation.final-nav {
+  @apply flex items-center justify-between gap-4;
+}
+  
+#form-final footer .form-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+#form-final footer .nav-prev {
+  margin-right: auto;
+}
+
+#form-final footer .nav-button-group {
+  margin-left: auto;
+}
 
 
 

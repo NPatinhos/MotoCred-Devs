@@ -19,7 +19,7 @@
 <body class="min-h-svh flex items-stretch justify-center bg-brand">
       <div class="v1-shell">
 
-        <div class="card max-w-[820px] w-full h-full flex flex-col">
+        <div class="card max-w-[820px] w-full flex flex-col">
             <div class="header">
                 <img class="img_logo" src="imagens/motocred_logo.avif" alt="Logo MotoCred">
             </div>
@@ -44,7 +44,6 @@
                     </button>
 
                 </div>
-                <span class="step-current-label" aria-live="polite">Identificação</span>
             </div>
 
             <main>
@@ -155,7 +154,7 @@
                         </section>
                     </div>
 
-                    <div class="form-navigation ">
+                    <div class="form-navigation">
                         <button type="button" class="btn-secondary nav-prev" aria-label="Voltar para a etapa anterior" disabled>Voltar</button>
                         <div class="nav-button-group">
                             <button type="button" class="btn-primary nav-next" aria-label="Avançar para a próxima etapa">Próximo</button>
@@ -502,9 +501,8 @@
                             disabled
                             >
                         </div>
-                        
-                        <div class="v2-flex v2-w-full v2-gap-4">
-                            <div class="v2-w-1/2">
+                    
+                            <div class="v2-w-full">
                                 <label for="estado_civil" class="v2-font-medium">Estado Civil:</label>
                                 <select 
                                 id="estado_civil" 
@@ -519,24 +517,11 @@
                                 <option value="Divorciado">Divorciado(a)</option>
                                 <option value="União Estável">União Estável</option>
                             </select>
-                        </div>
-                        
-                        <div class="v2-w-1/2">
-                            <label for="dependentes" class="v2-font-medium">Número de Dependentes Financeiros:</label>
-                            <input 
-                            type="number" 
-                            id="dependentes" 
-                            name="dependentes"
-                            class="v2-rounded-2xl v2-w-full v2-visible"
-                            placeholder=""
-                            required
-                            >
-                        </div>
-                    </div>
+                            </div>
                     
-                            <div class="v2-flex v2-w-full v2-gap-4">
+                        <div class="v2-flex v2-w-full v2-gap-4">
 
-                                <div class="v2-w-1/2">
+                            <div class="v2-w-1/2">
                                     <label for="residencia" class="v2-font-medium">Tipo de Residência:</label>
                                     <select 
                                     id="residencia" 
@@ -559,7 +544,6 @@
                                 id="tempo_residencia" 
                                 name="tempo_residencia"
                                 class="v2-rounded-2xl v2-w-full v2-visible"
-                                placeholder=""
                                 required
                                 >
                             </div>
@@ -822,11 +806,9 @@
             </section>
         </form>
         <footer class="v2-space-y-4 v2-w-full v2-mt-4">
-            <div class="form-navigation v2-w-full">
-                <button type="button" class="btn-secondary nav-prev " aria-label="Voltar para a etapa anterior" disabled>Voltar</button>
-                <div class="nav-button-group">
-                    <button type="button" class="btn-primary nav-next" aria-label="Avançar para a próxima etapa">Próximo</button>
-                </div>
+            <div class="form-navigation final-nav v2-w-full">
+                <button type="button" class="btn-secondary nav-prev" aria-label="Voltar para a etapa anterior" disabled>Voltar</button>
+                <button type="button" class="btn-primary nav-next" aria-label="Avançar para a próxima etapa">Próximo</button>
             </div>
             <p class="v2-text-black/50 v2-text-xs">
                 © 2025 MotoCred. Todos os direitos reservados.
