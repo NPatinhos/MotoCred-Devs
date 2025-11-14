@@ -507,7 +507,7 @@ input.v2-range::-moz-range-thumb {
 
 /* Legacy styles migrated to Tailwind */
 
-.entrada-alert {
+/*.entrada-alert {
   position: fixed;
   right: 1.25rem;
   bottom: 1.25rem;
@@ -519,7 +519,7 @@ input.v2-range::-moz-range-thumb {
   color: #ffffff;
   z-index: 60;
   font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
+}*/
 
 .entrada-alert__title {
   font-weight: 600;
@@ -531,6 +531,22 @@ input.v2-range::-moz-range-thumb {
   line-height: 1.2rem;
   margin: 0;
 }
+
+.entrada-alert__close {
+  border: none;
+  background: transparent;
+  color: #f2600b;
+  font-size: 1.25rem;
+  line-height: 1;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0 0.25rem;
+}
+
+.entrada-alert__close:hover {
+  color: #c44904;
+}
+
 
 
 
