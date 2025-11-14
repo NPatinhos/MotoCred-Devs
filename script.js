@@ -2140,20 +2140,41 @@ const btnNext = document.querySelector('#form-final .nav-next');
     }
   });
 });
+
+//to so mexendo para ver na tela, pode apagar essa linha para fazer seu back definir true/false
+window.aprovado40Flag = false;
+
+//mostra tela de simulação normal ou flag de entrada 50%
 window.addEventListener('DOMContentLoaded', () => {
   const alertEntrada = document.getElementById('alert-entrada-50');
+  const mensagemEntrada40 = document.getElementById('entrada40');
   if (!alertEntrada) return;
-  if (!getAprovado40Flag()) {
-    alertEntrada.classList.remove('v2-hidden');
-  } else {
+
+  //determina qual mensagem aparece (a normal ou do reajuste)
+  const updateVisibility = (flag) => {
+    const aprovado = flag === true;
+    if (aprovado) {
+      alertEntrada.classList.add('v2-hidden');
+      mensagemEntrada40?.classList.remove('v2-hidden');
+    } else {
+      alertEntrada.classList.remove('v2-hidden');
+      mensagemEntrada40?.classList.add('v2-hidden');
+    }
+  };
+
+  const closeEntradaBtn = alertEntrada.querySelector('.entrada-alert__close');
+  closeEntradaBtn?.addEventListener('click', () => {
     alertEntrada.classList.add('v2-hidden');
-  }
+  });
+
+  // BACK-END: defina window.aprovado40Flag = true/false antes deste script carregar.
+  updateVisibility(window.aprovado40Flag);
 });
 
 
 
 
-
+//abre o form final
 window.addEventListener('DOMContentLoaded', () => {
   const stage = getFlowStage();
   const ultimaTela = localStorage.getItem('v2TelaAtiva');
@@ -2165,26 +2186,37 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  //corrigindo um bug da tela final abrindo na simulação
+  const shouldRestoreFormFinal =
+    stage === FLOW_STAGES.FORMULARIO_FINAL ||
+    (stage === FLOW_STAGES.SIMULACAO && localStorage.getItem('formFinalAtivo') === 'true');
+
+  if (shouldRestoreFormFinal) {
+    ensureFinalRestored();
+    return;
+  }
+
   if (stage === FLOW_STAGES.SIMULACAO) {
+    document.getElementById('form-final')?.classList.add('v2-hidden');
+    localStorage.removeItem('formFinalAtivo');
     if (ultimaTela === 'v2-pagina-aprovado' || ultimaTela === 'v2-pagina-negado') {
       openV2AsPage(ultimaTela);
     } else {
       setFlowStage(FLOW_STAGES.FORMULARIO_INICIAL);
     }
-  } else if (stage === FLOW_STAGES.FORMULARIO_FINAL || localStorage.getItem('formFinalAtivo') === 'true') {
-    ensureFinalRestored();
-  } else {
-    const v1Shell = document.querySelector('.v1-shell');
-    v1Shell?.classList.remove('v2-hidden');
-    const mainCard = document.querySelector('.card');
-    if (mainCard) mainCard.style.display = '';
-    document.getElementById('v2-pagina-aprovado')?.classList.add('v2-hidden');
-    document.getElementById('v2-pagina-negado')?.classList.add('v2-hidden');
-    document.getElementById('form-final')?.classList.add('v2-hidden');
-    localStorage.removeItem('formFinalAtivo');
-    localStorage.removeItem('v2TelaAtiva');
-    setFlowStage(FLOW_STAGES.FORMULARIO_INICIAL);
+    return;
   }
+
+  const v1Shell = document.querySelector('.v1-shell');
+  v1Shell?.classList.remove('v2-hidden');
+  const mainCard = document.querySelector('.card');
+  if (mainCard) mainCard.style.display = '';
+  document.getElementById('v2-pagina-aprovado')?.classList.add('v2-hidden');
+  document.getElementById('v2-pagina-negado')?.classList.add('v2-hidden');
+  document.getElementById('form-final')?.classList.add('v2-hidden');
+  localStorage.removeItem('formFinalAtivo');
+  localStorage.removeItem('v2TelaAtiva');
+  setFlowStage(FLOW_STAGES.FORMULARIO_INICIAL);
 });
 
 
