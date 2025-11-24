@@ -2008,10 +2008,15 @@ window.addEventListener('DOMContentLoaded', () => {
       });
     });
 
+    //bloqueia analise final se nao selecionar parcela
     if (btnAnaliseFinal) {
-      btnAnaliseFinal.addEventListener("click", () =>
-        openFormFinal({ restoreStep: false })
-      );
+      btnAnaliseFinal.addEventListener("click", () => {
+        const parcela = document
+          .getElementById("parcelas-escolhida")
+          ?.value?.trim();
+        if (!parcela) return; // avança se tiver selecionado
+        openFormFinal({ restoreStep: false });
+      });
     }
   });
 
@@ -2078,6 +2083,14 @@ window.addEventListener('DOMContentLoaded', () => {
       input.setCustomValidity("");
       return true;
     };
+
+    const consentRadio = document.getElementById("aceito-termos");
+    consentRadio?.addEventListener("invalid", () => {
+      consentRadio.setCustomValidity("Marque uma opção.");
+    });
+    consentRadio?.addEventListener("change", () => {
+      consentRadio.setCustomValidity(""); // limpa a mensagem assim que marcar
+    });
 
     referenceCpfInputs.forEach((input) => {
       normalizeReferenceCpfValue(input);
