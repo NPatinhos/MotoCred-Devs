@@ -249,7 +249,7 @@
             </header>
                     <!--ALERTA 50%
             <div id="alert-entrada-50" class="entrada-alert v2-top-20 v2-right-2 v2-p-3 v2-bg-white v2-rounded-2xl v2-rounded-tr-none v2-border-2 v2-border-[#F2600B] v2-flex v2-items-start v2-gap-3 v2-relative" role="status" aria-live="assertive">
-                <!--<div class="entrada-alert__title v2-text-sm">Entrada de 50%</div>
+                <div class="entrada-alert__title v2-text-sm">Entrada de 50%</div>
                 <p class="entrada-alert__text">Entrada reajustada para 50% do valor do veículo</p>
                 <button type="button" class="entrada-alert__close" aria-label="Fechar aviso">&times;</button>
             </div> -->
@@ -812,6 +812,28 @@
                             class="v2-rounded-2xl v2-w-full" required>
                         </div>                        
                     </div>
+                </fieldset>
+
+                <fieldset class="v2-border-0 v2-bg-[#E0E0E0] v2-rounded-2xl v2-p-6 v2-pt-4 v2-relative">
+                    <span class="radio-label">
+                        O cliente confirma expressamente que os dados serão utilizados para checagem de referência, sendo as referências cientes que podem ser contactadas pela empresa a qualquer tempo, seja antes ou depois da venda do veículo.
+                    </span>
+                    <div class="v2-flex v2-items-center v2-gap-2 v2-mt-2">
+                        <input 
+                            id="aceito-termos"
+                            name="aceito-termos"
+                            type="radio"
+                            value="sim"
+                            required
+                        />
+
+                        <label for="aceito-termos" class="v2-text-sm v2-text-gray-700">
+                            Concordo com a checagem de referências.
+                        </label>
+                    </div>
+
+
+
                 </fieldset>
 
 
