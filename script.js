@@ -2008,15 +2008,10 @@ window.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    //bloqueia analise final se nao selecionar parcela
     if (btnAnaliseFinal) {
-      btnAnaliseFinal.addEventListener("click", () => {
-        const parcela = document
-          .getElementById("parcelas-escolhida")
-          ?.value?.trim();
-        if (!parcela) return; // avança se tiver selecionado
-        openFormFinal({ restoreStep: false });
-      });
+      btnAnaliseFinal.addEventListener("click", () =>
+        openFormFinal({ restoreStep: false })
+      );
     }
   });
 
