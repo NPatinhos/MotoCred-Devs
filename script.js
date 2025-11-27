@@ -1941,48 +1941,67 @@ loadFinalPlaceholderData();
     const persistableFields = Array.from(
       formFinal.querySelectorAll("input, select, textarea")
     ).filter((field) => field.name && !field.disabled && field.type !== "file");
-    const referenceCpfInputs = Array.from(
-      formFinal.querySelectorAll('input[id^="cpf_referencia_"]')
+    const referencePhoneInputs = Array.from(
+      formFinal.querySelectorAll('input[id^="telefone_referencia_"]')
     );
     const documentFileInputs = Array.from(
       formFinal.querySelectorAll('#final_documentacao input[type="file"]')
     );
 
-    const normalizeReferenceCpfValue = (input) => {
+    const formatReferencePhoneValue = (digits) => {
+      const clean = digits.slice(0, 11);
+      if (!clean) return "";
+      if (clean.length <= 2) {
+        return clean;
+      }
+      const ddd = clean.slice(0, 2);
+      const firstPart = clean.slice(2, 7);
+      const secondPart = clean.slice(7, 11);
+      let formatted = `(${ddd})`;
+      if (firstPart) {
+        formatted += ` ${firstPart}`;
+      }
+      if (secondPart) {
+        formatted += `-${secondPart}`;
+      }
+      return formatted.trim();
+    };
+
+    const normalizeReferencePhoneValue = (input) => {
       if (!input) return "";
-      const digits = sanitizeCpf(input.value || "");
-      input.value = formatCpf(digits);
+      const digits = sanitizePhoneNumber(input.value || "");
+      input.value = formatReferencePhoneValue(digits);
       return digits;
     };
 
-    const updateReferenceCpfValidity = (input, showMessage = false) => {
+    const updateReferencePhoneValidity = (input, showMessage = false) => {
       if (!input || input.disabled) {
         return true;
       }
-      const digits = normalizeReferenceCpfValue(input);
+      const digits = normalizeReferencePhoneValue(input);
       if (!digits) {
         input.setCustomValidity("");
         return true;
       }
-      const isValid = isValidCpfDigits(digits);
-      if (!isValid) {
-        input.setCustomValidity(showMessage ? "Informe um CPF válido." : "");
+      const result = validateBrazilianCellphone(digits);
+      if (!result.valid) {
+        input.setCustomValidity(showMessage ? result.message : "");
         return false;
       }
       input.setCustomValidity("");
       return true;
     };
 
-    referenceCpfInputs.forEach((input) => {
-      normalizeReferenceCpfValue(input);
-      updateReferenceCpfValidity(input, false);
+    referencePhoneInputs.forEach((input) => {
+      normalizeReferencePhoneValue(input);
+      updateReferencePhoneValidity(input, false);
       input.addEventListener("input", () => {
-        normalizeReferenceCpfValue(input);
-        updateReferenceCpfValidity(input, false);
+        normalizeReferencePhoneValue(input);
+        updateReferencePhoneValidity(input, false);
       });
       input.addEventListener("blur", () => {
-        normalizeReferenceCpfValue(input);
-        updateReferenceCpfValidity(input, true);
+        normalizeReferencePhoneValue(input);
+        updateReferencePhoneValidity(input, true);
       });
     });
 
@@ -2146,8 +2165,8 @@ loadFinalPlaceholderData();
       ).filter((field) => !field.disabled);
 
       for (const field of fields) {
-        if (referenceCpfInputs.includes(field)) {
-          updateReferenceCpfValidity(field, true);
+        if (referencePhoneInputs.includes(field)) {
+          updateReferencePhoneValidity(field, true);
         }
         if (!field.checkValidity()) {
           field.reportValidity();
