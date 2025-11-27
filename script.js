@@ -1,60 +1,31 @@
-﻿function showV2Overlay(sectionId) {
-  document.body.classList.add("v2-mode");
-  const mainCard = document.querySelector(".card");
-  if (mainCard) mainCard.style.display = "none";
+﻿import { openV2AsPage } from "./ui.js";
+import { debounce, serializeFormToPayload } from "./utils.js";
 
-  ["v2-pagina-negado", "v2-pagina-aprovado"].forEach((id) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.classList.add("v2-hidden"); // <- aqui
-    el.classList.remove("v2-flex");
-  });
+import {
+  preAnalysisRequest,
+  calculateLoanRequest,
+  createLoanRequest,
+} from "./api.js";
 
-  const target = document.getElementById(sectionId);
-  if (target) {
-    target.classList.remove("v2-hidden"); // <- e aqui
-    target.classList.add(
-      "v2-flex",
-      "v2-items-center",
-      "v2-justify-center",
-      "v2-min-h-screen"
-    );
-  }
-}
+import {
+  loadInitialFormStorage,
+  saveInitialFieldValue,
+  loadFinalPlaceholderData,
+  saveFinalPlaceholderData,
+  getFinalPlaceholderValue,
+} from "./persistences.js";
 
-function openV2AsPage(sectionId) {
-  document.body.classList.add("v2-mode");
-  const mainCard = document.querySelector(".card");
-  if (mainCard) mainCard.style.display = "none";
+import {
+  setFlowStage,
+  getFlowStage,
+  setInitialPPA,
+  loadPPA,
+} from "./flowContollers.js";
 
-  ["v2-pagina-negado", "v2-pagina-aprovado"].forEach((id) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.classList.add("v2-hidden");
-    el.classList.remove("v2-flex");
-  });
-
-  const target = document.getElementById(sectionId);
-  if (target) {
-    target.classList.remove(
-      "v2-fixed",
-      "v2-inset-0",
-      "v2-overflow-auto",
-      "v2-z-50"
-    );
-    target.classList.remove("v2-hidden");
-
-    // ? continua usando flex + centralização
-    target.classList.add(
-      "v2-flex",
-      "v2-items-center",
-      "v2-justify-center",
-      "v2-min-h-screen"
-    );
-    // (remova a linha que trocava para v2-block)
-    // target.classList.add('v2-block');  // ? não usar
-  }
-}
+let rendaGlobal = 0;
+let limit40Global = false;
+let lastDownPayment = 0;
+let lastCredit = 0;
 
 const FLOW_STAGE_KEY = "motocredFlowStage";
 const FLOW_STAGES = {
@@ -80,147 +51,14 @@ const FINAL_PLACEHOLDER_MAP = [
 let finalPlaceholderData = {};
 let initialFormData = {};
 
-function loadInitialFormStorage() {
-  try {
-    const stored = localStorage.getItem(INITIAL_FORM_STORAGE_KEY);
-    initialFormData = stored ? JSON.parse(stored) || {} : {};
-  } catch (err) {
-    initialFormData = {};
-    console.warn("[FormCadastro] Falha ao ler dados", err);
-  }
-  return initialFormData;
-}
-
-function persistInitialFormStorage() {
-  try {
-    localStorage.setItem(
-      INITIAL_FORM_STORAGE_KEY,
-      JSON.stringify(initialFormData)
-    );
-  } catch (err) {
-    console.warn("[FormCadastro] Falha ao salvar dados", err);
-  }
-}
-
-function saveInitialFormFieldValue(name, value) {
-  if (!name) return;
-  if (!initialFormData || typeof initialFormData !== "object") {
-    initialFormData = {};
-  }
-  initialFormData[name] = value;
-  persistInitialFormStorage();
-}
-
-function loadFinalPlaceholderData() {
-  try {
-    const stored = localStorage.getItem(FINAL_PLACEHOLDER_STORAGE_KEY);
-    finalPlaceholderData = stored ? JSON.parse(stored) || {} : {};
-  } catch (err) {
-    finalPlaceholderData = {};
-    console.warn("[FormFinal] Falha ao ler placeholders", err);
-  }
-  return finalPlaceholderData;
-}
-
-function saveFinalPlaceholderData(partial = {}) {
-  if (!partial || typeof partial !== "object") return;
-  finalPlaceholderData = { ...finalPlaceholderData, ...partial };
-  try {
-    localStorage.setItem(
-      FINAL_PLACEHOLDER_STORAGE_KEY,
-      JSON.stringify(finalPlaceholderData)
-    );
-  } catch (err) {
-    console.warn("[FormFinal] Falha ao salvar placeholders", err);
-  }
-}
-
-function getFinalPlaceholderValue(key) {
-  if (!finalPlaceholderData || typeof finalPlaceholderData !== "object")
-    return "";
-  return finalPlaceholderData[key] || "";
-}
-
-function setFlowStage(stage) {
-  try {
-    localStorage.setItem(FLOW_STAGE_KEY, stage);
-  } catch (err) {
-    console.warn("[Flow] Falha ao salvar estágio", err);
-  }
-}
-
-function getFlowStage() {
-  try {
-    return (
-      localStorage.getItem(FLOW_STAGE_KEY) || FLOW_STAGES.FORMULARIO_INICIAL
-    );
-  } catch (err) {
-    console.warn("[Flow] Falha ao ler estágio", err);
-    return FLOW_STAGES.FORMULARIO_INICIAL;
-  }
-}
-
 loadInitialFormStorage();
 loadFinalPlaceholderData();
-
-//MODO DEV
-/*
-window.addEventListener('DOMContentLoaded', () => {
-  // Abre a tela de aprovado como página (fluxo normal, sem overlay)
-  openV2AsPage('v2-pagina-aprovado');
-});
-*/
 
 (function () {
   console.log("[PPA] Script carregado. Versão:", new Date().toISOString());
 
   if (!localStorage.getItem(FLOW_STAGE_KEY)) {
     setFlowStage(FLOW_STAGES.FORMULARIO_INICIAL);
-  }
-
-  function loadPPA() {
-    try {
-      const p = JSON.parse(localStorage.getItem("ppa"));
-      if (p && Number.isFinite(p.total) && Number.isFinite(p.entrada)) {
-        window.PPA = {
-          total: Number(p.total),
-          entrada: Number(p.entrada),
-          financiado: Math.max(0, Number(p.total) - Number(p.entrada)),
-        };
-      }
-    } catch {}
-  }
-
-  function setInitialPPA(total, entrada) {
-    const t = Number(total) || 0;
-    const e = Number(entrada) || 0;
-    const f = Math.max(0, t - e);
-    window.PPA = { total: t, entrada: e, financiado: f };
-    console.log("[PPA] setInitialPPA ?", window.PPA);
-    try {
-      localStorage.setItem("ppa", JSON.stringify(window.PPA));
-    } catch (err) {
-      console.warn("[PPA] Erro ao salvar localStorage", err);
-    }
-    window.dispatchEvent(
-      new CustomEvent("ppa:changed", { detail: window.PPA })
-    );
-  }
-
-  function loadPPA() {
-    try {
-      const p = JSON.parse(localStorage.getItem("ppa"));
-      console.log("[PPA] loadPPA ?", p);
-      if (p && Number.isFinite(p.total) && Number.isFinite(p.entrada)) {
-        window.PPA = {
-          total: Number(p.total),
-          entrada: Number(p.entrada),
-          financiado: Math.max(0, Number(p.total) - Number(p.entrada)),
-        };
-      }
-    } catch (err) {
-      console.warn("[PPA] Erro ao ler localStorage", err);
-    }
   }
 
   // 1??  Pega o formulário
@@ -260,49 +98,6 @@ window.addEventListener('DOMContentLoaded', () => {
     if (nextButton && buttonText !== null) {
       nextButton.textContent = buttonText;
     }
-  }
-
-  // 2??  Config: coloque aqui sua URL do Apps Script
-  const WEB_APP_URL =
-    "https://script.google.com/macros/s/AKfycbw6PqzZUg7oD9dH9CjxN8ZqhBT00r7kwf_cGW0H8Ag2yMSkVUqvBbw-1Ng8eZ4OY4SocA/exec";
-
-  // 3??  Função que monta o JSON com os dados
-
-  function serializeFormToPayload(form) {
-    const get = (name) => form.elements[name]?.value?.trim() ?? "";
-
-    return {
-      submission_id: get("submission_id"),
-      tipo_usuario: get("tipo_usuario"),
-      loja: get("loja"),
-      nome_vendedor: get("nome_vendedor"),
-      email_vendedor: get("email_vendedor"),
-      nome_cliente: get("nome_cliente"),
-      cpf: get("cpf"),
-      cnh: get("cnh"),
-      email_cliente: get("email_cliente"),
-      telefone: get("telefone"),
-
-      // ? manter só estas 3 linhas
-      renda_mensal: numFromInput(document.getElementById("renda_mensal")),
-      valor_moto: numFromInput(document.getElementById("valor_moto")),
-      valor_entrada: numFromInput(document.getElementById("valor_entrada")),
-    };
-  }
-
-  // 4??  Função que faz o POST para o Apps Script
-  async function postToAppsScript(payload) {
-    const body = new URLSearchParams({
-      data: JSON.stringify(payload),
-    }).toString();
-    const res = await fetch(WEB_APP_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-      },
-      body,
-    });
-    return res.json();
   }
 
   const steps = Array.from(form.querySelectorAll(".form-step"));
@@ -606,15 +401,10 @@ window.addEventListener('DOMContentLoaded', () => {
     return Math.floor(minimo * 100) / 100;
   };
 
-  // Em script.js
-
   const updateValorEntradaHint = () => {
     if (!valorMotoInput || !valorEntradaInput) return;
 
-    let minimo = calculateValorEntradaMinimo();
-    if (minimo < 4000) {
-      minimo = 4000;
-    }
+    const minimo = calculateValorEntradaMinimo();
     const formatted = minimo.toLocaleString("pt-BR", {
       style: "currency",
       currency: "BRL",
@@ -1376,13 +1166,14 @@ window.addEventListener('DOMContentLoaded', () => {
     // Coleta os valores numéricos uma única vez no início
     const valorMoto = numFromInput(document.getElementById("valor_moto"));
     const entrada = numFromInput(document.getElementById("valor_entrada"));
-    const renda = numFromInput(document.getElementById("renda_mensal"));
+    rendaGlobal = numFromInput(document.getElementById("renda_mensal"));
+    localStorage.setItem("rendaGlobal", rendaGlobal);
 
     // Pequeno atraso para o usuário perceber a mudança no botão
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     // Executa a PPA com os valores coletados
-    const falhas = realizarCalculoPPA(valorMoto, entrada, renda);
+    const falhas = realizarCalculoPPA(valorMoto, entrada, rendaGlobal);
 
     // --- FLUXO DE FALHA DA PPA ---
     if (falhas.length > 0) {
@@ -1392,7 +1183,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
       // --- CORREÇÃO APLICADA AQUI ---
       // Passa os parâmetros corretos que já coletamos para a função de sugestões
-      const sugestoes = calcularSugestoes(falhas, valorMoto, entrada, renda);
+      const sugestoes = calcularSugestoes(
+        falhas,
+        valorMoto,
+        entrada,
+        rendaGlobal
+      );
 
       const listaMotivos = motivos
         .map((motivo) => `<li>- ${motivo}</li>`)
@@ -1405,18 +1201,18 @@ window.addEventListener('DOMContentLoaded', () => {
 
         if (sugestoes.length == 1) {
           mensagemHTML += `
-                    <ul class="list-none pl-5">
-                        <li>- ${sugestoes[0]}</li>
-                    </ul>
-                `;
+<ul class="list-none pl-5">
+<li>- ${sugestoes[0]}</li>
+</ul>
+`;
         } else {
           // sempre mostra duas sugestões unidas por "OU"
           mensagemHTML += `
-                    <ul class="list-none pl-5">
-                        <li>- ${sugestoes[0]} OU</li>
-                        <li>- ${sugestoes[1]}</li>
-                    </ul>
-                `;
+<ul class="list-none pl-5">
+<li>- ${sugestoes[0]} OU</li>
+<li>- ${sugestoes[1]}</li>
+</ul>
+`;
         }
       }
       feedbackArea.innerHTML = mensagemHTML;
@@ -1433,21 +1229,39 @@ window.addEventListener('DOMContentLoaded', () => {
     console.log("PPA Aprovada! Enviando para o Apps Script...");
     const payload = serializeFormToPayload(form);
 
-    try {
-      const result = await postToAppsScript(payload);
+    const prePayload = {
+      cpf: payload.cpf,
+      dealership: payload.loja,
+      seller: payload.nome_vendedor,
+      credit: valorMoto - entrada,
+      income: rendaGlobal,
+      down_payment: entrada,
+      email: payload.email_cliente,
+      phone: payload.telefone,
+    };
+    console.log(prePayload);
 
-      if (result && result.ok) {
+    try {
+      // const result = await postToAppsScript(payload);
+      const pre = await preAnalysisRequest(prePayload);
+      // const pre = { approved: true, discount_40: false };
+
+      // if (result && result.ok) {
+      if (pre.approved) {
         // Sucesso no envio abre a etapa de sucesso
+        limit40Global = pre.discount_40;
         setSubmittingState(false, "Enviar");
         setInitialPPA(valorMoto, entrada);
         localStorage.setItem("v2TelaAtiva", "v2-pagina-aprovado");
         localStorage.removeItem("formFinalAtivo");
         setFlowStage(FLOW_STAGES.SIMULACAO);
         openV2AsPage("v2-pagina-aprovado");
+        localStorage.setItem("cpfGlobal", payload.cpf);
       } else {
         // Falha no envio (erro retornado pelo servidor)
-        alert("Erro ao enviar: " + (result?.error || "desconhecido"));
         setSubmittingState(false, "Enviar");
+        openV2AsPage("v2-pagina-negado");
+        return;
       }
     } catch (err) {
       // Falha de comunicação (rede, etc.)
@@ -1614,8 +1428,14 @@ window.addEventListener('DOMContentLoaded', () => {
       total = Number(p.total) || total;
       entrada = Number(p.entrada) || entrada;
 
+      const tax = window.limit40 ? 0.4 : 0.5;
+
+      const finInit = window.limit40
+        ? Math.max(total * tax, total - entrada)
+        : Math.min(total * tax, total - entrada);
+
       // respeita o “teto” (max financiado permitido no primeiro cálculo)
-      const finInit = Math.max(0, total - entrada);
+      // const finInit = Math.max(0, total - entrada);
       MAX_FINANCIADO_PERMITIDO = finInit;
 
       updateFinanceiro("init");
@@ -1667,7 +1487,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // (1 = Mostrar só 36x)
     // (2 = Mostrar 24x e 36x)
     // (3 = Mostrar 12x, 24x e 36x)
-    const CASO_TESTE = 0; // <-- MUDE AQUI PARA TESTAR (1, 2, 3 ou 0)
+    const CASO_TESTE = 3; // <-- MUDE AQUI PARA TESTAR (1, 2, 3 ou 0)
     // ===============================================
 
     // !! NOVO: Cache das parcelas permitidas !!
@@ -1723,6 +1543,10 @@ window.addEventListener('DOMContentLoaded', () => {
     /**
      * Função Cérebro: Aplica todas as regras de negócio em ordem.
      */
+    const atualizarValoresParcelasDebounce = debounce(
+      atualizarValoresParcelas,
+      2000
+    ); // Debounce
     function updateFinanceiro(source) {
       // 1. Lê os valores atuais (dos sliders)
       if (source === "total") {
@@ -1768,7 +1592,18 @@ window.addEventListener('DOMContentLoaded', () => {
 
       // !! MUDANÇA !!
       // Apenas atualiza os valores (chamando a futura API de valores)
-      atualizarValoresParcelas(financiado);
+
+      localStorage.setItem("downPaymentGlobal", entrada); // ---> Salvando valor da entrada para ser usado na criação do credito
+      // Esconder botão de para analise final
+      document.getElementById("btn-analise-final").disabled = true;
+      document
+        .getElementById("btn-analise-final")
+        .classList.remove("v2-bg-black");
+      document
+        .getElementById("btn-analise-final")
+        .classList.add("v2-bg-black/50");
+      atualizarValoresParcelasDebounce(financiado); // Esse fica ouvindo os sliders!
+      // Relevar botao
     }
 
     /**
@@ -1821,28 +1656,67 @@ window.addEventListener('DOMContentLoaded', () => {
      * Apenas atualiza o R$ das parcelas (a futura API de valores).
      * Esta é a função "leve" que o slider vai chamar.
      */
-    function atualizarValoresParcelas(valorFinanciado) {
+    async function atualizarValoresParcelas(valorFinanciado) {
+      // Ask gpt how to debounce
       // (Esta função será chamada a cada movimento do slider)
       // (No futuro, aqui é o local para chamar a API que CALCULA os valores)
+      // Request para chamar a API:
+      const credit = valorFinanciado;
+      const income = Number(localStorage.getItem("rendaGlobal")) || 0;
+      if (income == 0) return;
+      if (
+        document
+          .getElementById("v2-pagina-aprovado")
+          .classList.contains("v2-hidden")
+      )
+        return;
+      const loanPayload = {
+        credit: credit,
+        income: income,
+      };
+      const loan = await calculateLoanRequest(loanPayload);
+      // Put a blur in the page
+      // Salvando os valores para serem usados na criação do credito
+      localStorage.setItem("creditGlobal", credit);
 
-      // Por agora, apenas pomos um placeholder "calculando..."
-      const placeholderValor = "R$ --,--";
+      atualizarUnicaParcela(btn12x, loan.installment_12, "12x");
+      atualizarUnicaParcela(btn24x, loan.installment_24, "24x");
+      atualizarUnicaParcela(btn36x, loan.installment_36, "36x");
+      console.log("Botao revelado");
+      document.getElementById("btn-analise-final").disabled = false;
+      document
+        .getElementById("btn-analise-final")
+        .classList.remove("v2-bg-black/50");
+      document.getElementById("btn-analise-final").classList.add("v2-bg-black");
+
+      function atualizarUnicaParcela(botao, valor, chave) {
+        if (!parcelasPermitidasCache.includes(chave) || valor === 0) {
+          botao.classList.add("v2-hidden");
+          const span = botao.querySelector(".valor-parcela");
+          if (span) span.textContent = "R$ --,--";
+          return;
+        }
+
+        botao.classList.remove("v2-hidden");
+        const span = botao.querySelector(".valor-parcela");
+        if (span) span.textContent = `R$ ${valor.toFixed(2)}`;
+      }
 
       // 4. Atualiza os botões permitidos (lendo do Cache)
-      if (parcelasPermitidasCache.includes("12x")) {
-        const span = btn12x.querySelector(".valor-parcela");
-        if (span) span.textContent = placeholderValor;
-      }
-
-      if (parcelasPermitidasCache.includes("24x")) {
-        const span = btn24x.querySelector(".valor-parcela");
-        if (span) span.textContent = placeholderValor;
-      }
-
-      if (parcelasPermitidasCache.includes("36x")) {
-        const span = btn36x.querySelector(".valor-parcela");
-        if (span) span.textContent = placeholderValor;
-      }
+      // if (parcelasPermitidasCache.includes('12x')) {
+      //     const span = btn12x.querySelector('.valor-parcela');
+      //     if(span) span.textContent = placeholderValor;
+      // }
+      //
+      // if (parcelasPermitidasCache.includes('24x')) {
+      //     const span = btn24x.querySelector('.valor-parcela');
+      //     if(span) span.textContent = placeholderValor;
+      // }
+      //
+      // if (parcelasPermitidasCache.includes('36x')) {
+      //     const span = btn36x.querySelector('.valor-parcela');
+      //     if(span) span.textContent = placeholderValor;
+      // }
     }
 
     /**
@@ -1869,7 +1743,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
       // 4. Agora, calcula o valor inicial
       // (A variável 'financiado' já foi definida pelo 'updateFinanceiro('init')')
-      atualizarValoresParcelas(financiado);
+      atualizarValoresParcelas(financiado); // Aqui é chamado no momento em que entra na página
     }
 
     // ===============================================
@@ -2009,9 +1883,29 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     if (btnAnaliseFinal) {
-      btnAnaliseFinal.addEventListener("click", () =>
-        openFormFinal({ restoreStep: false })
-      );
+      btnAnaliseFinal.addEventListener("click", async function () {
+        const activatedInstallmentBtn = document.querySelector(
+          '[aria-pressed="true"]'
+        );
+        if (!activatedInstallmentBtn) return 0;
+        const chousenInstallmentAmount = parseInt(
+          activatedInstallmentBtn.id.replace("btn-parcela-", ""),
+          10
+        );
+
+        const createLoanPayload = {
+          cpf: localStorage.getItem("cpfGlobal"),
+          down_payment: localStorage.getItem("downPaymentGlobal"),
+          credit: localStorage.getItem("creditGlobal"),
+          chousen_installment_amount: chousenInstallmentAmount,
+        };
+
+        console.log(createLoanPayload);
+        const createdLoan = await createLoanRequest(createLoanPayload);
+        console.log(createdLoan);
+
+        openFormFinal({ restoreStep: false });
+      });
     }
   });
 
@@ -2078,14 +1972,6 @@ window.addEventListener('DOMContentLoaded', () => {
       input.setCustomValidity("");
       return true;
     };
-
-    const consentRadio = document.getElementById("aceito-termos");
-    consentRadio?.addEventListener("invalid", () => {
-      consentRadio.setCustomValidity("Marque uma opção.");
-    });
-    consentRadio?.addEventListener("change", () => {
-      consentRadio.setCustomValidity(""); // limpa a mensagem assim que marcar
-    });
 
     referenceCpfInputs.forEach((input) => {
       normalizeReferenceCpfValue(input);
@@ -2354,6 +2240,8 @@ window.addEventListener('DOMContentLoaded', () => {
   //abre o form final
   window.addEventListener("DOMContentLoaded", () => {
     const stage = getFlowStage();
+
+    // localStorage.removeItem('v2TelaAtiva');
     const ultimaTela = localStorage.getItem("v2TelaAtiva");
     const ensureFinalRestored = () => {
       if (window.MotoCredFlow?.openFormFinal) {
