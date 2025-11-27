@@ -401,7 +401,10 @@ loadFinalPlaceholderData();
   const updateValorEntradaHint = () => {
     if (!valorMotoInput || !valorEntradaInput) return;
 
-    const minimo = calculateValorEntradaMinimo();
+    let minimo = calculateValorEntradaMinimo();
+    if (minimo < 4000) {
+      minimo = 4000;
+    }
     const formatted = minimo.toLocaleString("pt-BR", {
       style: "currency",
       currency: "BRL",
