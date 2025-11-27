@@ -9,30 +9,27 @@ import {
 
 import {
   loadInitialFormStorage,
-  saveInitialFieldValue,
+  saveInitialFormFieldValue,
   loadFinalPlaceholderData,
   saveFinalPlaceholderData,
   getFinalPlaceholderValue,
 } from "./persistences.js";
 
+//gpt fez modificação
 import {
+  FLOW_STAGE_KEY,
+  FLOW_STAGES,
   setFlowStage,
   getFlowStage,
   setInitialPPA,
   loadPPA,
-} from "./flowContollers.js";
+} from "./flowController.js";
 
 let rendaGlobal = 0;
 let limit40Global = false;
 let lastDownPayment = 0;
 let lastCredit = 0;
 
-const FLOW_STAGE_KEY = "motocredFlowStage";
-const FLOW_STAGES = {
-  FORMULARIO_INICIAL: "formulario_inicial",
-  SIMULACAO: "simulacao",
-  FORMULARIO_FINAL: "formulario_final",
-};
 const FINAL_STEP_IDS = [
   "final_dados_cliente",
   "final_documentacao",
