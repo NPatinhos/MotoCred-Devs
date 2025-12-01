@@ -72,3 +72,10 @@ export async function createLoanRequest(data) {
     return null;
   }
 }
+
+export async function analiseFinal(payload) {
+  const res = await fetch(`${API_URL}/final-analysis/`, {
+    method: "POST",
+    body: payload,
+  });
+}
