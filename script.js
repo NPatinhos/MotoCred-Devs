@@ -3,14 +3,14 @@ import {
   debounce,
   numFromInput,
   serializeFormToPayload,
-  serializePayloadCliente,
-  serializePayloadReferencias,
+  serializePayloadFormFinal,
 } from "./utils.js";
 
 import {
   preAnalysisRequest,
   calculateLoanRequest,
   createLoanRequest,
+  analiseFinal,
 } from "./api.js";
 
 import {
@@ -60,9 +60,8 @@ loadFinalPlaceholderData();
 
 // ENVIO DO FORM FINAL
 export async function enviarFinalAnalise(formFinal) {
-  const payloadCliente = serializePayloadCliente(formFinal);
-  const payloadReferencias = serializePayloadReferencias(formFinal);
-  // console.log("[FormFinal] Payload completo:", payload);
+  const payloadFormFinal = serializePayloadFormFinal(formFinal);
+  console.log("[FormFinal] Payload completo:", payloadFormFinal);
 
   const idFilesList = formFinal.querySelector(
     'input[name="file-doc-id"]'
@@ -76,7 +75,7 @@ export async function enviarFinalAnalise(formFinal) {
   const crlvFile = formFinal.querySelector('input[name="file-crlv"]')?.files[0];
 
   const formData = new FormData();
-  formData.append("dados", JSON.stringify(payloadCliente));
+  formData.append("payload", JSON.stringify(payloadFormFinal));
 
   const appendFiles = (fileList, keyName) => {
     // Verifica se a lista existe e tem pelo menos um arquivo
@@ -89,29 +88,25 @@ export async function enviarFinalAnalise(formFinal) {
       }
     }
   };
-  appendFiles(idFilesList, "id_pdf");
-  appendFiles(extratoFilesList, "extrato_pdf");
-  appendFiles(residenciaFilesList, "residencia_pdf");
-  if (crlvFile) formData.append("crlv_pdf", crlvFile);
+  appendFiles(idFilesList, "identity");
+  appendFiles(extratoFilesList, "extract");
+  appendFiles(residenciaFilesList, "residence");
+  if (crlvFile) formData.append("crlv", crlvFile);
 
-  console.log("payloadClientes: ", payloadCliente);
   console.log("[formdata tem os pdfs] FormData enviado:", formData);
   // Verifique o conteúdo do FormData (apenas para debug)
   for (var pair of formData.entries()) {
     console.log(pair[0] + ": " + pair[1]);
   }
-  console.log("payloadReferencias: ", payloadReferencias);
 
   const url =
     "https://script.google.com/macros/s/AKfycbxqxRTACwCSMkYTRFSOKEEES5GlZSEGsnirVc7o_vLmvzKRyAAHt5zuta1r3In_mH3HIw/exec";
 
   try {
-    const response = await fetch(url, {
-      method: "POST",
-      body: formData,
-    });
+    console.log("[FormFinal] Payload completo:", formData);
+    await analiseFinal(formData);
 
-    const result = await response.json();
+    // const result = await response.json();
 
     return result;
   } catch (erro) {
@@ -2004,6 +1999,7 @@ export async function enviarFinalAnalise(formFinal) {
 
       try {
         const resposta = await enviarFinalAnalise(formFinal);
+
         console.log("Resposta:", resposta);
         // aqui depois dá feedback ao usuário ou avança para a próxima tela
       } catch (err) {

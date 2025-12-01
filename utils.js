@@ -40,59 +40,63 @@ export function debounce(fn, delay) {
   };
 }
 
-export function serializePayloadReferencias(formFinal) {
+// export function serializePayloadReferencias(formFinal) {
+//   const get = (name) => formFinal.elements[name]?.value?.trim() ?? "";
+
+//   return {
+//     nome_cliente: getFinalPlaceholderValue("nome"),
+//     cpf: getFinalPlaceholderValue("cpf"),
+//     referencia_1: referencia_1,
+//     referencia_2: referencia_2,
+//     referencia_3: referencia_3,
+//     referencia_4: referencia_4,
+//     referencia_5: referencia_5,
+//   };
+// }
+
+export function serializePayloadFormFinal(formFinal) {
   const get = (name) => formFinal.elements[name]?.value?.trim() ?? "";
 
   const referencia_1 = {
-    nome: get("nome_referencia_1"),
-    telefone: get("telefone_referencia_1"),
-    parentesco: get("parentesco_referencia_1"),
+    name: get("nome_referencia_1"),
+    phone: get("telefone_referencia_1"),
+    relative: get("parentesco_referencia_1"),
   };
 
   const referencia_2 = {
-    nome: get("nome_referencia_2"),
-    telefone: get("telefone_referencia_2"),
-    parentesco: get("parentesco_referencia_2"),
+    name: get("nome_referencia_2"),
+    phone: get("telefone_referencia_2"),
+    relative: get("parentesco_referencia_2"),
   };
 
   const referencia_3 = {
-    nome: get("nome_referencia_3"),
-    telefone: get("telefone_referencia_3"),
-    parentesco: get("parentesco_referencia_3"),
+    name: get("nome_referencia_3"),
+    phone: get("telefone_referencia_3"),
+    relative: get("parentesco_referencia_3"),
   };
 
   const referencia_4 = {
-    nome: get("nome_referencia_4"),
-    telefone: get("telefone_referencia_4"),
-    parentesco: get("parentesco_referencia_4"),
+    name: get("nome_referencia_4"),
+    phone: get("telefone_referencia_4"),
+    relative: get("parentesco_referencia_4"),
   };
 
   const referencia_5 = {
-    nome: get("nome_referencia_5"),
-    telefone: get("telefone_referencia_5"),
-    parentesco: get("parentesco_referencia_5"),
+    name: get("nome_referencia_5"),
+    phone: get("telefone_referencia_5"),
+    relative: get("parentesco_referencia_5"),
   };
 
   return {
-    nome_cliente: getFinalPlaceholderValue("nome"),
     cpf: getFinalPlaceholderValue("cpf"),
-    referencia_1: referencia_1,
-    referencia_2: referencia_2,
-    referencia_3: referencia_3,
-    referencia_4: referencia_4,
-    referencia_5: referencia_5,
-  };
-}
-
-export function serializePayloadCliente(formFinal) {
-  const get = (name) => formFinal.elements[name]?.value?.trim() ?? "";
-
-  return {
-    nome_cliente: getFinalPlaceholderValue("nome"),
-    cpf: getFinalPlaceholderValue("cpf"),
-    estado_civil: get("estado_civil"),
-    tipo_residencia: get("residencia"),
-    tempo_residencia: get("tempo_residencia"),
-    profissao: get("profissao"),
+    marital_status: get("estado_civil"),
+    residence_type: get("residencia"),
+    residence_time: get("tempo_residencia"),
+    occupation: get("profissao"),
+    reference1: referencia_1,
+    reference2: referencia_2,
+    reference3: referencia_3,
+    reference4: referencia_4,
+    reference5: referencia_5,
   };
 }
