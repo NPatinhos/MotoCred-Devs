@@ -3,6 +3,7 @@ export const FLOW_STAGES = {
   FORMULARIO_INICIAL: "formulario_inicial",
   SIMULACAO: "simulacao",
   FORMULARIO_FINAL: "formulario_final",
+  TELA_FINAL: "pagina-final",
 };
 
 export function setFlowStage(stage) {
