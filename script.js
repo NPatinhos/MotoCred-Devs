@@ -32,6 +32,7 @@ import {
   loadPPA,
   FLOW_STAGES,
   FLOW_STAGE_KEY,
+  resetFlowState,
 } from "./flowController.js";
 
 let rendaGlobal = 0;
@@ -2038,6 +2039,10 @@ export async function enviarFinalAnalise(formFinal) {
         console.log("Resposta:", resposta);
         document.getElementById("form-final").classList.add("v2-hidden");
         document.getElementById("pagina-final").classList.remove("v2-hidden");
+        resetFlowState();
+        setFlowStage(FLOW_STAGES.FORMULARIO_INICIAL);
+        document.getElementById("form-final")?.classList.add("v2-hidden");
+        document.getElementById("pagina-final")?.classList.remove("v2-hidden");
 
         // aqui depois dá feedback ao usuário ou avança para a próxima tela
       } catch (err) {
