@@ -106,7 +106,7 @@ export async function enviarFinalAnalise(formFinal) {
     console.log("[FormFinal] Payload completo:", formData);
     await analiseFinal(formData);
 
-    // const result = await response.json();
+    const result = await response.json();
 
     return result;
   } catch (erro) {
@@ -1993,18 +1993,58 @@ export async function enviarFinalAnalise(formFinal) {
     const formFinal = document.getElementById("formFinal");
     if (!formFinal) return;
 
+    const finalNavPrev = document.querySelector("#form-final .nav-prev");
+    const finalNavNext = document.querySelector("#form-final .nav-next");
+    const finalTabsNav = document.querySelectorAll(".final-step-tab");
+    const originalNextText = finalNavNext?.textContent;
+    const finalSection = document.querySelector("#form-final");
+    const finalInputs =
+      finalSection?.querySelectorAll("input, select, textarea") || [];
+
+    const setFinalSubmittingState = (isSubmitting) => {
+      finalInputs.forEach((field) => {
+        if (isSubmitting) {
+          field.dataset.wasDisabled = field.disabled ? "true" : "false";
+          field.disabled = true;
+        } else if (field.dataset.wasDisabled !== "true") {
+          field.disabled = false;
+        }
+      });
+
+      finalNavPrev.disabled = isSubmitting;
+      finalNavNext.disabled = isSubmitting;
+
+      finalTabsNav.forEach((tab) => {
+        tab.disabled = isSubmitting;
+        tab.setAttribute("aria-disabled", isSubmitting ? "true" : "false");
+      });
+
+      if (finalNavNext) {
+        finalNavNext.textContent = isSubmitting
+          ? "Enviando..."
+          : originalNextText;
+      }
+    };
+
     formFinal.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (!ensureDocumentFilesSelected()) return;
+      setFinalSubmittingState(true);
+      console.log("submeteu");
 
       try {
+        console.log("tentando enviar analise final");
         const resposta = await enviarFinalAnalise(formFinal);
-
         console.log("Resposta:", resposta);
+        document.getElementById("form-final").classList.add("v2-hidden");
+        document.getElementById("pagina-final").classList.remove("v2-hidden");
+
         // aqui depois dá feedback ao usuário ou avança para a próxima tela
       } catch (err) {
         console.error("Falha ao enviar formulário final", err);
         // opcional: mostrar erro na UI
+      } finally {
+        setFinalSubmittingState(false);
       }
     });
 
