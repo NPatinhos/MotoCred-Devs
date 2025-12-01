@@ -5,6 +5,18 @@ export const FLOW_STAGES = {
   FORMULARIO_FINAL: "formulario_final",
   TELA_FINAL: "pagina-final",
 };
+export const resetFlowState = () => {
+  localStorage.removeItem(FLOW_STAGE_KEY);
+  localStorage.removeItem("formFinalAtivo");
+  localStorage.removeItem("formFinalStep");
+  localStorage.removeItem("v2TelaAtiva");
+  localStorage.removeItem(INITIAL_FORM_STORAGE_KEY);
+  localStorage.removeItem(FINAL_FORM_STORAGE_KEY);
+  localStorage.removeItem(FINAL_PLACEHOLDER_STORAGE_KEY);
+  localStorage.removeItem("cpfGlobal");
+  localStorage.removeItem("downPaymentGlobal");
+  localStorage.removeItem("creditGlobal");
+};
 
 export function setFlowStage(stage) {
   try {
