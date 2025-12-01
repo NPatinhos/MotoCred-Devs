@@ -1,5 +1,11 @@
 ﻿import { openV2AsPage } from "./ui.js";
-import { debounce, serializeFormToPayload } from "./utils.js";
+import {
+  debounce,
+  numFromInput,
+  serializeFormToPayload,
+  serializePayloadCliente,
+  serializePayloadReferencias,
+} from "./utils.js";
 
 import {
   preAnalysisRequest,
@@ -9,20 +15,23 @@ import {
 
 import {
   loadInitialFormStorage,
-  saveInitialFormFieldValue,
   loadFinalPlaceholderData,
   saveFinalPlaceholderData,
+  saveInitialFormFieldValue,
   getFinalPlaceholderValue,
+  initialFormData,
+  finalPlaceholderData,
+  INITIAL_FORM_STORAGE_KEY,
+  FINAL_PLACEHOLDER_STORAGE_KEY,
 } from "./persistences.js";
 
-//gpt fez modificação
 import {
-  FLOW_STAGE_KEY,
-  FLOW_STAGES,
   setFlowStage,
   getFlowStage,
   setInitialPPA,
   loadPPA,
+  FLOW_STAGES,
+  FLOW_STAGE_KEY,
 } from "./flowController.js";
 
 let rendaGlobal = 0;
@@ -36,8 +45,6 @@ const FINAL_STEP_IDS = [
   "final_referencias",
 ];
 const FINAL_FORM_STORAGE_KEY = "formFinalData";
-const INITIAL_FORM_STORAGE_KEY = "formCadastroData";
-const FINAL_PLACEHOLDER_STORAGE_KEY = "formFinalPlaceholderData";
 const FINAL_PLACEHOLDER_MAP = [
   { key: "nome", source: "#nome_cliente", target: "#final_nome_cliente" },
   { key: "cpf", source: "#cpf", target: "#final_cpf" },
@@ -45,11 +52,73 @@ const FINAL_PLACEHOLDER_MAP = [
   { key: "email", source: "#email_cliente", target: "#final_email_cliente" },
 ];
 
-let finalPlaceholderData = {};
-let initialFormData = {};
+// let finalPlaceholderData = {};
+// let initialFormData = {};
 
 loadInitialFormStorage();
 loadFinalPlaceholderData();
+
+// ENVIO DO FORM FINAL
+export async function enviarFinalAnalise(formFinal) {
+  const payloadCliente = serializePayloadCliente(formFinal);
+  const payloadReferencias = serializePayloadReferencias(formFinal);
+  // console.log("[FormFinal] Payload completo:", payload);
+
+  const idFilesList = formFinal.querySelector(
+    'input[name="file-doc-id"]'
+  )?.files;
+  const extratoFilesList = formFinal.querySelector(
+    'input[name="file-extrato"]'
+  )?.files;
+  const residenciaFilesList = formFinal.querySelector(
+    'input[name="file-residencia"]'
+  )?.files;
+  const crlvFile = formFinal.querySelector('input[name="file-crlv"]')?.files[0];
+
+  const formData = new FormData();
+  formData.append("dados", JSON.stringify(payloadCliente));
+
+  const appendFiles = (fileList, keyName) => {
+    // Verifica se a lista existe e tem pelo menos um arquivo
+    if (fileList && fileList.length > 0) {
+      // Itera sobre todos os arquivos da lista
+      for (let i = 0; i < fileList.length; i++) {
+        // Anexa o arquivo, usando o mesmo nome (keyName).
+        // O FormData lidará com múltiplos valores para a mesma chave.
+        formData.append(keyName, fileList[i]);
+      }
+    }
+  };
+  appendFiles(idFilesList, "id_pdf");
+  appendFiles(extratoFilesList, "extrato_pdf");
+  appendFiles(residenciaFilesList, "residencia_pdf");
+  if (crlvFile) formData.append("crlv_pdf", crlvFile);
+
+  console.log("payloadClientes: ", payloadCliente);
+  console.log("[formdata tem os pdfs] FormData enviado:", formData);
+  // Verifique o conteúdo do FormData (apenas para debug)
+  for (var pair of formData.entries()) {
+    console.log(pair[0] + ": " + pair[1]);
+  }
+  console.log("payloadReferencias: ", payloadReferencias);
+
+  const url =
+    "https://script.google.com/macros/s/AKfycbxqxRTACwCSMkYTRFSOKEEES5GlZSEGsnirVc7o_vLmvzKRyAAHt5zuta1r3In_mH3HIw/exec";
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    return result;
+  } catch (erro) {
+    console.error("Erro ao enviar:", erro);
+    return { ok: false, erro };
+  }
+}
 
 (function () {
   console.log("[PPA] Script carregado. Versão:", new Date().toISOString());
@@ -1100,15 +1169,6 @@ loadFinalPlaceholderData();
   }
 
   // helper p/ ler número do input (usa a máscara; tem fallback)
-  function numFromInput(el) {
-    if (!el) return NaN;
-    if (typeof el.getNumberValue === "function") return el.getNumberValue();
-    const raw = String(el.value || "")
-      .replace(/\./g, "")
-      .replace(",", ".");
-    const n = Number(raw);
-    return Number.isFinite(n) ? n : NaN;
-  }
 
   // aplica a máscara nos três campos
   attachBRLMoneyMask(document.getElementById("valor_moto"));
@@ -1201,18 +1261,18 @@ loadFinalPlaceholderData();
 
         if (sugestoes.length == 1) {
           mensagemHTML += `
-<ul class="list-none pl-5">
-<li>- ${sugestoes[0]}</li>
-</ul>
-`;
+            <ul class="list-none pl-5">
+            <li>- ${sugestoes[0]}</li>
+            </ul>
+            `;
         } else {
           // sempre mostra duas sugestões unidas por "OU"
           mensagemHTML += `
-<ul class="list-none pl-5">
-<li>- ${sugestoes[0]} OU</li>
-<li>- ${sugestoes[1]}</li>
-</ul>
-`;
+            <ul class="list-none pl-5">
+            <li>- ${sugestoes[0]} OU</li>
+            <li>- ${sugestoes[1]}</li>
+            </ul>
+            `;
         }
       }
       feedbackArea.innerHTML = mensagemHTML;
@@ -1938,70 +1998,65 @@ loadFinalPlaceholderData();
     const formFinal = document.getElementById("formFinal");
     if (!formFinal) return;
 
+    formFinal.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!ensureDocumentFilesSelected()) return;
+
+      try {
+        const resposta = await enviarFinalAnalise(formFinal);
+        console.log("Resposta:", resposta);
+        // aqui depois dá feedback ao usuário ou avança para a próxima tela
+      } catch (err) {
+        console.error("Falha ao enviar formulário final", err);
+        // opcional: mostrar erro na UI
+      }
+    });
+
     const persistableFields = Array.from(
       formFinal.querySelectorAll("input, select, textarea")
     ).filter((field) => field.name && !field.disabled && field.type !== "file");
-    const referencePhoneInputs = Array.from(
-      formFinal.querySelectorAll('input[id^="telefone_referencia_"]')
+    const referenceCpfInputs = Array.from(
+      formFinal.querySelectorAll('input[id^="cpf_referencia_"]')
     );
     const documentFileInputs = Array.from(
       formFinal.querySelectorAll('#final_documentacao input[type="file"]')
     );
 
-    const formatReferencePhoneValue = (digits) => {
-      const clean = digits.slice(0, 11);
-      if (!clean) return "";
-      if (clean.length <= 2) {
-        return clean;
-      }
-      const ddd = clean.slice(0, 2);
-      const firstPart = clean.slice(2, 7);
-      const secondPart = clean.slice(7, 11);
-      let formatted = `(${ddd})`;
-      if (firstPart) {
-        formatted += ` ${firstPart}`;
-      }
-      if (secondPart) {
-        formatted += `-${secondPart}`;
-      }
-      return formatted.trim();
-    };
-
-    const normalizeReferencePhoneValue = (input) => {
+    const normalizeReferenceCpfValue = (input) => {
       if (!input) return "";
-      const digits = sanitizePhoneNumber(input.value || "");
-      input.value = formatReferencePhoneValue(digits);
+      const digits = sanitizeCpf(input.value || "");
+      input.value = formatCpf(digits);
       return digits;
     };
 
-    const updateReferencePhoneValidity = (input, showMessage = false) => {
+    const updateReferenceCpfValidity = (input, showMessage = false) => {
       if (!input || input.disabled) {
         return true;
       }
-      const digits = normalizeReferencePhoneValue(input);
+      const digits = normalizeReferenceCpfValue(input);
       if (!digits) {
         input.setCustomValidity("");
         return true;
       }
-      const result = validateBrazilianCellphone(digits);
-      if (!result.valid) {
-        input.setCustomValidity(showMessage ? result.message : "");
+      const isValid = isValidCpfDigits(digits);
+      if (!isValid) {
+        input.setCustomValidity(showMessage ? "Informe um CPF válido." : "");
         return false;
       }
       input.setCustomValidity("");
       return true;
     };
 
-    referencePhoneInputs.forEach((input) => {
-      normalizeReferencePhoneValue(input);
-      updateReferencePhoneValidity(input, false);
+    referenceCpfInputs.forEach((input) => {
+      normalizeReferenceCpfValue(input);
+      updateReferenceCpfValidity(input, false);
       input.addEventListener("input", () => {
-        normalizeReferencePhoneValue(input);
-        updateReferencePhoneValidity(input, false);
+        normalizeReferenceCpfValue(input);
+        updateReferenceCpfValidity(input, false);
       });
       input.addEventListener("blur", () => {
-        normalizeReferencePhoneValue(input);
-        updateReferencePhoneValidity(input, true);
+        normalizeReferenceCpfValue(input);
+        updateReferenceCpfValidity(input, true);
       });
     });
 
@@ -2165,8 +2220,8 @@ loadFinalPlaceholderData();
       ).filter((field) => !field.disabled);
 
       for (const field of fields) {
-        if (referencePhoneInputs.includes(field)) {
-          updateReferencePhoneValidity(field, true);
+        if (referenceCpfInputs.includes(field)) {
+          updateReferenceCpfValidity(field, true);
         }
         if (!field.checkValidity()) {
           field.reportValidity();
@@ -2195,8 +2250,9 @@ loadFinalPlaceholderData();
 
       if (currentStep === stepOrder.length - 1) {
         if (!ensureDocumentFilesSelected()) return;
-        alert("? Enviar formulário final (implementação futura)");
-        // aqui depois envia para planilha ou backend
+        formFinal.requestSubmit();
+        console.log("envio");
+
         return;
       }
 
