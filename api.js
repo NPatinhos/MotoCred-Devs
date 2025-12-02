@@ -78,4 +78,10 @@ export async function analiseFinal(payload) {
     method: "POST",
     body: payload,
   });
+
+  if (!res.ok) {
+    throw new Error(`HTTP error! Status: ${res.status}`);
+  }
+
+  return res;
 }

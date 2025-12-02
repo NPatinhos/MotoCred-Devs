@@ -1,3 +1,9 @@
+import {
+  INITIAL_FORM_STORAGE_KEY,
+  FINAL_FORM_STORAGE_KEY,
+  FINAL_PLACEHOLDER_STORAGE_KEY,
+} from "./persistences.js";
+
 export const FLOW_STAGE_KEY = "motocredFlowStage";
 export const FLOW_STAGES = {
   FORMULARIO_INICIAL: "formulario_inicial",

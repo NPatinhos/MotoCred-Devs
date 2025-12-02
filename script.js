@@ -105,7 +105,7 @@ export async function enviarFinalAnalise(formFinal) {
 
   try {
     console.log("[FormFinal] Payload completo:", formData);
-    await analiseFinal(formData);
+    const response = await analiseFinal(formData);
 
     const result = await response.json();
 
@@ -561,7 +561,7 @@ export async function enviarFinalAnalise(formFinal) {
     // vazio / inválido
     if (!valorEntradaInput.value.trim() || !Number.isFinite(ve) || ve <= 0) {
       if (showMessage) {
-        erroArea.innerHTML = "? Informe um valor de entrada válido.";
+        erroArea.innerHTML = "Informe um valor de entrada válido.";
         erroArea.classList.remove("hidden");
       }
       return false;
@@ -571,7 +571,17 @@ export async function enviarFinalAnalise(formFinal) {
     if (Number.isFinite(vm) && ve > vm) {
       if (showMessage) {
         erroArea.innerHTML =
-          "? O valor da entrada não pode ser maior que o valor da moto.";
+          "O valor da entrada não pode ser maior que o valor da moto.";
+        erroArea.classList.remove("hidden");
+      }
+      return false;
+    }
+
+    // maior que moto
+    if (Number.isFinite(vm) && ve == vm) {
+      if (showMessage) {
+        erroArea.innerHTML =
+          "O valor da entrada não pode ser igual ao valor da moto.";
         erroArea.classList.remove("hidden");
       }
       return false;
@@ -1284,6 +1294,7 @@ export async function enviarFinalAnalise(formFinal) {
     // --- FLUXO DE SUCESSO DA PPA ---
     console.log("PPA Aprovada! Enviando para o Apps Script...");
     const payload = serializeFormToPayload(form);
+    console.log(payload);
 
     const prePayload = {
       cpf: payload.cpf,
@@ -2039,6 +2050,7 @@ export async function enviarFinalAnalise(formFinal) {
         console.log("Resposta:", resposta);
         document.getElementById("form-final").classList.add("v2-hidden");
         document.getElementById("pagina-final").classList.remove("v2-hidden");
+        localStorage.clear();
         resetFlowState();
         setFlowStage(FLOW_STAGES.FORMULARIO_INICIAL);
         document.getElementById("form-final")?.classList.add("v2-hidden");

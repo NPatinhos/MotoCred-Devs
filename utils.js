@@ -12,13 +12,19 @@ export function numFromInput(el) {
 
 export function serializeFormToPayload(form) {
   const get = (name) => form.elements[name]?.value?.trim() ?? "";
+  const tipoUsuario = get("tipo_usuario");
+  const lojaValue = tipoUsuario === "comprador" ? "--" : get("loja") || "";
+  const vendedorValue =
+    tipoUsuario === "comprador" ? "--" : get("nome_vendedor") || "";
+  const emailVendedorValue =
+    tipoUsuario === "comprador" ? "--" : get("email_vendedor") || "";
 
   return {
     submission_id: get("submission_id"),
     tipo_usuario: get("tipo_usuario"),
-    loja: get("loja"),
-    nome_vendedor: get("nome_vendedor"),
-    email_vendedor: get("email_vendedor"),
+    loja: lojaValue,
+    nome_vendedor: vendedorValue,
+    email_vendedor: emailVendedorValue,
     nome_cliente: get("nome_cliente"),
     cpf: get("cpf"),
     cnh: get("cnh"),

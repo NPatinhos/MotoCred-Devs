@@ -2,6 +2,7 @@ export let initialFormData = {};
 export let finalPlaceholderData = {};
 export const INITIAL_FORM_STORAGE_KEY = "formCadastroData";
 export const FINAL_PLACEHOLDER_STORAGE_KEY = "formFinalPlaceholderData";
+export const FINAL_FORM_STORAGE_KEY = "formFinalData";
 
 export function persistInitialFormStorage() {
   try {
