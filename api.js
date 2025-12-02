@@ -2,7 +2,7 @@ const API_URL = "http://13.218.72.252:8000";
 
 export async function preAnalysisRequest(data) {
   try {
-    const response = await fetch(`${API_URL}/pre-analysis/mock`, {
+    const response = await fetch(`${API_URL}/pre-analysis/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -51,7 +51,7 @@ export async function calculateLoanRequest(data) {
 
 export async function createLoanRequest(data) {
   try {
-    const response = await fetch(`${API_URL}/loan/create/mock`, {
+    const response = await fetch(`${API_URL}/loan/create/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
